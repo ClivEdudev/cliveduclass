@@ -94,6 +94,21 @@
     async join(code, onMessage, onStatus) { const c = new Client(this.brokerFor(code), onMessage, onStatus); await c.connect(8000); return c; },
     roomsTopic: "clivedu/live/rooms/+",
     roomTopic(code) { return `clivedu/live/rooms/${String(code).toUpperCase()}`; },
+    /* Slide sync for a lesson: the teacher's screen sends its slide, students' phones follow.
+       Uses every broker so a phone that reaches only one of them still follows. */
+    syncSlides(id, onSlide) {
+      const urls = override ? [override] : BROKERS, clients = [], t = `clivedu/lesson/${id}/slide`;
+      let last = null;
+      const start = url => {
+        const c = new Client(url, (tp, p) => { if (!onSlide || !p) return; try { onSlide(JSON.parse(p)); } catch (e) {} },
+          st => { if (st === "online" && last) c.publish(t, last, true); });
+        if (onSlide) c.subscribe(t);
+        c.connect(7000).then(() => { if (last) c.publish(t, last, true); }).catch(() => setTimeout(() => start(url), 8000));
+        clients.push(c);
+      };
+      urls.forEach(start);
+      return { send(obj) { last = JSON.stringify(obj); clients.forEach(c => { if (c.ready) c.publish(t, last, true); }); } };
+    },
     /* Watch the list of running games on every broker. Calls onRooms(list) whenever it changes. Returns stop(). */
     watchRooms(onRooms) {
       const rooms = {}, clients = [];

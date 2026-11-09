@@ -274,3 +274,9 @@ body.flow .lname{display:none}
 body.flow .lname{display:none}
 .nbtn{white-space:nowrap}
 @media (max-width:1100px){.hint{display:none}}
+
+/* Follow the teacher */
+.followbtn.on{border-color:#6CCB8A;color:#BDF0CC}
+#shareTag{border-color:#6CCB8A;color:#BDF0CC;cursor:default}
+@media (max-width:640px){.bar .lname{display:none}}
+body.flow section.s{scroll-margin-top:calc(var(--barh,0px) + 12px)}

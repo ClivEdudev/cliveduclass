@@ -7,6 +7,7 @@
 "use strict";
 const L = window.LESSON;
 if (!L) return;
+const SELF = (document.currentScript && document.currentScript.src) || "";
 const P = window.PLAN || null;
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -109,6 +110,7 @@ document.body.innerHTML = `
   <a class="brand" href="${HOME}"><i aria-hidden="true"></i>${STUDENT ? "My lessons" : "ClivEdu Class"}</a>
   <span class="lname">${lname}</span>
   <button class="lnk viewbtn" id="viewBtn" data-viewtoggle></button>
+  ${STUDENT ? `<button class="lnk viewbtn followbtn" id="followBtn" data-follow></button>` : `<span class="lnk viewbtn followbtn" id="shareTag" title="Students' phones follow this slide">Phones follow</span><a class="lnk viewbtn" href="${HOME}../live/">Live game</a>`}
   ${STUDENT ? `<div class="teams"><span class="mine">My points <b id="mypts">0</b></span></div>` : `<div class="teams" id="teams" aria-label="Team scores"></div>`}
 </div>
 <div class="viewport" id="viewport">
@@ -216,7 +218,8 @@ $$(".ans").forEach(b => { const a = b.textContent; b.innerHTML = `<span class="q
 function go(i, fromHash) {
   i = Math.max(0, Math.min(slides.length - 1, i));
   clearInterval(timerId);
-  if (flow) { cur = i; slides[i].scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" }); return; }
+  if (TEACHER && sync) sync.send({ i: ORIG[i], ts: Date.now() });
+  if (flow) { cur = i; const bh = ($(".bar") || {}).offsetHeight || 0; scrollTo({ top: Math.max(0, slides[i].getBoundingClientRect().top + scrollY - bh - 12), behavior: reduceMotion ? "auto" : "smooth" }); return; }
   slides[cur].classList.remove("active");
   cur = i;
   const sl = slides[cur];
@@ -400,6 +403,7 @@ document.addEventListener("click", e => {
   if (d.menuClose != null) { $("#menu").hidden = true; return; }
   if (d.goto != null) { $("#menu").hidden = true; go(+d.goto); return; }
   if (d.full != null) { toggleFull(); return; }
+  if (d.follow != null) { following = !following; store.set("clv-follow", following); paintFollow(); if (following && lastMsg) followTo(lastMsg, true); return; }
   if (d.viewtoggle != null) { viewPref = flow ? "slides" : "scroll"; store.set("clv-view", viewPref); fit(); if (!flow) go(cur, true); return; }
   if (d.jump) { const i = slides.findIndex(s => s.dataset.id === d.jump); if (i >= 0) go(i); return; }
   if (d.blur) { const el = $("#" + d.blur); const on = el.classList.toggle("blurred"); t.textContent = on ? "Show the lines" : "Hide the lines"; return; }
@@ -462,6 +466,30 @@ document.addEventListener("keydown", e => {
 let tx = null;
 vp.addEventListener("touchstart", e => { tx = e.touches[0].clientX; }, { passive: true });
 vp.addEventListener("touchend", e => { if (flow || tx == null) return; const dx = e.changedTouches[0].clientX - tx; tx = null; if (Math.abs(dx) > 70 && !e.target.closest("button")) { dx < 0 ? go(cur + 1) : go(cur - 1); } }, { passive: true });
+
+/* ================= FOLLOW THE TEACHER: students' phones show the slide on the board ================= */
+const ORIG = slideList.map(s => L.slides.indexOf(s));
+let sync = null, following = store.get("clv-follow", true), lastMsg = null, lastTs = 0;
+function paintFollow() { const b = $("#followBtn"); if (b) { b.textContent = following ? "● Following teacher" : "Follow teacher"; b.classList.toggle("on", following); } }
+function followTo(m, force) {
+  if (!m || typeof m.i !== "number") return;
+  if (Math.abs(Date.now() - (m.ts || 0)) > 3 * 3600000) return;   // only during class
+  if (!force && (m.ts || 0) <= lastTs) return;
+  lastTs = m.ts || 0; lastMsg = m;
+  if (!following) return;
+  let k = 0; ORIG.forEach((o, j) => { if (o <= m.i) k = j; });
+  if (k === cur && !flow) return;
+  go(k);
+}
+function startSync() {
+  if (!window.LiveNet) return;
+  const id = L.n ? "l" + L.n : "rev";
+  sync = window.LiveNet.syncSlides(id, STUDENT ? m => followTo(m) : null);
+  if (TEACHER) sync.send({ i: ORIG[cur], ts: Date.now() });
+}
+paintFollow();
+if (window.LiveNet) startSync();
+else if (SELF) { const sc = document.createElement("script"); sc.src = SELF.replace(/engine\.js(\?.*)?$/, "live-net.js"); sc.onload = startSync; document.head.appendChild(sc); }
 
 /* ================= START ================= */
 renderTeams();
