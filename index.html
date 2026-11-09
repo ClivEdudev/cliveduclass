@@ -58,12 +58,17 @@ a.card:hover{transform:translateY(-3px);border-color:var(--yellow)}
 .foot-link{color:var(--mist);font-size:14px;text-align:center}
 .foot-link a{color:var(--mist)}
 a:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+.live-on{display:flex;align-items:center;gap:14px;background:var(--teal);color:var(--cream);text-decoration:none;border-radius:20px;padding:14px 18px}
+.live-on .dot{width:14px;height:14px;border-radius:50%;background:#6CCB8A;box-shadow:0 0 0 6px rgba(108,203,138,.25);flex:none}
+.live-on span:nth-child(2){flex:1}
+.live-on .go{font-weight:800;color:var(--yellow)}
 @media (max-width:640px){.feature{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
 <div class="wrap" id="app"></div>
 <script src="lessons/plan.js"></script>
+<script src="lessons/live-net.js"></script>
 <script>
 (() => {
   const P = window.PLAN;
@@ -103,9 +108,17 @@ a:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
     <div class="hello"><h1>My English <span>lessons</span></h1>
       <p>Every lesson from class is here to revise: the rules, examples in Uzbek, quizzes and games. New lessons appear after class.</p>
       <p class="uz">Darsdan keyin har bir dars shu yerda ochiladi. Takrorlang va ball yig’ing!</p></div>
+    <div id="liveBanner"></div>
     ${feature}
     <section class="sec"><h2>Lessons to revise</h2><p>${items.length} open · newest first</p><div class="grid">${cards}</div></section>
     <p class="foot-link"><a href="teacher/">Teacher</a></p>`;
+  if (window.LiveNet) {
+    const stop = window.LiveNet.watchRooms(list => {
+      const el = document.getElementById("liveBanner"); if (!el) return;
+      el.innerHTML = list.length ? `<a class="live-on" href="play/?code=${encodeURIComponent(list[0].code)}"><span class="dot" aria-hidden="true"></span><span><b>A class game is on now!</b><br>${esc(list[0].set || "")} · code ${esc(list[0].code)}</span><span class="go">Join →</span></a>` : "";
+    });
+    setTimeout(stop, 10 * 60000);
+  }
 })();
 </script>
 </body>

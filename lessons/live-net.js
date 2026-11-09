@@ -23,8 +23,8 @@
     connect(timeoutMs = 6000) {
       return new Promise((resolve, reject) => {
         let done = false;
-        const t = setTimeout(() => { if (!done) { done = true; try { this.ws.close(); } catch (e) {} reject(new Error("timeout")); } }, timeoutMs);
-        this._open(() => { if (!done) { done = true; clearTimeout(t); resolve(this); } }, () => { if (!done) { done = true; clearTimeout(t); reject(new Error("failed")); } });
+        const t = setTimeout(() => { if (!done) { done = true; this.closed = true; try { this.ws.close(); } catch (e) {} reject(new Error("timeout")); } }, timeoutMs);
+        this._open(() => { if (!done) { done = true; clearTimeout(t); resolve(this); } }, () => { if (!done) { done = true; this.closed = true; clearTimeout(t); reject(new Error("failed")); } });
       });
     }
     _open(ok, fail) {
@@ -91,6 +91,29 @@
       }
       throw new Error("No live server could be reached.");
     },
-    async join(code, onMessage, onStatus) { const c = new Client(this.brokerFor(code), onMessage, onStatus); await c.connect(8000); return c; }
+    async join(code, onMessage, onStatus) { const c = new Client(this.brokerFor(code), onMessage, onStatus); await c.connect(8000); return c; },
+    roomsTopic: "clivedu/live/rooms/+",
+    roomTopic(code) { return `clivedu/live/rooms/${String(code).toUpperCase()}`; },
+    /* Watch the list of running games on every broker. Calls onRooms(list) whenever it changes. Returns stop(). */
+    watchRooms(onRooms) {
+      const rooms = {}, clients = [];
+      const urls = override ? [override] : BROKERS;
+      const emit = () => {
+        const now = Date.now();
+        onRooms(Object.values(rooms).filter(r => r && r.code && now - (r.seen || 0) < 15 * 60000 && r.phase !== "closed").sort((a, b) => (b.ts || 0) - (a.ts || 0)));
+      };
+      urls.forEach(url => {
+        const c = new Client(url, (topic, payload) => {
+          const code = topic.split("/").pop();
+          if (!payload) { delete rooms[code]; return emit(); }
+          try { const r = JSON.parse(payload); r.seen = Date.now(); if (Date.now() - (r.ts || 0) > 20 * 60000 && Math.abs(Date.now() - (r.ts || 0)) < 24 * 3600000) return; rooms[code] = r; emit(); } catch (e) {}
+        }, () => {});
+        c.subscribe(this.roomsTopic);
+        c.connect(7000).catch(() => {});
+        clients.push(c);
+      });
+      emit();
+      return () => clients.forEach(c => c.close());
+    }
   };
 })();

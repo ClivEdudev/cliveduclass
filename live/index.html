@@ -99,6 +99,50 @@ function setup() {
         <span class="muted">Answer → scores → next question, ${REVEAL_MS / 1000} seconds each. You can pause any time.</span></div>
       <div class="row gap"><button class="btn y xl" data-create>Create game →</button><span class="muted" id="setupMsg"></span></div>
     </section>`;
+  app.querySelector(".wrapc").insertAdjacentHTML("afterbegin", `<div class="running"><h2 class="h3">Games running now</h2><div id="rooms" class="roomlist"><p class="muted">Looking for games…</p></div></div>`);
+  startWatch();
+}
+let stopWatch = null, roomList = [];
+function startWatch() {
+  if (!stopWatch) stopWatch = NET.watchRooms(list => { roomList = list; drawRooms(); });
+  drawRooms();
+}
+function drawRooms() {
+  const el = $("#rooms"); if (!el) return;
+  const snap = readSnap();
+  const list = roomList.slice();
+  if (snap && !list.some(r => r.code === snap.room)) list.unshift({ code: snap.room, set: (sets.find(x => x.id === snap.setId) || {}).title || "", type: (TYPES.find(t => t.id === snap.type) || {}).name || "", phase: snap.phase, qi: snap.qi, total: snap.rounds.length, n: Object.keys(snap.players).length });
+  el.innerHTML = list.length ? list.map(r => {
+    const mine = snap && snap.room === r.code;
+    return `<div class="roomcard"><span class="rcode">${esc(r.code)}</span><span class="rinfo"><b>${esc(r.set || "")}</b> · ${esc(r.type || "")}<br><span class="muted">${roomStatus(r)}</span></span>
+      ${mine ? `<button class="btn y" data-resume="${esc(r.code)}">Continue</button>` : ""}<button class="pill" data-endroom="${esc(r.code)}">End</button></div>`;
+  }).join("") : `<p class="muted">No games running. Create one below.</p>`;
+}
+function roomStatus(r) { return r.phase === "lobby" ? `Waiting to start · ${r.n || 0} joined` : r.phase === "end" ? "Finished" : `Question ${(r.qi || 0) + 1} of ${r.total || "?"} · ${r.n || 0} playing`; }
+async function endRemote(code) {
+  try {
+    const c = await NET.join(code, () => {}, () => {});
+    c.publish(NET.topic(code, "state"), { v: 2, phase: "closed" }, true);
+    c.publish(NET.roomTopic(code), "", true);
+    setTimeout(() => c.close(), 600);
+  } catch (e) {}
+  const snap = readSnap(); if (snap && snap.room === code) dropSnap();
+  roomList = roomList.filter(r => r.code !== code); drawRooms();
+}
+async function resume(code) {
+  const snap = readSnap(); if (!snap || snap.room !== code) return;
+  const msg = $("#setupMsg"); if (msg) msg.textContent = "Reconnecting to your game…";
+  try {
+    S.set = sets.find(x => x.id === snap.setId) || sets[0]; S.type = snap.type; S.limit = snap.limit; S.auto = snap.auto;
+    S.rounds = snap.rounds; S.players = snap.players; S.room = snap.room; S.qi = snap.qi;
+    S.client = await NET.join(code, onMessage, st => { S.status = st; UI.status(st); });
+    S.status = "online";
+    S.client.subscribe(NET.topic(S.room, "join")); S.client.subscribe(NET.topic(S.room, "ans"));
+    if (stopWatch) { stopWatch(); stopWatch = null; }
+    if (snap.phase === "lobby" || snap.qi < 0) lobby();
+    else if (snap.phase === "question") { S.qi = snap.qi - 1; nextQuestion(); }
+    else { S.q = S.rounds[S.qi]; S.lastGain = {}; board(); }
+  } catch (e) { if (msg) msg.textContent = "Could not reconnect. Check the internet and try again."; }
 }
 async function create() {
   const msg = $("#setupMsg"); $("[data-create]").disabled = true;
@@ -109,6 +153,7 @@ async function create() {
   try {
     const { client, index } = await NET.hostConnect(onMessage, st => { S.status = st; UI.status(st); });
     S.client = client; S.room = NET.makeRoom(index);
+    if (stopWatch) { stopWatch(); stopWatch = null; }
     client.subscribe(NET.topic(S.room, "join")); client.subscribe(NET.topic(S.room, "ans"));
     S.qi = -1; S.players = {};
     lobby();
@@ -131,7 +176,23 @@ function publish() {
   if (S.phase === "question") { st.left = Math.max(0, S.qLimit - (Date.now() - S.qStart) / 1000); st.answered = Object.keys(S.answers); }
   if (S.phase === "reveal") { st.correct = S.q.correct; st.answerText = answerText(S.q); st.gained = S.lastGain; }
   S.client.publish(NET.topic(S.room, "state"), st, true);
+  announce(); saveSnap();
 }
+let lastAnn = "", annAt = 0;
+function announce(force) {
+  if (!S.client || !S.room) return;
+  const e = { code: S.room, set: S.set.title, type: TYPES.find(t => t.id === S.type).name, phase: S.phase, qi: S.qi, total: S.rounds.length, n: Object.keys(S.players).length };
+  const sig = JSON.stringify(e);
+  if (!force && sig === lastAnn && Date.now() - annAt < 30000) return;
+  lastAnn = sig; annAt = Date.now(); e.ts = annAt;
+  S.client.publish(NET.roomTopic(S.room), e, true);
+}
+setInterval(() => announce(true), 30000);
+function saveSnap() {
+  try { localStorage.setItem("clv-live-host", JSON.stringify({ room: S.room, setId: S.set.id, type: S.type, limit: S.limit, auto: S.auto, rounds: S.rounds, qi: S.qi, phase: S.phase, players: S.players, savedAt: Date.now() })); } catch (e) {}
+}
+function readSnap() { try { const x = JSON.parse(localStorage.getItem("clv-live-host") || "null"); return x && Date.now() - x.savedAt < 6 * 3600000 && x.phase !== "end" ? x : null; } catch (e) { return null; } }
+function dropSnap() { try { localStorage.removeItem("clv-live-host"); } catch (e) {} }
 function answerText(q) { return q.type === "build" ? q.answer.join(" ") + q.end : q.type === "tf" ? (q.correct === 0 ? "Right" : "Wrong — " + q.fix) : q.opts[q.correct]; }
 function onMessage(topic, payload) {
   let m; try { m = JSON.parse(payload); } catch (e) { return; }
@@ -200,7 +261,8 @@ function togglePause() {
 }
 function closeRoom() {
   clearTimers();
-  if (S.client) { const c = S.client; c.publish(NET.topic(S.room, "state"), { v: 2, phase: "closed" }, true); setTimeout(() => { c.publish(NET.topic(S.room, "state"), "", true); c.close(); }, 500); S.client = null; }
+  if (S.client) { const c = S.client, room = S.room; c.publish(NET.topic(room, "state"), { v: 2, phase: "closed" }, true); c.publish(NET.roomTopic(room), "", true); setTimeout(() => { c.publish(NET.topic(room, "state"), "", true); c.close(); }, 500); S.client = null; }
+  S.room = null; dropSnap();
   setup();
 }
 const ranked = () => Object.values(S.players).sort((a, b) => b.score - a.score);
@@ -284,8 +346,10 @@ document.addEventListener("click", async e => {
   else if (d.kick) { delete S.players[d.kick]; renderLobbyList(); publish(); }
   else if (d.again != null) { Object.values(S.players).forEach(p => p.score = 0); S.rounds = await buildRounds(); S.qi = -1; lobby(); }
   else if (d.close != null) closeRoom();
+  else if (d.resume) resume(d.resume);
+  else if (d.endroom) { t.disabled = true; t.textContent = "Ending…"; endRemote(d.endroom); }
 });
-addEventListener("beforeunload", () => { if (S.client && S.room) S.client.publish(NET.topic(S.room, "state"), { v: 2, phase: "closed" }, true); });
+/* Closing or refreshing this page keeps the game listed: open Live again on this device and tap Continue. */
 setup();
 })();
 </script>

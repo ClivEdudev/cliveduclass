@@ -29,6 +29,7 @@ function joinForm(err) {
   app.innerHTML = `<div class="pcard">
     <p class="brand"><i></i>ClivEdu Live</p>
     <h1>Join the game</h1>
+    <div class="proomwrap"><p class="strong">Games now</p><div id="rooms" class="proomlist"><p class="muted small">Looking for games…</p></div></div>
     <label for="code">Game code</label>
     <input id="code" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="6" placeholder="ABCDE1" value="${esc(qcode)}">
     <fieldset class="seg"><legend>How are you playing?</legend>
@@ -43,6 +44,14 @@ function joinForm(err) {
   const setLbl = () => { const team = document.querySelector('input[name=type]:checked').value === "team"; $("#nameLbl").textContent = team ? "Team name" : "Your name"; $("#name").placeholder = team ? "Samarkand" : "Aziz"; };
   document.querySelectorAll("input[name=type]").forEach(r => r.addEventListener("change", setLbl)); setLbl();
   $("#go").addEventListener("click", start);
+  if (!stopWatch) stopWatch = NET.watchRooms(list => { rooms = list; drawRooms(); });
+  drawRooms();
+}
+let stopWatch = null, rooms = [];
+function drawRooms() {
+  const el = $("#rooms"); if (!el) return;
+  el.innerHTML = rooms.length ? rooms.map(r => `<button class="proom" data-room="${esc(r.code)}"><b>${esc(r.set || "Class game")}</b><span>${esc(r.type || "")}</span><span class="muted small">${r.phase === "lobby" ? `Waiting to start · ${r.n || 0} joined` : `Playing now · question ${(r.qi || 0) + 1} of ${r.total || "?"}`}</span><span class="pcode">${esc(r.code)}</span></button>`).join("")
+    : `<p class="muted small">No games right now. Ask your teacher for the code.</p>`;
 }
 async function start() {
   const code = $("#code").value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -51,6 +60,7 @@ async function start() {
   if (!/^[A-Z]{5}[1-9]$/.test(code)) return joinForm("The code has 5 letters and 1 number, like ABCDE1.");
   if (!name) return joinForm(type === "team" ? "Write your team name." : "Write your name.");
   keep("clv-live-last", { name, type });
+  if (stopWatch) { stopWatch(); stopWatch = null; }
   const prev = saved("clv-live-" + code);
   Object.assign(me, { id: prev && prev.id || Math.random().toString(36).slice(2, 10), name, type, room: code });
   keep("clv-live-" + code, { id: me.id });
@@ -145,7 +155,9 @@ function send(data) {
   update();
 }
 document.addEventListener("click", e => {
-  const b = e.target.closest("button"); if (!b || !st) return;
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.room) { const c = $("#code"); if (c) { c.value = b.dataset.room; document.querySelectorAll(".proom").forEach(x => x.classList.toggle("sel", x === b)); $("#name").focus(); } return; }
+  if (!st) return;
   if (b.dataset.c != null) send({ choice: +b.dataset.c });
   else if (b.dataset.in != null) { built.push(+b.dataset.in); drawBuild(); }
   else if (b.dataset.out != null) { built.splice(+b.dataset.out, 1); drawBuild(); }

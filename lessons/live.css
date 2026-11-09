@@ -163,3 +163,16 @@ body.player .opt{min-height:96px}
 .pw{font:800 20px var(--body);background:var(--cream);color:var(--ink);border-radius:12px;padding:10px 14px}
 .pw.on{background:var(--yellow)}
 .pw.end{background:none;color:var(--mist);padding:10px 4px}
+
+/* ---------- running games list ---------- */
+.running{background:var(--ink);border-radius:22px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.roomlist{display:flex;flex-direction:column;gap:8px}
+.roomcard{display:flex;align-items:center;gap:14px;background:var(--ink2);border-radius:16px;padding:10px 14px;flex-wrap:wrap}
+.rcode{font:800 26px var(--display);color:var(--yellow);letter-spacing:.06em}
+.rinfo{flex:1;min-width:180px}
+.proomwrap{display:flex;flex-direction:column;gap:8px}
+.proomlist{display:flex;flex-direction:column;gap:8px}
+.proom{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto auto;gap:2px 10px;text-align:left;background:var(--night);border:2px solid var(--ink2);border-radius:14px;padding:10px 12px}
+.proom b{font-size:17px}
+.proom .pcode{grid-column:2;grid-row:1/4;align-self:center;font:800 20px var(--display);color:var(--yellow);letter-spacing:.05em}
+.proom.sel{border-color:var(--yellow)}
