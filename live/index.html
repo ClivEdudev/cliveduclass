@@ -23,7 +23,7 @@
 const P = window.PLAN, UI = window.LiveUI, NET = window.LiveNet, $ = s => document.querySelector(s), esc = UI.esc, shuffle = UI.shuffle;
 if (!P.isTeacher()) { location.replace("../teacher/"); return; }
 const app = $("#app");
-const REVEAL_MS = 5000, BOARD_MS = 5000;
+const REVEAL_MS = 3000, BOARD_MS = 4000, ROUNDS = 30, BOARD_EVERY = 5;
 const TYPES = [
   { id: "mix", name: "Mix of everything", desc: "All game types in one game" },
   { id: "mcq", name: "Quiz", desc: "Four answers, pick the right one" },
@@ -34,7 +34,7 @@ const TYPES = [
 const TYPE_LABEL = { mcq: "Quiz", tf: "Right or wrong?", build: "Word order race", clue: "Mystery clues" };
 const sets = window.LIVE_SETS.map(s => ({ ...s }));
 sets.push({ id: "all", title: "Everything so far", topic: "Big Revision + lessons 1–5", mixOf: sets.map(s => s.id) });
-const S = { phase: "setup", room: null, client: null, players: {}, rounds: [], qi: -1, q: null, qStart: 0, answers: {}, limit: 20, qLimit: 20,
+const S = { phase: "setup", room: null, client: null, players: {}, rounds: [], qi: -1, q: null, qStart: 0, answers: {}, limit: 10, qLimit: 10,
   set: sets[0], type: "mix", auto: true, status: "offline", tick: 0, timer: 0, autoAt: 0, lastGain: {}, clueShown: 1 };
 
 /* ---------- content loading ---------- */
@@ -72,12 +72,13 @@ async function buildRounds() {
   const take = (arr, n, f) => shuffle(arr).slice(0, n).map(f);
   let rounds;
   if (S.type === "mix") {
-    const A = { mcq: take(mcq, 4, mk.mcq), tf: take(tf, 3, mk.tf), build: take(build, 2, mk.build), clue: take(clue, 2, mk.clue) };
+    const A = { mcq: take(mcq, 99, mk.mcq), tf: take(tf, 99, mk.tf), build: take(build, 7, mk.build), clue: take(clue, 4, mk.clue) };
+    const pat = ["mcq", "tf", "mcq", "build", "tf", "mcq", "clue", "mcq", "tf", "build"];
     rounds = [];
-    for (const t of ["mcq", "tf", "build", "mcq", "clue", "tf", "mcq", "build", "tf", "mcq", "clue"]) if (A[t].length) rounds.push(A[t].shift());
+    for (let k = 0; rounds.length < ROUNDS && k < 400; k++) { const t = pat[k % pat.length]; if (A[t].length) rounds.push(A[t].shift()); else if (!A.mcq.length && !A.tf.length && !A.build.length && !A.clue.length) break; }
   } else {
-    const pool = { mcq: [mcq, 10], tf: [tf, 10], build: [build, 8], clue: [clue, 6] }[S.type];
-    rounds = take(pool[0], pool[1], mk[S.type]);
+    const pool = { mcq: mcq, tf: tf, build: build, clue: clue }[S.type];
+    rounds = take(pool, ROUNDS, mk[S.type]);
   }
   return rounds;
 }
@@ -94,9 +95,9 @@ function setup() {
       <h2 class="h3">2 · Which game?</h2>
       <div class="setgrid">${TYPES.map(t => `<button class="setcard ${t.id === S.type ? "sel" : ""}" data-type="${t.id}"><b>${esc(t.name)}</b><span class="muted">${esc(t.desc)}</span></button>`).join("")}</div>
       <h2 class="h3">3 · Settings</h2>
-      <div class="row gap"><span class="muted strong">Time per question:</span>${[10, 20, 30].map(t => `<button class="pill ${t === S.limit ? "sel" : ""}" data-time="${t}">${t} s</button>`).join("")}</div>
+      <div class="row gap"><span class="muted strong">Time per question:</span>${[10, 15, 20].map(t => `<button class="pill ${t === S.limit ? "sel" : ""}" data-time="${t}">${t} s</button>`).join("")}</div>
       <div class="row gap"><span class="muted strong">Move on by itself:</span><button class="pill ${S.auto ? "sel" : ""}" data-auto="1">On</button><button class="pill ${S.auto ? "" : "sel"}" data-auto="0">Off</button>
-        <span class="muted">Answer → scores → next question, ${REVEAL_MS / 1000} seconds each. You can pause any time.</span></div>
+        <span class="muted">Answer shown ${REVEAL_MS / 1000} s → next question. Scores every ${BOARD_EVERY} questions. You can pause any time.</span></div>
       <div class="row gap"><button class="btn y xl" data-create>Create game →</button><span class="muted" id="setupMsg"></span></div>
     </section>`;
   app.querySelector(".wrapc").insertAdjacentHTML("afterbegin", `<div class="running"><h2 class="h3">Games running now</h2><div id="rooms" class="roomlist"><p class="muted">Looking for games…</p></div></div>`);
@@ -243,8 +244,9 @@ function reveal() {
     else S.lastGain[id] = 0;
   }
   render(); publish();
-  if (S.auto) schedule(board, REVEAL_MS);
+  if (S.auto) schedule(showBoard() ? board : nextQuestion, REVEAL_MS);
 }
+function showBoard() { return (S.qi + 1) % BOARD_EVERY === 0 || S.qi + 1 >= S.rounds.length; }
 function board() { clearTimers(); S.phase = "board"; render(); publish(); if (S.auto) schedule(nextQuestion, BOARD_MS); }
 function finish() { clearTimers(); S.phase = "end"; render(); publish(); setTimeout(() => UI.confetti(innerWidth / 2, innerHeight / 3, 220), 300); }
 function schedule(fn, ms) {
@@ -255,7 +257,7 @@ function schedule(fn, ms) {
 function togglePause() {
   S.auto = !S.auto;
   if (!S.auto) { clearTimeout(S.timer); clearInterval(S.tick); S.autoAt = 0; }
-  else if (S.phase === "reveal") schedule(board, REVEAL_MS);
+  else if (S.phase === "reveal") schedule(showBoard() ? board : nextQuestion, REVEAL_MS);
   else if (S.phase === "board") schedule(nextQuestion, BOARD_MS);
   render();
 }
