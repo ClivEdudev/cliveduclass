@@ -6,7 +6,7 @@ window.PLAN = {
   teachDays: [1, 2, 3, 4, 5, 6],
   unlockHour: 16,
   teacherCode: "clivedu",
-  revision: { title: "Big Revision", date: "2026-11-09", path: "revision/" },
+  revision: { title: "Big Revision", date: "2026-11-09", path: "revision/", openNow: true },
   done: [
     { title: "Making sentences", path: null }, { title: "To be: am / is / are", path: null },
     { title: "Negatives and questions", path: null }, { title: "Commands", path: null },

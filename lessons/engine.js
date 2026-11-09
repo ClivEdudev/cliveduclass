@@ -35,7 +35,7 @@ if (P) {
   else { const pl = P.lesson(L.n); if (pl) openDate = pl.date; }
 }
 document.title = `${L.n ? "Lesson " + L.n + " · " : ""}${strip(L.title)}`;
-if (STUDENT && openDate && !P.isOpen(openDate)) {
+if (STUDENT && openDate && !L.openNow && !P.isOpen(openDate)) {
   const at = P.openAt(openDate);
   document.body.classList.add("locked-page");
   document.body.innerHTML = `<div class="lockbox">
