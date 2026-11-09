@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Big Revision Live Slides</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: a fixed 1920×1080 slide stage scaled to fit the window, with a team scoreboard bar above it and a navigation bar below. Single deliberate look matching the printed deck (ink, cream, sunflower yellow, Uzbek teal). */
+:root{
+  --ink:#12263A; --ink2:#1C3650; --night:#0B1828; --cream:#FFF8E7; --paper:#FFFDF6; --line:#EADFC4;
+  --yellow:#FFC93C; --teal:#0B6E70; --mist:#BFD8D5; --slate:#4B5F73;
+  --blue:#1F5FD1; --orange:#C2410C; --red:#B42318; --green:#157347; --ochre:#9A6A00;
+  --peach:#FFE3D3; --mint:#D5F1E3; --sky:#DCE8FB; --butter:#FFEFB8; --rose:#FFD9D5;
+  --display:'Rubik',Verdana,sans-serif; --body:'Nunito',Verdana,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--night);color:var(--cream);font-family:var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0;
+  display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:4px solid var(--yellow);outline-offset:3px}
+p,h1,h2,h3{margin:0}
+
+/* ---------- chrome ---------- */
+.bar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding-block:10px;font-size:15px}
+.brand{font:800 18px var(--display);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand i{width:22px;height:22px;border-radius:6px;background:conic-gradient(from 45deg,var(--blue) 0 25%,var(--teal) 0 50%,var(--blue) 0 75%,var(--teal) 0);box-shadow:inset 0 0 0 3px var(--night),inset 0 0 0 5px var(--yellow)}
+.teams{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.team{--tc:var(--blue);display:flex;align-items:center;gap:6px;background:var(--ink);border:2px solid var(--tc);border-radius:999px;padding:2px 4px 2px 12px}
+.team.pulse{animation:pulse .6s}
+@keyframes pulse{40%{transform:scale(1.12)}}
+.team input{width:86px;border:0;background:transparent;font:800 14px var(--body);color:var(--cream);padding:2px 0}
+.team .sc{font:800 19px var(--display);min-width:40px;text-align:right;font-variant-numeric:tabular-nums;color:var(--cream)}
+.team .star{color:var(--yellow)}
+.s[data-game]{gap:28px}
+.ink .sub{color:var(--mist)}
+.mini{width:28px;height:28px;border-radius:50%;background:var(--ink2);font-weight:800;line-height:28px;text-align:center}
+.mini:hover{background:var(--slate)}
+.tools{display:flex;gap:6px;align-items:center}
+.tools select{font:700 13px var(--body);color:var(--cream);background:var(--ink2);border:0;border-radius:999px;padding:5px 10px}
+.lnk{font-weight:800;font-size:13px;color:var(--mist);padding:5px 10px;border-radius:999px}
+.lnk:hover{background:var(--ink2)}
+.viewport{flex:1;position:relative;min-height:0}
+.stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px -30px #000}
+.nav{display:flex;align-items:center;gap:12px;padding-block:10px max(10px,env(safe-area-inset-bottom,0px))}
+.nbtn{background:var(--ink);border-radius:999px;padding:9px 18px;font-weight:800;font-size:15px}
+.nbtn:hover{background:var(--ink2)}
+.nbtn.y{background:var(--yellow);color:var(--ink)}
+.count{font:800 16px var(--display);font-variant-numeric:tabular-nums;min-width:70px;text-align:center}
+.prog{flex:1;height:8px;border-radius:999px;background:var(--ink);overflow:hidden;min-width:60px}
+.prog i{display:block;height:100%;background:var(--yellow);transition:width .3s}
+.hint{font-size:13px;color:var(--mist)}
+.menu{position:absolute;inset:0;z-index:30;background:rgba(11,24,40,.94);overflow:auto;padding:20px max(16px,env(safe-area-inset-right,0px)) 20px max(16px,env(safe-area-inset-left,0px))}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;max-width:1200px;margin:0 auto}
+.menu-grid button{text-align:left;background:var(--ink);border-radius:14px;padding:12px 14px;font-weight:700;font-size:15px}
+.menu-grid button b{display:block;color:var(--yellow);font:800 13px var(--body);letter-spacing:.1em}
+.menu-grid button[aria-current]{outline:3px solid var(--yellow)}
+@media (max-width:700px){.hint{display:none}.team input{width:64px}}
+
+/* ---------- slides ---------- */
+.s{position:absolute;inset:0;padding:128px;display:flex;flex-direction:column;gap:40px;background:var(--cream);color:var(--ink);font-family:var(--body);
+  opacity:0;visibility:hidden;transform:translateX(60px);transition:opacity .45s,transform .45s,visibility 0s .45s}
+.s.active{opacity:1;visibility:visible;transform:none;transition:opacity .45s,transform .45s}
+.s.active > *{animation:in .55s both}
+.s.active > *:nth-child(2){animation-delay:.08s}.s.active > *:nth-child(3){animation-delay:.16s}.s.active > *:nth-child(4){animation-delay:.24s}.s.active > *:nth-child(5){animation-delay:.32s}
+@keyframes in{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.s,.s.active{transition:none;transform:none}.s.active > *{animation:none}}
+.ink{background:var(--ink);color:var(--cream)}
+.yel{background:var(--yellow)}
+.tealbg{background:var(--teal);color:var(--cream)}
+.sky{background:var(--sky)}
+.center{justify-content:center}
+.h1{font:800 160px/1 var(--display)}
+.h2{font:800 72px/1.1 var(--display)}
+.eb{font:800 28px/1.2 var(--body);letter-spacing:3px;text-transform:uppercase;color:var(--orange)}
+.ink .eb,.tealbg .eb{color:var(--yellow)}
+.sub{font-size:32px;font-weight:700;line-height:1.4;color:var(--slate)}
+.yel .sub,.sky .sub{color:var(--ink)}
+.lead{font-size:40px;font-weight:700;line-height:1.3;color:var(--mist)}
+.row{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.tag{display:inline-block;font:800 28px/1.2 var(--body);letter-spacing:3px;text-transform:uppercase;padding:12px 32px;border-radius:999px;background:var(--yellow);color:var(--ink)}
+.ink .tag.dk,.tag.dk{background:var(--ink);color:var(--cream)}
+.bub{font:800 44px/1.2 var(--display);padding:12px 36px;border-radius:999px;color:var(--ink)}
+.peach{background:var(--peach)}.mint{background:var(--mint)}.skyb{background:var(--sky)}.butter{background:var(--butter)}.rose{background:var(--rose)}
+.note{font-size:32px;font-weight:800;line-height:1.4;padding:14px 36px;border-radius:999px;background:var(--yellow);color:var(--ink)}
+.notes{display:flex;gap:20px;flex-wrap:wrap}
+.flex1{flex:1;min-height:0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px}
+.r2{grid-template-rows:1fr 1fr}.r3{grid-template-rows:1fr 1fr 1fr}.r4{grid-template-rows:repeat(4,1fr)}
+.cols{display:flex;gap:32px}
+.card{border-radius:28px;padding:28px 40px;display:flex;flex-direction:column;justify-content:center;gap:12px;min-width:0}
+.card.ln{background:var(--paper);border:3px solid var(--line)}
+.card.big{border-radius:32px;padding:44px;flex:1}
+.en{font:700 44px/1.2 var(--display)}
+.enb{font:800 56px/1.1 var(--display)}
+.uz{font:800 36px/1.3 var(--body);color:var(--teal)}
+.uz.s{font-size:32px}
+.ink .uz{color:var(--mist)}
+.lbl{display:inline-block;align-self:flex-start;font:800 28px/1.2 var(--body);padding:8px 28px;border-radius:999px;background:var(--ink);color:var(--cream)}
+.lbl.g{background:var(--green)}.lbl.r{background:var(--red)}.lbl.b{background:var(--blue)}
+.cw{color:var(--blue)}.ca{color:var(--orange)}.cn{color:var(--red)}.cg{color:var(--green)}.cy{color:var(--yellow)}
+.huge{font:800 120px/1 var(--display);color:var(--orange)}
+.who{font:800 52px/1.1 var(--display);color:var(--blue)}
+.frow{display:flex;align-items:center;gap:20px;background:var(--ink2);border-radius:32px;padding:32px 40px}
+.fc{font:800 64px/1.1 var(--display);padding:12px 36px;border-radius:24px;color:var(--ink)}
+.frow .uz{margin-left:auto}
+.numc{width:96px;height:96px;border-radius:50%;background:var(--ink);color:var(--cream);font:800 56px/96px var(--display);text-align:center}
+
+/* quiz rows + reveal */
+.qlist{display:flex;flex-direction:column;gap:24px}
+.qrow{display:flex;align-items:center;gap:24px;background:var(--cream);border-radius:28px;padding:24px 32px}
+.qrow.ln{background:var(--paper);border:3px solid var(--line)}
+.qrow.warn{background:var(--peach)}
+.num{width:64px;height:64px;flex:none;border-radius:50%;background:var(--ink);color:var(--cream);font:800 36px/64px var(--display);text-align:center}
+.yel .num{background:var(--ink)}
+.qt{flex:1;min-width:0;font:800 40px/1.3 var(--body);color:var(--teal)}
+.qt.e{font:700 44px/1.2 var(--display);color:var(--ink)}
+.bang{width:56px;height:56px;flex:none;border-radius:50%;background:var(--red);color:var(--cream);font:800 36px/56px var(--display);text-align:center}
+.mk{font:800 28px/1.2 var(--body);padding:8px 22px;border-radius:999px;color:var(--cream);flex:none}
+.ans{width:660px;flex:none;min-height:68px;border-radius:20px;border:3px dashed rgba(18,38,58,.35);font:700 30px/1.2 var(--body);color:var(--slate);padding:8px 24px;transition:background .25s,border-color .25s,transform .2s}
+.ans:hover{transform:scale(1.02);border-color:var(--ink)}
+.ans .a{display:none}
+.ans.on{background:var(--mint);border:3px solid var(--mint);color:var(--ink);font:800 40px/1.2 var(--display);animation:pop .35s}
+.ans.bad.on{background:var(--rose);border-color:var(--rose)}
+.ans.on .a{display:inline}.ans.on .q{display:none}
+.ans.sm{width:176px}
+@keyframes pop{0%{transform:scale(.7)}70%{transform:scale(1.06)}100%{transform:scale(1)}}
+.chipw{font:700 36px/1.2 var(--display);background:var(--cream);border:3px solid var(--line);padding:8px 22px;border-radius:16px;color:var(--ink)}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:30px}
+.tbl th{background:var(--ink);color:var(--cream);text-align:left;padding:14px 22px;font-weight:800}
+.tbl td{padding:12px 22px;border-bottom:2px solid var(--line)}
+.tbl tr:nth-child(odd) td{background:var(--paper)}
+.tbl td:last-child{color:var(--teal);font-weight:800}
+.tbl td:first-child{font-weight:800}
+
+/* interactive spotlights */
+.spot{transition:transform .25s,box-shadow .25s,background .25s}
+.spot.lit{transform:scale(1.05);box-shadow:0 0 0 8px var(--ink);background:var(--paper)}
+.sbtn{font:800 32px/1.2 var(--body);padding:16px 36px;border-radius:999px;background:var(--ink);color:var(--cream);transition:transform .15s}
+.sbtn:hover{transform:translateY(-3px)}
+.sbtn.y{background:var(--yellow);color:var(--ink)}
+.sbtn.g{background:var(--green);color:var(--cream)}
+.sbtn.b{background:var(--blue);color:var(--cream)}
+.sbtn.r{background:var(--red);color:var(--cream)}
+.sbtn.w{background:var(--paper);color:var(--ink)}
+.sbtn[disabled]{opacity:.4;pointer-events:none}
+.blurable{transition:filter .3s}
+.blurred{filter:blur(14px)}
+.checkit{cursor:pointer}
+.checkit .tick{width:60px;height:60px;flex:none;border-radius:50%;border:4px solid var(--green);display:grid;place-items:center;font:800 36px var(--display);color:transparent;transition:background .2s,color .2s}
+.checkit.done .tick{background:var(--green);color:var(--cream)}
+
+/* games */
+.award{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.award .al{font:800 28px var(--body);color:var(--slate)}
+.ink .award .al{color:var(--mist)}
+.award button{--tc:var(--blue);font:800 28px/1.2 var(--body);padding:10px 24px;border-radius:999px;border:3px solid var(--tc);color:var(--tc);background:var(--paper)}
+.award button:hover{background:var(--tc);color:var(--paper)}
+.award button[disabled]{opacity:.35}
+.bigs{font:800 76px/1.15 var(--display);text-wrap:balance}
+.verdict{display:inline-block;font:800 48px var(--display);padding:12px 36px;border-radius:999px;animation:pop .35s}
+.verdict.good{background:var(--green);color:var(--cream)}.verdict.bad{background:var(--red);color:var(--cream)}
+.bids{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.bid{--tc:var(--blue);border:4px solid var(--tc);border-radius:24px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--paper)}
+.bid b{font:800 30px var(--body);color:var(--tc);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.bid .amt{font:800 48px var(--display);min-width:110px;text-align:center;font-variant-numeric:tabular-nums}
+.bid .mini{width:56px;height:56px;font-size:32px;line-height:56px;background:var(--line);color:var(--ink)}
+.board{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:auto repeat(3,1fr);gap:16px}
+.bh{font:800 32px/1.2 var(--display);background:var(--yellow);color:var(--ink);border-radius:20px;padding:16px 8px;text-align:center}
+.bt{font:800 64px var(--display);border-radius:20px;color:var(--cream);background:var(--ink2);transition:transform .15s}
+.bt.v200{background:#24476A}.bt.v300{background:var(--teal)}
+.bt:hover{transform:scale(1.04)}
+.bt.used{opacity:.25;text-decoration:line-through}
+.modal{position:absolute;inset:0;background:rgba(11,24,40,.8);display:grid;place-items:center;padding:96px;z-index:5;animation:fade .25s}
+@keyframes fade{from{opacity:0}}
+.mbox{background:var(--cream);color:var(--ink);border-radius:36px;padding:64px;width:1400px;display:flex;flex-direction:column;gap:32px;animation:pop .3s}
+.mans{font:800 64px/1.15 var(--display);color:var(--green)}
+.timer{display:flex;align-items:center;gap:20px}
+.timer .bar{flex:1;height:22px;border-radius:999px;background:var(--line);overflow:hidden}
+.timer .fill{height:100%;width:100%;background:var(--yellow);transition:width 1s linear}
+.timer .t{font:800 48px var(--display);min-width:150px;font-variant-numeric:tabular-nums}
+.wheelwrap{position:relative;width:640px;height:640px;flex:none}
+.wheelwrap canvas{width:640px;height:640px;transition:transform 4.2s cubic-bezier(.12,.75,.15,1)}
+.ptr{position:absolute;left:50%;top:-10px;transform:translateX(-50%);border-left:32px solid transparent;border-right:32px solid transparent;border-top:60px solid var(--cream)}
+.hubc{position:absolute;inset:41%;border-radius:50%;background:var(--ink);box-shadow:0 0 0 10px var(--yellow)}
+.chal{flex:1;background:var(--ink2);border-radius:36px;padding:56px;display:flex;flex-direction:column;justify-content:center;gap:32px;min-height:600px}
+.slots{min-height:140px;border:5px dashed var(--line);border-radius:28px;padding:22px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;background:var(--paper)}
+.pool{display:flex;flex-wrap:wrap;gap:18px;min-height:110px}
+.wt{font:800 52px var(--display);padding:16px 34px 12px;border-radius:22px;background:var(--sky);color:var(--blue);box-shadow:0 8px 0 var(--line);transition:transform .15s}
+.wt:hover{transform:translateY(-4px)}
+.slots .wt{background:var(--butter);color:var(--ochre)}
+.cardx{border-radius:36px;flex:1;min-height:0;display:grid;place-items:center;text-align:center;padding:48px;
+  background:repeating-linear-gradient(45deg,var(--blue) 0 36px,var(--teal) 36px 72px);color:var(--cream)}
+.cardx.open{background:var(--paper);color:var(--ink);border:4px solid var(--line)}
+.secret{font:800 120px/1 var(--display);color:var(--blue)}
+.cardx .bigs{font-size:84px}
+.clue{font:700 40px/1.25 var(--display);padding:16px 32px;border-radius:28px;background:var(--paper);border:3px solid var(--line);animation:in .4s both}
+.clue small{display:block;font:800 26px var(--body);color:var(--teal);letter-spacing:3px}
+.lb{display:flex;flex-direction:column;gap:20px}
+.lbr{display:flex;align-items:center;gap:28px;background:var(--ink2);border-radius:28px;padding:20px 36px;font:800 52px var(--display)}
+.lbr .pos{width:80px;color:var(--yellow)}
+.lbr .nm{flex:1}
+.lbr.first{background:var(--yellow);color:var(--ink)}
+.lbr.first .pos{color:var(--ink)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%;height:100%}
+</style>
+
+</head>
+<body>
+<div class="bar" id="topbar">
+  <div class="brand"><i aria-hidden="true"></i>Big Revision</div>
+  <div class="teams" id="teams" aria-label="Team scores"></div>
+</div>
+
+<div class="viewport" id="viewport">
+<div class="stage" id="stage">
+
+<!-- 1 COVER -->
+<section class="s ink center" data-title="Cover">
+  <div><span class="tag">Revision lesson</span></div>
+  <h1 class="h1">Big<br><span class="cy">Revision</span></h1>
+  <p class="lead">Sentences · to be · negatives and questions · commands · may · must · have to</p>
+  <div class="row"><span class="bub peach">Let’s review!</span><span class="bub mint">Takrorlaymiz!</span></div>
+</section>
+
+<!-- 2 MAP -->
+<section class="s" data-title="Today we revise">
+  <h2 class="h2">Today we revise</h2>
+  <p class="sub" style="margin-top:-24px">Tap a topic to jump to it.</p>
+  <div class="g3 r2 flex1">
+    <button class="card peach spot" data-jump="sent" style="text-align:left"><span class="eb">1</span><span class="enb">Making sentences</span><span class="en" style="font-size:36px">I eat apples.</span><span class="uz s">Men olma yeyman.</span></button>
+    <button class="card mint spot" data-jump="tobe" style="text-align:left"><span class="eb" style="color:var(--green)">2</span><span class="enb">To be</span><span class="en" style="font-size:36px">She is happy.</span><span class="uz s">U xursand.</span></button>
+    <button class="card skyb spot" data-jump="negrec" style="text-align:left"><span class="eb" style="color:var(--blue)">3</span><span class="enb">Negatives and questions</span><span class="en" style="font-size:36px">Do you like tea?</span><span class="uz s">Choyni yoqtirasizmi?</span></button>
+    <button class="card butter spot" data-jump="imprec" style="text-align:left"><span class="eb" style="color:var(--ochre)">4</span><span class="enb">Commands</span><span class="en" style="font-size:36px">Open the door!</span><span class="uz s">Eshikni oching!</span></button>
+    <button class="card peach spot" data-jump="mayrec" style="text-align:left"><span class="eb">5</span><span class="enb">May</span><span class="en" style="font-size:36px">May I come in?</span><span class="uz s">Kirsam bo’ladimi?</span></button>
+    <button class="card mint spot" data-jump="haverec" style="text-align:left"><span class="eb" style="color:var(--green)">6</span><span class="enb">Must and have to</span><span class="en" style="font-size:36px">I have to work.</span><span class="uz s">Men ishlashim kerak.</span></button>
+  </div>
+</section>
+
+<!-- 3 WARMUP -->
+<section class="s yel" data-title="Warm-up">
+  <div class="row" style="justify-content:space-between"><h2 class="h2">Warm-up: finish the sentence</h2><button class="sbtn" data-spotlight="warm">Pick for me</button></div>
+  <p class="sub">Pick a start. Say one true sentence about you.</p>
+  <div class="g3 r2 flex1" id="warm">
+    <div class="card spot" style="background:var(--cream);align-items:center"><span class="enb" style="font-size:72px">I am…</span></div>
+    <div class="card spot" style="background:var(--cream);align-items:center"><span class="enb" style="font-size:72px">I don’t…</span></div>
+    <div class="card spot" style="background:var(--cream);align-items:center"><span class="enb" style="font-size:72px">Do you…?</span></div>
+    <div class="card spot" style="background:var(--cream);align-items:center"><span class="enb" style="font-size:72px">Please…</span></div>
+    <div class="card spot" style="background:var(--cream);align-items:center"><span class="enb" style="font-size:72px">May I…?</span></div>
+    <div class="card spot" style="background:var(--cream);align-items:center"><span class="enb" style="font-size:72px">I have to…</span></div>
+  </div>
+</section>
+
+<!-- 4 SENTENCES -->
+<section class="s ink" data-title="Topic 1: Who + Action + What" data-id="sent">
+  <div><p class="eb">Topic 1 · Recap</p><h2 class="h2" style="margin-top:12px">Who + Action + What</h2></div>
+  <div class="frow"><span class="fc skyb">I</span><span class="fc peach">play</span><span class="fc mint">football.</span><span class="uz">Men futbol o’ynayman.</span></div>
+  <div class="frow"><span class="fc skyb">She</span><span class="fc peach">play<span class="cn">s</span></span><span class="fc mint">football.</span><span class="uz">U futbol o’ynaydi.</span></div>
+  <div class="notes"><span class="note">he · she · it → verb + s</span><span class="note">have → has</span></div>
+</section>
+
+<!-- 5 TO BE -->
+<section class="s" data-title="Topic 2: am / is / are" data-id="tobe">
+  <div><p class="eb">Topic 2 · Recap</p><h2 class="h2" style="margin-top:12px">Who + am / is / are + Detail</h2></div>
+  <div class="cols flex1">
+    <div class="card big skyb"><p class="who">I</p><p class="huge">am</p><p class="en" style="font-size:36px">I am a student.</p><p class="uz s">Men talabaman.</p></div>
+    <div class="card big skyb"><p class="who">he · she · it</p><p class="huge">is</p><p class="en" style="font-size:36px">She is a doctor.</p><p class="uz s">U shifokor.</p></div>
+    <div class="card big skyb"><p class="who">you · we · they</p><p class="huge">are</p><p class="en" style="font-size:36px">We are at home.</p><p class="uz s">Biz uydamiz.</p></div>
+  </div>
+</section>
+
+<!-- 6 QUIZ 1 -->
+<section class="s yel" data-title="Quiz 1">
+  <h2 class="h2">Quiz 1: say it in English</h2>
+  <p class="sub">Students answer first. Tap to reveal each answer.</p>
+  <div class="qlist">
+    <div class="qrow"><span class="num">1</span><p class="qt">Men choy ichaman.</p><button class="ans">I drink tea.</button></div>
+    <div class="qrow"><span class="num">2</span><p class="qt">U shifokor.</p><button class="ans">She is a doctor.</button></div>
+    <div class="qrow"><span class="num">3</span><p class="qt">Ular maktabda.</p><button class="ans">They are at school.</button></div>
+    <div class="qrow"><span class="num">4</span><p class="qt">Akam futbol o’ynaydi.</p><button class="ans">My brother plays football.</button></div>
+  </div>
+</section>
+
+<!-- 7 NEGATIVES -->
+<section class="s" data-title="Topic 3: Saying no" data-id="negrec">
+  <div><p class="eb">Topic 3 · Recap</p><h2 class="h2" style="margin-top:12px">Saying no</h2></div>
+  <div class="cols flex1">
+    <div class="card big peach"><span class="lbl">With be: add not</span><p class="en">I am <span class="cn">not</span> tired.</p><p class="en">She <span class="cn">isn’t</span> tired.</p><p class="en">They <span class="cn">aren’t</span> tired.</p><p class="uz s">Men charchagan emasman.</p></div>
+    <div class="card big mint"><span class="lbl">With actions: don’t / doesn’t</span><p class="en">I <span class="cn">don’t</span> like fish.</p><p class="en">He <span class="cn">doesn’t</span> like fish.</p><p class="en">We <span class="cn">don’t</span> like fish.</p><p class="uz s">Men baliqni yoqtirmayman.</p></div>
+  </div>
+</section>
+
+<!-- 8 QUESTIONS -->
+<section class="s" data-title="Topic 3: Asking questions">
+  <div><p class="eb">Topic 3 · Recap</p><h2 class="h2" style="margin-top:12px">Asking questions</h2></div>
+  <div class="cols flex1">
+    <div class="card big skyb"><span class="lbl">With be: move it to the front</span><p class="en"><span class="cw">Is</span> she happy?</p><p class="en"><span class="cw">Are</span> you ready?</p><p class="uz s">U xursandmi? · Tayyormisiz?</p></div>
+    <div class="card big skyb"><span class="lbl">With actions: Do / Does first</span><p class="en"><span class="cw">Do</span> you like tea?</p><p class="en"><span class="cw">Does</span> he work here?</p><p class="uz s">Choyni yoqtirasizmi? · U shu yerda ishlaydimi?</p></div>
+  </div>
+  <div class="notes"><span class="note">Yes, she is. · No, she isn’t.</span><span class="note">Yes, I do. · No, he doesn’t.</span></div>
+</section>
+
+<!-- 9 QUIZ 2 -->
+<section class="s yel" data-title="Quiz 2">
+  <h2 class="h2">Quiz 2: change it</h2>
+  <p class="sub">NO = make it negative. ? = make a question. Tap to check.</p>
+  <div class="qlist">
+    <div class="qrow"><span class="mk" style="background:var(--red)">NO</span><p class="qt e">He is a teacher.</p><button class="ans">He isn’t a teacher.</button></div>
+    <div class="qrow"><span class="mk" style="background:var(--blue)">&nbsp;?&nbsp;</span><p class="qt e">You like coffee.</p><button class="ans">Do you like coffee?</button></div>
+    <div class="qrow"><span class="mk" style="background:var(--red)">NO</span><p class="qt e">She plays tennis.</p><button class="ans">She doesn’t play tennis.</button></div>
+    <div class="qrow"><span class="mk" style="background:var(--blue)">&nbsp;?&nbsp;</span><p class="qt e">They are at home.</p><button class="ans">Are they at home?</button></div>
+  </div>
+</section>
+
+<!-- 10 COMMANDS -->
+<section class="s" data-title="Topic 4: Commands" data-id="imprec">
+  <div><p class="eb">Topic 4 · Recap</p><h2 class="h2" style="margin-top:12px">Commands</h2></div>
+  <div class="cols flex1">
+    <div class="card big peach"><span class="lbl">Do it</span><p class="ca" style="font-size:32px;font-weight:800">Verb + …</p><p class="enb">Open the door!</p><p class="uz s">Eshikni oching!</p></div>
+    <div class="card big rose"><span class="lbl">Don’t do it</span><p class="cn" style="font-size:32px;font-weight:800">Don’t + verb</p><p class="enb">Don’t run!</p><p class="uz s">Yugurmang!</p></div>
+    <div class="card big mint"><span class="lbl">Be polite</span><p class="cg" style="font-size:32px;font-weight:800">Please + verb</p><p class="enb">Please sit down.</p><p class="uz s">Iltimos, o’tiring.</p></div>
+  </div>
+  <div class="notes"><span class="note">No subject · base verb · verb first</span></div>
+</section>
+
+<!-- 11 QUIZ 3 -->
+<section class="s yel" data-title="Quiz 3">
+  <h2 class="h2">Quiz 3: give the command</h2>
+  <p class="sub">Say it in English. Tap to reveal.</p>
+  <div class="qlist">
+    <div class="qrow"><span class="num">1</span><p class="qt">Doskaga qarang!</p><button class="ans">Look at the board!</button></div>
+    <div class="qrow"><span class="num">2</span><p class="qt">Telefondan foydalanmang!</p><button class="ans">Don’t use your phone!</button></div>
+    <div class="qrow"><span class="num">3</span><p class="qt">Iltimos, derazani yoping.</p><button class="ans">Please close the window.</button></div>
+    <div class="qrow"><span class="num">4</span><p class="qt">Kechikmang!</p><button class="ans">Don’t be late!</button></div>
+  </div>
+</section>
+
+<!-- 12 MAY -->
+<section class="s" data-title="Topic 5: May" data-id="mayrec">
+  <div><p class="eb">Topic 5 · Recap</p><h2 class="h2" style="margin-top:12px">May: two jobs</h2></div>
+  <div class="cols flex1">
+    <div class="card big mint"><span class="lbl">1 · Permission</span><p class="enb"><span class="ca">May</span> I come in?</p><p class="uz">Kirsam bo’ladimi?</p><p class="en" style="font-size:32px">Yes, you may. · No, you may not.</p></div>
+    <div class="card big butter"><span class="lbl">2 · Possibility</span><p class="enb">It <span class="ca">may</span> rain.</p><p class="uz">Yomg’ir yog’ishi mumkin.</p><p class="en" style="font-size:32px">may = maybe, not 100% sure</p></div>
+  </div>
+  <div class="notes"><span class="note">No -s: she may</span><span class="note">No to: may go</span></div>
+</section>
+
+<!-- 13 QUIZ 4 -->
+<section class="s yel" data-title="Quiz 4">
+  <h2 class="h2">Quiz 4: what do you say with may?</h2>
+  <p class="sub">Read the situation. Make a sentence with may. Tap to check.</p>
+  <div class="qlist">
+    <div class="qrow"><span class="num">1</span><p class="qt" style="font-size:36px">Siz suv ichmoqchisiz.</p><button class="ans">May I drink some water?</button></div>
+    <div class="qrow"><span class="num">2</span><p class="qt" style="font-size:36px">Osmonda qora bulutlar bor.</p><button class="ans">It may rain.</button></div>
+    <div class="qrow"><span class="num">3</span><p class="qt" style="font-size:36px">Siz darsga kechikib keldingiz.</p><button class="ans">May I come in?</button></div>
+    <div class="qrow"><span class="num">4</span><p class="qt" style="font-size:36px">Do’stingiz ertaga kelishi mumkin.</p><button class="ans">My friend may come tomorrow.</button></div>
+  </div>
+</section>
+
+<!-- 14 HAVE TO -->
+<section class="s" data-title="Topic 6: Have to" data-id="haverec">
+  <div><p class="eb">Topic 6 · Recap</p><h2 class="h2" style="margin-top:12px">Have to: four forms</h2></div>
+  <div class="g2 r2 flex1">
+    <div class="card mint"><span class="lbl">I · you · we · they</span><p class="enb">I <span class="ca">have to</span> work.</p><p class="uz s">Men ishlashim kerak.</p></div>
+    <div class="card mint"><span class="lbl">he · she · it</span><p class="enb">She <span class="ca">has to</span> work.</p><p class="uz s">U ishlashi kerak.</p></div>
+    <div class="card peach"><span class="lbl r">Negative</span><p class="enb">He <span class="cn">doesn’t have to</span> work.</p><p class="uz s">U ishlashi shart emas.</p></div>
+    <div class="card skyb"><span class="lbl b">Question</span><p class="enb"><span class="cw">Do</span> you <span class="ca">have to</span> work?</p><p class="uz s">Ishlashingiz kerakmi?</p></div>
+  </div>
+</section>
+
+<!-- 15 MUST VS -->
+<section class="s ink" data-title="Must or have to?">
+  <div><p class="eb">Topic 6 · Recap</p><h2 class="h2" style="margin-top:12px">Must or have to?</h2></div>
+  <div class="cols">
+    <div class="card big" style="background:var(--ink2)"><p class="enb cy">must</p><p class="lead" style="font-size:32px">My own rule, I feel it is important</p><p class="en">I must study harder.</p></div>
+    <div class="card big" style="background:var(--ink2)"><p class="enb" style="color:var(--mint)">have to</p><p class="lead" style="font-size:32px">A rule from outside: school, job, law</p><p class="en">I have to wear a uniform.</p></div>
+  </div>
+  <div class="cols flex1">
+    <div class="card big rose"><p class="enb cn" style="font-size:48px">mustn’t = forbidden</p><p class="en" style="font-size:40px">You mustn’t smoke here.</p><p class="uz s">Bu yerda chekish mumkin emas.</p></div>
+    <div class="card big mint"><p class="enb cg" style="font-size:48px">don’t have to = not needed</p><p class="en" style="font-size:40px">You don’t have to pay.</p><p class="uz s">Pul to’lashingiz shart emas.</p></div>
+  </div>
+</section>
+
+<!-- 16 QUIZ 5 -->
+<section class="s yel" data-title="Quiz 5">
+  <h2 class="h2">Quiz 5: mustn’t or don’t have to?</h2>
+  <p class="sub">Forbidden or not needed? Tap to check.</p>
+  <div class="qlist">
+    <div class="qrow"><span class="num">1</span><p class="qt e" style="font-size:40px">You ______ smoke in the hospital.</p><button class="ans bad" style="width:440px">mustn’t</button></div>
+    <div class="qrow"><span class="num">2</span><p class="qt e" style="font-size:40px">It’s Sunday. I ______ get up early.</p><button class="ans" style="width:440px">don’t have to</button></div>
+    <div class="qrow"><span class="num">3</span><p class="qt e" style="font-size:40px">Careful! You ______ touch the fire.</p><button class="ans bad" style="width:440px">mustn’t</button></div>
+    <div class="qrow"><span class="num">4</span><p class="qt e" style="font-size:40px">It’s free. She ______ pay.</p><button class="ans" style="width:440px">doesn’t have to</button></div>
+  </div>
+</section>
+
+<!-- 17 TABLE -->
+<section class="s" data-title="Everything in one table">
+  <h2 class="h2">Everything in one table</h2>
+  <table class="tbl">
+    <tr><th style="width:17%">Form</th><th style="width:21%">Meaning</th><th style="width:29%">Example</th><th>Uzbek</th></tr>
+    <tr><td>Command</td><td>order, request</td><td>Sit down, please.</td><td>Iltimos, o’tiring.</td></tr>
+    <tr><td>Don’t + verb</td><td>don’t do it</td><td>Don’t run!</td><td>Yugurmang!</td></tr>
+    <tr><td>May I…?</td><td>permission</td><td>May I go out?</td><td>Chiqsam bo’ladimi?</td></tr>
+    <tr><td>may</td><td>possibility</td><td>It may rain.</td><td>Yomg’ir yog’ishi mumkin.</td></tr>
+    <tr><td>must</td><td>my strong rule</td><td>I must study.</td><td>O’qishim shart.</td></tr>
+    <tr><td>mustn’t</td><td>forbidden</td><td>You mustn’t run.</td><td>Yugurish mumkin emas.</td></tr>
+    <tr><td>have to</td><td>rule, duty</td><td>I have to work.</td><td>Ishlashim kerak.</td></tr>
+    <tr><td>don’t have to</td><td>not needed</td><td>I don’t have to pay.</td><td>To’lashim shart emas.</td></tr>
+  </table>
+</section>
+
+<!-- 18 WHICH WORD -->
+<section class="s" data-title="Which word is missing?">
+  <div><h2 class="h2">Which word is missing?</h2><p class="sub" style="margin-top:8px">am · is · are · do · does. Tap to check.</p></div>
+  <div class="g2 r3 flex1">
+    <div class="qrow ln"><p class="qt e">1. ____ you like tea?</p><button class="ans sm">Do</button></div>
+    <div class="qrow ln"><p class="qt e">2. ____ she a teacher?</p><button class="ans sm">Is</button></div>
+    <div class="qrow ln"><p class="qt e">3. He ____ not hungry.</p><button class="ans sm">is</button></div>
+    <div class="qrow ln"><p class="qt e">4. ____ they live here?</p><button class="ans sm">Do</button></div>
+    <div class="qrow ln"><p class="qt e">5. We ____ happy today.</p><button class="ans sm">are</button></div>
+    <div class="qrow ln"><p class="qt e">6. ____ your brother work?</p><button class="ans sm">Does</button></div>
+  </div>
+</section>
+
+<!-- 19 FIX 1 -->
+<section class="s" data-title="Find the mistake 1">
+  <h2 class="h2">Find the mistake · Part 1</h2>
+  <p class="sub">Shout “Stop!” when you see it. Tap to fix.</p>
+  <div class="qlist">
+    <div class="qrow warn"><span class="bang">!</span><p class="qt e">She don’t like milk.</p><button class="ans">She doesn’t like milk.</button></div>
+    <div class="qrow warn"><span class="bang">!</span><p class="qt e">I is a student.</p><button class="ans">I am a student.</button></div>
+    <div class="qrow warn"><span class="bang">!</span><p class="qt e">May I to go out?</p><button class="ans">May I go out?</button></div>
+    <div class="qrow warn"><span class="bang">!</span><p class="qt e">He have to work.</p><button class="ans">He has to work.</button></div>
+  </div>
+</section>
+
+<!-- 20 FIX 2 -->
+<section class="s" data-title="Find the mistake 2">
+  <h2 class="h2">Find the mistake · Part 2</h2>
+  <p class="sub">Shout “Stop!” when you see it. Tap to fix.</p>
+  <div class="qlist">
+    <div class="qrow warn"><span class="bang">!</span><p class="qt e">Does he plays football?</p><button class="ans">Does he play football?</button></div>
+    <div class="qrow warn"><span class="bang">!</span><p class="qt e">Don’t to shout!</p><button class="ans">Don’t shout!</button></div>
+    <div class="qrow warn"><span class="bang">!</span><p class="qt e">They isn’t at home.</p><button class="ans">They aren’t at home.</button></div>
+    <div class="qrow warn"><span class="bang">!</span><p class="qt e">You mustn’t to run.</p><button class="ans">You mustn’t run.</button></div>
+  </div>
+</section>
+
+<!-- 21 TRANSLATE -->
+<section class="s yel" data-title="Translation challenge">
+  <h2 class="h2">Translation challenge</h2>
+  <p class="sub">All topics mixed. Pairs race to say it first. Tap to check.</p>
+  <div class="qlist">
+    <div class="qrow"><span class="num">1</span><p class="qt" style="font-size:36px">Men o’qituvchiman.</p><button class="ans">I am a teacher.</button></div>
+    <div class="qrow"><span class="num">2</span><p class="qt" style="font-size:36px">U qahva ichmaydi.</p><button class="ans">He doesn’t drink coffee.</button></div>
+    <div class="qrow"><span class="num">3</span><p class="qt" style="font-size:36px">Eshikni yoping, iltimos.</p><button class="ans">Close the door, please.</button></div>
+    <div class="qrow"><span class="num">4</span><p class="qt" style="font-size:36px">Ertaga ishlashim shart emas.</p><button class="ans">I don’t have to work tomorrow.</button></div>
+  </div>
+</section>
+
+<!-- 22 SCRAMBLE -->
+<section class="s" data-title="Put the words in order">
+  <h2 class="h2">Put the words in order</h2>
+  <p class="sub">Work with your partner. Tap to check.</p>
+  <div class="qlist">
+    <div class="qrow ln"><span class="num">1</span><div class="row flex1" style="gap:14px"><span class="chipw">have</span><span class="chipw">I</span><span class="chipw">work</span><span class="chipw">to</span></div><button class="ans">I have to work.</button></div>
+    <div class="qrow ln"><span class="num">2</span><div class="row flex1" style="gap:14px"><span class="chipw">door</span><span class="chipw">open</span><span class="chipw">please</span><span class="chipw">the</span></div><button class="ans">Please open the door.</button></div>
+    <div class="qrow ln"><span class="num">3</span><div class="row flex1" style="gap:14px"><span class="chipw">happy</span><span class="chipw">she</span><span class="chipw">is</span><span class="chipw">?</span></div><button class="ans">Is she happy?</button></div>
+    <div class="qrow ln"><span class="num">4</span><div class="row flex1" style="gap:14px"><span class="chipw">may</span><span class="chipw">in</span><span class="chipw">I</span><span class="chipw">come</span></div><button class="ans">May I come in?</button></div>
+  </div>
+</section>
+
+<!-- 23 SPEAK -->
+<section class="s sky" data-title="Talk about you">
+  <div class="row" style="justify-content:space-between"><div class="row"><h2 class="h2">Talk about you</h2><span class="tag dk">Pair work</span></div><button class="sbtn" data-spotlight="speak">Pick for me</button></div>
+  <p class="sub">Finish each sentence about your life. Then ask your partner a question.</p>
+  <div class="g3 r2 flex1" id="speak">
+    <div class="card spot" style="background:var(--cream)"><span class="eb">have to</span><span class="enb" style="font-size:48px">Every day I have to…</span></div>
+    <div class="card spot" style="background:var(--cream)"><span class="eb">don’t have to</span><span class="enb" style="font-size:48px">At weekends I don’t have to…</span></div>
+    <div class="card spot" style="background:var(--cream)"><span class="eb">mustn’t</span><span class="enb" style="font-size:48px">In class we mustn’t…</span></div>
+    <div class="card spot" style="background:var(--cream)"><span class="eb">may</span><span class="enb" style="font-size:48px">Tomorrow I may…</span></div>
+    <div class="card spot" style="background:var(--cream)"><span class="eb">to be</span><span class="enb" style="font-size:48px">My best friend is…</span></div>
+    <div class="card spot" style="background:var(--cream)"><span class="eb">question</span><span class="enb" style="font-size:48px">Do you…? Are you…?</span></div>
+  </div>
+</section>
+
+<!-- 24 ROLEPLAY -->
+<section class="s" data-title="Role-play">
+  <div class="row" style="justify-content:space-between"><h2 class="h2">Role-play: late for class</h2><button class="sbtn y" data-blur="teacherCard">Hide teacher lines</button></div>
+  <div><span class="note">A student comes in late. Use all the topics!</span></div>
+  <div class="cols flex1">
+    <div class="card big skyb"><p class="enb cw" style="font-size:44px">Student</p><p class="en" style="font-size:36px">May I come in?</p><p class="en" style="font-size:36px">Sorry, I am late. The bus was slow.</p><p class="en" style="font-size:36px">Do I have to do the homework?</p><p class="en" style="font-size:36px">May I open the window?</p></div>
+    <div class="card big mint blurable" id="teacherCard"><p class="enb cg" style="font-size:44px">Teacher</p><p class="en" style="font-size:36px">Yes, you may. Please sit down.</p><p class="en" style="font-size:36px">It’s OK, but don’t be late again!</p><p class="en" style="font-size:36px">Yes, you do. You have to do page 10.</p><p class="en" style="font-size:36px">No, you may not. It is cold today.</p></div>
+  </div>
+</section>
+
+<!-- 25 GAME 1 RULES -->
+<section class="s yel" data-title="Game 1: Grammar Auction rules" style="flex-direction:row;align-items:center;gap:64px">
+  <div style="width:620px;display:flex;flex-direction:column;gap:32px"><div><span class="tag dk">Game 1</span></div><h1 class="h1" style="font-size:120px">Grammar<br>Auction</h1><p class="en" style="font-size:40px;font-weight:800">Each team starts with 1000 points</p><div><button class="sbtn" data-start1000>Give every team 1000</button></div></div>
+  <div class="flex1 qlist" style="gap:20px">
+    <div class="qrow"><span class="num" style="width:72px;height:72px;line-height:72px">1</span><p class="qt e" style="font-size:36px">Make 3 or 4 teams (3–4 students each).</p></div>
+    <div class="qrow"><span class="num" style="width:72px;height:72px;line-height:72px">2</span><p class="qt e" style="font-size:36px">Read a sentence. Is it right or wrong? Talk in your team.</p></div>
+    <div class="qrow"><span class="num" style="width:72px;height:72px;line-height:72px">3</span><p class="qt e" style="font-size:36px">Bid 100 to 500 points if you think it is right.</p></div>
+    <div class="qrow"><span class="num" style="width:72px;height:72px;line-height:72px">4</span><p class="qt e" style="font-size:36px">Right = win your bid. Wrong = lose it. Fix a wrong one = +100!</p></div>
+  </div>
+</section>
+
+<!-- 26 AUCTION -->
+<section class="s ink" data-title="Auction (play)" data-game="auction"><div id="g-auction" style="display:contents"></div></section>
+
+<!-- 27 GAME 2 RULES -->
+<section class="s sky" data-title="Game 2: Quiz Board rules" style="flex-direction:row;align-items:center;gap:64px">
+  <div style="width:620px;display:flex;flex-direction:column;gap:32px"><div><span class="tag dk">Game 2</span></div><h1 class="h1" style="font-size:120px">Quiz<br>Board</h1><p class="en" style="font-size:40px;font-weight:800">20 seconds per question</p></div>
+  <div class="flex1 qlist" style="gap:20px">
+    <div class="qrow"><span class="num" style="width:72px;height:72px;line-height:72px">1</span><p class="qt e" style="font-size:36px">Same teams. Take turns.</p></div>
+    <div class="qrow"><span class="num" style="width:72px;height:72px;line-height:72px">2</span><p class="qt e" style="font-size:36px">Choose a topic and points: “Have to for 200!”</p></div>
+    <div class="qrow"><span class="num" style="width:72px;height:72px;line-height:72px">3</span><p class="qt e" style="font-size:36px">The teacher taps the square. Answer together.</p></div>
+    <div class="qrow"><span class="num" style="width:72px;height:72px;line-height:72px">4</span><p class="qt e" style="font-size:36px">Wrong? The next team can steal the points!</p></div>
+  </div>
+</section>
+
+<!-- 28 BOARD -->
+<section class="s ink" data-title="Quiz Board (play)" data-game="board"><div id="g-board" style="display:contents"></div></section>
+<!-- 29 WHEEL -->
+<section class="s ink" data-title="Game 3: Spin the Wheel" data-game="wheel"><div id="g-wheel" style="display:contents"></div></section>
+<!-- 30 BUILDER -->
+<section class="s" data-title="Game 4: Sentence Builder" data-game="build"><div id="g-build" style="display:contents"></div></section>
+<!-- 31 BOSS -->
+<section class="s yel" data-title="Game 5: Boss Says" data-game="boss"><div id="g-boss" style="display:contents"></div></section>
+<!-- 32 MYSTERY -->
+<section class="s" data-title="Game 6: Mystery Place" data-game="mystery"><div id="g-mystery" style="display:contents"></div></section>
+<!-- 33 MIME -->
+<section class="s sky" data-title="Game 7: Mime and Say" data-game="mime"><div id="g-mime" style="display:contents"></div></section>
+
+<!-- 34 CHECKLIST -->
+<section class="s" data-title="Can you…?">
+  <div><h2 class="h2">Can you…?</h2><p class="sub" style="margin-top:8px">Thumb up = yes. Middle = a little. Down = not yet. Tap a line when the class is confident.</p></div>
+  <div class="g2 r3 flex1">
+    <button class="qrow ln checkit"><span class="tick">✓</span><p class="qt e" style="font-size:40px;text-align:left">make a sentence with an action</p></button>
+    <button class="qrow ln checkit"><span class="tick">✓</span><p class="qt e" style="font-size:40px;text-align:left">use am, is and are</p></button>
+    <button class="qrow ln checkit"><span class="tick">✓</span><p class="qt e" style="font-size:40px;text-align:left">make negatives and questions</p></button>
+    <button class="qrow ln checkit"><span class="tick">✓</span><p class="qt e" style="font-size:40px;text-align:left">give commands, politely too</p></button>
+    <button class="qrow ln checkit"><span class="tick">✓</span><p class="qt e" style="font-size:40px;text-align:left">ask for permission with may</p></button>
+    <button class="qrow ln checkit"><span class="tick">✓</span><p class="qt e" style="font-size:40px;text-align:left">talk about rules with must and have to</p></button>
+  </div>
+</section>
+
+<!-- 35 BYE -->
+<section class="s ink" data-title="Winners and exit ticket" data-game="bye" style="flex-direction:row;gap:64px;align-items:center">
+  <div style="flex:1;display:flex;flex-direction:column;gap:36px">
+    <div><span class="tag">Exit ticket</span></div>
+    <h1 class="h1" style="font-size:130px">Great job!<br><span class="cy">Rahmat!</span></h1>
+    <p class="lead">Say one sentence on your way out:</p>
+    <div class="row" style="gap:18px"><span class="bub peach">I have to…</span><span class="bub mint">May I…?</span><span class="bub skyb">Don’t…!</span></div>
+  </div>
+  <div style="width:720px;display:flex;flex-direction:column;gap:24px">
+    <p class="eb">Final scores</p>
+    <div class="lb" id="leaderboard"></div>
+    <div><button class="sbtn y" data-celebrate>Celebrate the winners</button></div>
+  </div>
+</section>
+
+</div>
+<div class="menu" id="menu" hidden><div class="row" style="justify-content:space-between;max-width:1200px;margin:0 auto 14px"><b style="font:800 22px var(--display)">All slides</b><button class="nbtn" data-menu-close>Close</button></div><div class="menu-grid" id="menuGrid"></div></div>
+</div>
+
+<div class="nav">
+  <button class="nbtn" data-prev aria-label="Previous slide">← Back</button>
+  <span class="count" id="count">1 / 35</span>
+  <button class="nbtn y" data-next aria-label="Next slide">Next →</button>
+  <div class="prog" aria-hidden="true"><i id="prog"></i></div>
+  <span class="hint">Keys: → or Space reveals the next answer, then moves on · F full screen</span>
+  <button class="nbtn" data-menu>Slides</button>
+  <button class="nbtn" data-full>Full screen</button>
+</div>
+
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const TC = ["#1F5FD1", "#B42318", "#157347", "#9A6A00"];
+const TC_CHROME = ["#7FA2F5", "#F2788B", "#6CCB8A", "#F2BE4A"];
+
+/* ================= DATA ================= */
+const AUCTION = [
+  { s: "She has to wear a uniform.", ok: true },
+  { s: "May I to sit here?", ok: false, fix: "May I sit here?" },
+  { s: "They isn’t at school.", ok: false, fix: "They aren’t at school." },
+  { s: "Don’t touch the cake!", ok: true },
+  { s: "Does he like music?", ok: true },
+  { s: "I doesn’t have to go.", ok: false, fix: "I don’t have to go." },
+  { s: "You mustn’t run here.", ok: true },
+  { s: "We am very happy.", ok: false, fix: "We are very happy." },
+  { s: "He plays football every day.", ok: true },
+  { s: "Please to open the window.", ok: false, fix: "Please open the window." },
+  { s: "It mays rain tomorrow.", ok: false, fix: "It may rain tomorrow." },
+  { s: "Is your sister a nurse?", ok: true }
+];
+const BOARD = [
+  { cat: "Sentences", qs: [["Put in order: football / plays / Ali","Ali plays football."],["Correct it: She eat apples every day.","She eats apples every day."],["Translate: Men har kuni non yeyman.","I eat bread every day."]] },
+  { cat: "To be", qs: [["I ___ a student.","am"],["They ___ at home.","are"],["Translate: Biz charchaganmiz.","We are tired."]] },
+  { cat: "No & ?", qs: [["Make a question: You like tea.","Do you like tea?"],["Make it negative: He works here.","He doesn’t work here."],["Short answer (yes): Is she a doctor?","Yes, she is."]] },
+  { cat: "Commands", qs: [["Say “sit down” politely.","Please sit down."],["Make it negative: Run!","Don’t run!"],["Translate: Telefoningizni o’chiring.","Turn off your phone."]] },
+  { cat: "May", qs: [["You are late. Ask to come in.","May I come in?"],["Say no politely to “May I go out?”","No, you may not."],["Maybe it will rain tomorrow. Use may.","It may rain tomorrow."]] },
+  { cat: "Have to", qs: [["She ___ to work. (have or has?)","has"],["It is free. I ___ pay.","don’t have to"],["In a library, talking loudly is forbidden. Make a rule.","You mustn’t talk loudly."]] }
+];
+const WHEEL = [
+  { name: "Sentences", color: "#1F5FD1", tasks: ["Say 3 things your mother does every day.","Make a sentence with “plays”.","Tell us one thing you do every morning.","Say what your best friend likes."] },
+  { name: "To be", color: "#0B6E70", tasks: ["Describe the person on your left with “is”.","Say 3 sentences about you with “I am”.","Where are your family now? Use is / are.","Say two jobs: My father is… My mother is…"] },
+  { name: "No & ?", color: "#B42318", tasks: ["Ask the teacher 2 questions with “Do you…?”","Say 2 things you don’t like.","Ask a classmate: “Are you…?”","Make a question with “Does…?” about a famous person."] },
+  { name: "Commands", color: "#E7A61C", dark: true, tasks: ["Give your team 3 commands. They must do them!","Give 2 “Don’t” rules for this classroom.","Ask the teacher to do something, politely!","Guide a teammate to the door: walk, stop, turn left…"] },
+  { name: "May", color: "#157347", tasks: ["Ask the teacher for permission 2 times.","Say 2 things that may happen tomorrow.","Someone asks “May I use your phone?” Say no politely.","Ask a classmate for something with “May I…?”"] },
+  { name: "Have to", color: "#5B3FA8", tasks: ["Say 3 things you have to do this week.","Say 2 things you don’t have to do on Sunday.","Say 2 school rules with “mustn’t”.","Ask a classmate: “Do you have to…?”"] }
+];
+const BUILD = [
+  { w: ["I","have","to","work"], e: "." }, { w: ["May","I","come","in"], e: "?" }, { w: ["She","doesn’t","like","fish"], e: "." },
+  { w: ["Is","she","a","doctor"], e: "?" }, { w: ["Please","open","the","door"], e: "." }, { w: ["They","are","at","school"], e: "." },
+  { w: ["Does","he","play","football"], e: "?" }, { w: ["You","mustn’t","run","here"], e: "!" }, { w: ["It","may","rain","tomorrow"], e: "." },
+  { w: ["Don’t","be","late"], e: "!" }, { w: ["Do","you","have","to","work"], e: "?" }, { w: ["My","brother","plays","football"], e: "." }
+];
+const BOSS = [
+  ["stand up","turing"],["sit down","o’tiring"],["touch your nose","burningizga tegining"],["clap twice","ikki marta chapak chaling"],
+  ["raise your hand","qo’lingizni ko’taring"],["close your eyes","ko’zlaringizni yuming"],["turn around","orqaga o’giriling"],["smile","jilmaying"],
+  ["touch your head","boshingizga tegining"],["wave to the teacher","o’qituvchiga qo’l silkiting"],["jump","sakrang"],["look at the door","eshikka qarang"],
+  ["don’t laugh","kulmang"],["don’t move","qimirlamang"]
+];
+const BOSS_MAY = ["open the window","drink some water","go out","sit next to my friend","use your pen","stand up"];
+const PLACES = [
+  { p: "Library", uz: "Kutubxona", c: ["You don’t have to pay.","You have to be quiet.","You have to give the books back."] },
+  { p: "Hospital", uz: "Kasalxona", c: ["You have to wait your turn.","You mustn’t make noise.","Doctors have to help sick people."] },
+  { p: "Airport", uz: "Aeroport", c: ["You have to arrive early.","You mustn’t carry big bottles of water.","You have to show your passport."] },
+  { p: "Cinema", uz: "Kinoteatr", c: ["You have to turn off your phone.","You have to buy a ticket.","You sit in the dark and watch a big screen."] },
+  { p: "Restaurant", uz: "Restoran", c: ["You don’t have to cook.","You have to pay the bill.","A waiter has to bring your food."] },
+  { p: "Swimming pool", uz: "Basseyn", c: ["You have to wear special clothes.","You have to take a shower first.","You mustn’t run near the water."] },
+  { p: "Bazaar", uz: "Bozor", c: ["You don’t have to buy a ticket.","You may ask for a lower price.","You have to carry your bags of fruit and vegetables."] },
+  { p: "School", uz: "Maktab", c: ["You have to do homework.","You mustn’t use your phone in class.","You have to wear a uniform."] }
+];
+const MIME = [
+  { cue: "tired", say: "You are tired. / She is tired." }, { cue: "hungry", say: "You are hungry. / He is hungry." },
+  { cue: "cold", say: "You are cold. / She is cold." }, { cue: "happy", say: "You are happy. / He is happy." },
+  { cue: "a doctor", say: "You are a doctor. / She is a doctor." }, { cue: "a driver", say: "You are a driver. / He is a driver." },
+  { cue: "play football", say: "You play football. / He plays football." }, { cue: "drink tea", say: "You drink tea. / She drinks tea." },
+  { cue: "read a book", say: "You read a book. / He reads a book." }, { cue: "cook plov", say: "You cook plov. / She cooks plov." },
+  { cue: "don’t like fish", say: "You don’t like fish. / He doesn’t like fish." }, { cue: "have to get up early", say: "You have to get up early. / She has to get up early." },
+  { cue: "swim", say: "You swim. / He swims." }, { cue: "a teacher", say: "You are a teacher. / She is a teacher." }
+];
+
+/* ================= TEAMS ================= */
+const DEF = [{ name: "Samarkand", score: 0 },{ name: "Bukhara", score: 0 },{ name: "Khiva", score: 0 },{ name: "Tashkent", score: 0 }];
+let teams = store.get("brp-teams", DEF);
+if (!Array.isArray(teams) || teams.length !== 4) teams = DEF.map(t => ({ ...t }));
+let teamCount = store.get("brp-count", 3);
+if (![2,3,4].includes(teamCount)) teamCount = 3;
+let confirming = false;
+const save = () => { store.set("brp-teams", teams); store.set("brp-count", teamCount); };
+function renderTeams() {
+  const act = teams.slice(0, teamCount), max = Math.max(...act.map(t => t.score));
+  $("#teams").innerHTML = act.map((t, i) => `<div class="team" style="--tc:${TC_CHROME[i]}" data-team="${i}">
+      <input id="tn-${i}" aria-label="Team ${i + 1} name" value="${esc(t.name)}" maxlength="14">
+      ${max > 0 && t.score === max ? '<span class="star">★</span>' : ""}
+      <span class="sc">${t.score}</span>
+      <button class="mini" data-score="${i}" data-d="-100" aria-label="Minus 100">−</button>
+      <button class="mini" data-score="${i}" data-d="100" aria-label="Plus 100">+</button></div>`).join("") +
+    `<div class="tools"><select id="team-count" aria-label="Number of teams">${[2,3,4].map(n => `<option value="${n}" ${n === teamCount ? "selected" : ""}>${n} teams</option>`).join("")}</select>
+     ${confirming ? `<span class="lnk">Reset scores?</span><button class="lnk" data-reset="yes">Yes</button><button class="lnk" data-reset="no">No</button>` : `<button class="lnk" data-reset="ask">Reset</button>`}</div>`;
+}
+function addScore(i, d) {
+  if (i >= teamCount) return;
+  teams[i].score += d; save(); renderTeams(); renderLeader();
+  const chip = $(`.team[data-team="${i}"]`);
+  if (chip) { chip.classList.remove("pulse"); void chip.offsetWidth; chip.classList.add("pulse"); if (d > 0) { const r = chip.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top + r.height / 2, 40); } }
+}
+const award = (pts, label = "Give points:") => `<div class="award"><span class="al">${label}</span>${teams.slice(0, teamCount).map((t, i) =>
+  `<button style="--tc:${TC[i]}" data-award="${i}" data-pts="${pts}">+${pts} ${esc(t.name)}</button>`).join("")}</div>`;
+document.addEventListener("input", e => {
+  const m = e.target.id && e.target.id.match(/^tn-(\d)$/);
+  if (m) { teams[+m[1]].name = e.target.value || `Team ${+m[1] + 1}`; save(); renderLeader(); }
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "team-count") { teamCount = +e.target.value; save(); renderTeams(); renderLeader(); const g = slides[cur].dataset.game; if (g && RENDER[g]) RENDER[g](); }
+});
+function renderLeader() {
+  const el = $("#leaderboard"); if (!el) return;
+  const rows = teams.slice(0, teamCount).map((t, i) => ({ ...t, i })).sort((a, b) => b.score - a.score);
+  el.innerHTML = rows.map((t, k) => `<div class="lbr ${k === 0 && t.score > 0 ? "first" : ""}"><span class="pos">${k + 1}</span><span class="nm">${esc(t.name)}</span><span style="font-variant-numeric:tabular-nums">${t.score}</span></div>`).join("");
+}
+
+/* ================= CONFETTI ================= */
+const cv = $("#confetti"), cx = cv.getContext("2d");
+let parts = [], raf = 0;
+const sizeCv = () => { cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; };
+sizeCv();
+function confetti(x, y, n = 90) {
+  if (reduceMotion) return;
+  const cols = ["#1F5FD1","#B42318","#157347","#FFC93C","#0B6E70","#FFF8E7"];
+  for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 14, vy: -Math.random() * 13 - 3, r: 4 + Math.random() * 6, c: pick(cols), a: Math.random() * 6, life: 80 + Math.random() * 40 });
+  if (!raf) raf = requestAnimationFrame(tick);
+}
+function tick() {
+  cx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0); cx.clearRect(0, 0, innerWidth, innerHeight);
+  parts = parts.filter(p => p.life-- > 0);
+  for (const p of parts) { p.vy += .35; p.x += p.vx; p.y += p.vy; p.a += .2; cx.save(); cx.translate(p.x, p.y); cx.rotate(p.a); cx.fillStyle = p.c; cx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); cx.restore(); }
+  raf = parts.length ? requestAnimationFrame(tick) : 0;
+  if (!raf) cx.clearRect(0, 0, innerWidth, innerHeight);
+}
+const burst = (el, n) => { if (!el) return; const r = el.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top + r.height / 2, n); };
+
+/* ================= STAGE ================= */
+const stage = $("#stage"), vp = $("#viewport");
+const slides = $$(".s", stage);
+let cur = 0;
+function fit() {
+  const w = vp.clientWidth, h = vp.clientHeight;
+  const s = Math.min(w / 1920, h / 1080);
+  stage.style.transform = `translate(-50%,-50%) scale(${s})`;
+  sizeCv();
+}
+addEventListener("resize", fit);
+$$(".ans").forEach(b => { const a = b.textContent; b.innerHTML = `<span class="q">Tap to reveal</span><span class="a">${esc(a)}</span>`; b.setAttribute("aria-label", "Reveal answer"); });
+
+function go(i, fromHash) {
+  i = Math.max(0, Math.min(slides.length - 1, i));
+  clearInterval(timerId);
+  slides[cur].classList.remove("active");
+  cur = i;
+  const sl = slides[cur];
+  sl.classList.add("active");
+  $("#count").textContent = `${cur + 1} / ${slides.length}`;
+  $("#prog").style.width = ((cur + 1) / slides.length * 100) + "%";
+  const g = sl.dataset.game;
+  if (g && RENDER[g]) RENDER[g]();
+  if (!fromHash) { try { history.replaceState(null, "", "#slide-" + (cur + 1)); } catch (e) {} }
+  renderMenu();
+}
+function reveal(b) { if (b.classList.contains("on")) return; b.classList.add("on"); b.setAttribute("aria-label", "Answer shown"); burst(b, 30); }
+function next() {
+  const sl = slides[cur];
+  if (!sl.dataset.game) { const h = $(".ans:not(.on)", sl); if (h) { reveal(h); return; } }
+  go(cur + 1);
+}
+function renderMenu() {
+  $("#menuGrid").innerHTML = slides.map((s, i) => `<button data-goto="${i}" ${i === cur ? 'aria-current="true"' : ""}><b>${i + 1}</b>${esc(s.dataset.title || "")}</button>`).join("");
+}
+function fromHash() { const m = location.hash.match(/^#slide-(\d+)$/); return m ? +m[1] - 1 : 0; }
+addEventListener("hashchange", () => go(fromHash(), true));
+
+/* ================= GAMES ================= */
+const GS = {}; let timerId = 0;
+const timerHTML = sec => `<div class="timer" data-timer="${sec}"><button class="sbtn y" data-start-timer>Start ${sec}s</button><div class="bar"><div class="fill"></div></div><span class="t">${sec}</span></div>`;
+function startTimer(el) {
+  clearInterval(timerId);
+  const total = +el.dataset.timer; let left = total;
+  const fill = $(".fill", el), t = $(".t", el); fill.style.width = "100%"; t.textContent = left;
+  timerId = setInterval(() => { left--; t.textContent = Math.max(left, 0); fill.style.width = Math.max(left, 0) / total * 100 + "%"; if (left <= 0) { clearInterval(timerId); t.textContent = "Time!"; } }, 1000);
+}
+const head = (title, how) => `<div class="row" style="justify-content:space-between;gap:24px"><h2 class="h2">${title}</h2><button class="sbtn w" data-restart style="font-size:26px;padding:12px 28px">Restart game</button></div><p class="sub" style="margin-top:-12px">${how}</p>`;
+
+const RENDER = {
+  auction() {
+    const G = GS.auction || (GS.auction = {});
+    if (G.i == null) { G.order = shuffle(AUCTION); G.i = 0; G.bids = [0,0,0,0]; G.shown = false; }
+    const it = G.order[G.i];
+    $("#g-auction").innerHTML = head("Auction: right or wrong?", "Teams talk for 20 seconds, then bid 0–500 if they think it is correct.") + `
+      <div style="background:var(--ink2);border-radius:36px;padding:32px 48px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center">
+        <p class="eb">Sentence ${G.i + 1} of ${G.order.length}</p><p class="bigs" style="font-size:68px">${esc(it.s)}</p>
+        ${G.shown ? `<span class="verdict ${it.ok ? "good" : "bad"}">${it.ok ? "RIGHT! Bids paid" : "WRONG! Bids lost"}</span>${it.ok ? "" : `<p class="en" style="color:var(--mint);font-size:52px;font-weight:800">${esc(it.fix)}</p>`}` : ""}
+      </div>
+      <div class="bids">${teams.slice(0, teamCount).map((t, i) => `<div class="bid" style="--tc:${TC[i]}"><b>${esc(t.name)}</b><span class="row" style="gap:10px;flex-wrap:nowrap"><button class="mini" data-bid="${i}" data-d="-100" ${G.shown ? "disabled" : ""} aria-label="Lower bid">−</button><span class="amt" style="color:var(--ink)">${G.bids[i]}</span><button class="mini" data-bid="${i}" data-d="100" ${G.shown ? "disabled" : ""} aria-label="Raise bid">+</button></span></div>`).join("")}</div>
+      <div class="row" style="justify-content:space-between">
+        ${G.shown ? `<button class="sbtn y" data-auc-next ${G.i + 1 >= G.order.length ? "disabled" : ""}>Next sentence →</button>` : `<button class="sbtn y" data-auc-reveal>Reveal</button>`}
+        ${G.shown && !it.ok ? award(100, "Fixed it? Bonus:") : ""}
+      </div>`;
+  },
+  board() {
+    const G = GS.board || (GS.board = { used: {} });
+    let tiles = "";
+    for (let r = 0; r < 3; r++) BOARD.forEach((c, ci) => { const k = ci + "-" + r, v = (r + 1) * 100; tiles += `<button class="bt v${v} ${G.used[k] ? "used" : ""}" data-tile="${k}" aria-label="${esc(c.cat)} for ${v}">${v}</button>`; });
+    let modal = "";
+    if (G.open) {
+      const [ci, r] = G.open.split("-").map(Number), c = BOARD[ci], [q, a] = c.qs[r], v = (r + 1) * 100;
+      modal = `<div class="modal" data-modal><div class="mbox" role="dialog" aria-modal="true">
+        <div class="row" style="justify-content:space-between"><span class="tag dk">${esc(c.cat)} · ${v}</span><button class="sbtn w" data-tile-close style="font-size:26px">Close</button></div>
+        <p class="bigs">${esc(q)}</p>${timerHTML(20)}
+        ${G.shownAns ? `<p class="mans">${esc(a)}</p>${award(v, "Points to:")}` : `<div><button class="sbtn g" data-tile-answer>Show answer</button></div>`}
+      </div></div>`;
+    }
+    $("#g-board").innerHTML = head("Quiz Board", "Choose a topic and a value. Tap the square to open the question.") +
+      `<div class="board flex1">${BOARD.map(c => `<div class="bh">${esc(c.cat)}</div>`).join("")}${tiles}</div>${modal}`;
+  },
+  wheel() {
+    const G = GS.wheel || (GS.wheel = { rot: 0 });
+    $("#g-wheel").innerHTML = head("Spin the Wheel", "The wheel picks a topic and a speaking challenge. Answer before the timer ends.") + `
+      <div class="row flex1" style="gap:64px;align-items:center;flex-wrap:nowrap">
+        <div class="wheelwrap"><canvas id="wheel" width="1440" height="1440" style="transform:rotate(${G.rot}deg)"></canvas><div class="hubc"></div><div class="ptr"></div></div>
+        <div class="chal" id="chal">${G.task ? chalHTML(G.task) : `<p class="eb">Ready?</p><p class="bigs" style="font-size:64px;color:var(--cream)">Spin the wheel to get a challenge.</p><div><button class="sbtn y" data-spin>Spin!</button></div>`}</div>
+      </div>`;
+    drawWheel();
+  },
+  build() {
+    const G = GS.build || (GS.build = {});
+    if (G.i == null) { G.order = shuffle(BUILD); G.i = 0; }
+    if (!G.pool) { G.pool = shuffle(G.order[G.i].w.map((_, k) => k)); G.built = []; G.state = ""; }
+    const it = G.order[G.i], answer = it.w.join(" ") + it.e;
+    $("#g-build").innerHTML = head("Sentence Builder", "Teams race to say it. The fastest team taps the tiles in order. Tap a tile in the line to send it back.") + `
+      <p class="eb">Round ${G.i + 1} of ${G.order.length}</p>
+      <div class="slots">${G.built.length ? G.built.map(k => `<button class="wt" data-built="${k}">${esc(it.w[k])}</button>`).join("") : `<span class="sub">Tap the words below…</span>`}<span class="wt" style="background:none;box-shadow:none;color:var(--slate)">${it.e}</span></div>
+      <div class="pool">${G.pool.filter(k => !G.built.includes(k)).map(k => `<button class="wt" data-pool="${k}">${esc(it.w[k])}</button>`).join("")}</div>
+      <div class="row">
+        <button class="sbtn g" data-b-check ${G.built.length === it.w.length ? "" : "disabled"}>Check</button>
+        <button class="sbtn w" data-b-show style="border:3px solid var(--line)">Show answer</button>
+        <button class="sbtn" data-b-next ${G.i + 1 >= G.order.length ? "disabled" : ""}>Next →</button>
+        ${G.state === "right" ? `<span class="verdict good">Correct!</span>` : ""}${G.state === "wrong" ? `<span class="verdict bad">Not yet!</span>` : ""}
+        ${G.state === "shown" ? `<span class="en cg" style="font-weight:800">${esc(answer)}</span>` : ""}
+      </div>
+      ${G.state === "right" ? award(100) : ""}`;
+  },
+  boss() {
+    const G = GS.boss || (GS.boss = {});
+    const c = G.card;
+    let body;
+    if (!c) body = `<div class="cardx"><p class="bigs">Tap “New card”. The Boss reads it aloud.</p></div>`;
+    else if (c.type === "may") body = `<div class="cardx open"><div style="display:flex;flex-direction:column;gap:24px;align-items:center"><p class="eb">Student’s turn</p><p class="bigs">Ask the Boss: “May I ${esc(c.text)}?”</p>${G.rev ? `<span class="verdict ${c.yes ? "good" : "bad"}">${c.yes ? "Yes, you may." : "No, you may not."}</span>` : ""}</div></div>`;
+    else body = `<div class="cardx open"><div style="display:flex;flex-direction:column;gap:20px;align-items:center"><p class="bigs" style="font-size:110px">${esc(c.please ? "Please " + c.text : c.text.charAt(0).toUpperCase() + c.text.slice(1))}!</p><p class="uz">${esc(c.please ? "Iltimos, " + c.uz : c.uz.charAt(0).toUpperCase() + c.uz.slice(1))}!</p>${G.rev ? `<span class="verdict ${c.please ? "good" : "bad"}">${c.please ? "Do it!" : "Freeze! No “please”"}</span>` : ""}</div></div>`;
+    $("#g-boss").innerHTML = head("Boss Says…", "Everyone stands. Obey only if the Boss says “please”. Move without “please”? Sit down. On a “May I…?” card, a student asks the Boss.") + body + `
+      <div class="row" style="justify-content:space-between"><div class="row"><button class="sbtn b" data-boss-new>New card</button><button class="sbtn" data-boss-rev ${c && !G.rev ? "" : "disabled"}>Reveal</button></div>${award(100, "Last one standing:")}</div>`;
+  },
+  mystery() {
+    const G = GS.mystery || (GS.mystery = {});
+    if (G.i == null) { G.order = shuffle(PLACES); G.i = 0; G.n = 1; G.rev = false; }
+    const it = G.order[G.i], pts = [300, 200, 100][G.n - 1];
+    $("#g-mystery").innerHTML = head("Mystery Place", "Guess the place with “Is it a…?”. After 1 clue: 300 points, after 2: 200, after 3: 100.") + `
+      <p class="eb">Place ${G.i + 1} of ${G.order.length} · worth ${pts} now</p>
+      <div class="qlist flex1" style="gap:18px">${it.c.slice(0, G.n).map((c, k) => `<p class="clue"><small>CLUE ${k + 1}</small>${esc(c)}</p>`).join("")}
+        ${G.rev ? `<div class="row" style="gap:32px"><span class="secret" style="font-size:100px">${esc(it.p)}</span><span class="uz" style="font-size:48px">${esc(it.uz)}</span></div>` : ""}</div>
+      <div class="row"><button class="sbtn b" data-clue ${G.n >= 3 || G.rev ? "disabled" : ""}>Next clue</button><button class="sbtn y" data-place-rev ${G.rev ? "disabled" : ""}>Reveal place</button><button class="sbtn" data-place-next ${G.i + 1 >= G.order.length ? "disabled" : ""}>Next place →</button>${G.rev ? award(pts) : ""}</div>`;
+  },
+  mime() {
+    const G = GS.mime || (GS.mime = {});
+    if (G.order == null) { G.order = shuffle(MIME); G.i = -1; G.st = "idle"; }
+    const it = G.order[G.i];
+    let card;
+    if (G.st === "idle") card = `<div class="cardx"><p class="bigs">Tap “Next card”.</p></div>`;
+    else if (G.st === "peek") card = `<div class="cardx open"><div style="display:flex;flex-direction:column;gap:20px;align-items:center"><p class="eb">Mimer only!</p><p class="secret">${esc(it.cue)}</p><p class="sub">Remember it, then tap “Hide”.</p></div></div>`;
+    else if (G.st === "hidden") card = `<div class="cardx"><div><p class="bigs">Mime it! No talking.</p><p class="en" style="margin-top:16px">The team says a full sentence.</p></div></div>`;
+    else card = `<div class="cardx open"><div style="display:flex;flex-direction:column;gap:20px;align-items:center"><p class="secret">${esc(it.cue)}</p><p class="en cg" style="font-weight:800;font-size:52px">${esc(it.say)}</p>${award(100)}</div></div>`;
+    $("#g-mime").innerHTML = head("Mime and Say", "One student peeks at the card and mimes it. The team has 30 seconds to say a full sentence: “You are tired!”") + card + `
+      <div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:24px">
+        <div class="row" style="flex-wrap:nowrap"><button class="sbtn" data-mime-next ${G.i + 1 >= G.order.length ? "disabled" : ""}>Next card</button><button class="sbtn w" data-mime-peek ${G.st === "hidden" ? "" : "disabled"}>Peek</button><button class="sbtn w" data-mime-hide ${G.st === "peek" ? "" : "disabled"}>Hide</button><button class="sbtn y" data-mime-rev ${G.st === "hidden" ? "" : "disabled"}>Reveal</button></div>
+        <div style="width:640px">${timerHTML(30)}</div></div>`;
+  },
+  bye() { renderLeader(); }
+};
+const chalHTML = t => `<p class="eb">${esc(t.topic)}</p><p class="bigs" style="font-size:60px;color:var(--cream)">${esc(t.text)}</p>${timerHTML(30)}
+  <div class="row"><button class="sbtn y" data-spin>Spin again</button></div>${award(100, "Good:")}${award(200, "Excellent:")}`;
+function drawWheel() {
+  const c = $("#wheel"); if (!c) return;
+  const x = c.getContext("2d"), W = c.width, R = W / 2, n = WHEEL.length, seg = Math.PI * 2 / n;
+  x.clearRect(0, 0, W, W);
+  WHEEL.forEach((s, i) => {
+    const a0 = -Math.PI / 2 + i * seg;
+    x.beginPath(); x.moveTo(R, R); x.arc(R, R, R - 12, a0, a0 + seg); x.closePath();
+    x.fillStyle = s.color; x.fill(); x.lineWidth = 14; x.strokeStyle = "#12263A"; x.stroke();
+    x.save(); x.translate(R, R); x.rotate(a0 + seg / 2);
+    x.fillStyle = s.dark ? "#12263A" : "#FFF8E7"; x.font = "800 84px Rubik, Verdana, sans-serif"; x.textAlign = "right"; x.textBaseline = "middle";
+    x.fillText(s.name, R - 70, 6); x.restore();
+  });
+}
+function spin() {
+  const G = GS.wheel; $$("[data-spin]").forEach(b => b.disabled = true);
+  const k = Math.floor(Math.random() * WHEEL.length);
+  const target = (360 - (k * 60 + 30)) % 360, jitter = (Math.random() - .5) * 36;
+  G.rot = G.rot - (G.rot % 360) + 360 * 5 + target + jitter;
+  const c = $("#wheel"); c.style.transform = `rotate(${G.rot}deg)`;
+  const done = () => { G.task = { topic: WHEEL[k].name, text: pick(WHEEL[k].tasks) }; const ch = $("#chal"); if (ch && slides[cur].dataset.game === "wheel") { ch.innerHTML = chalHTML(G.task); burst(c); } };
+  if (reduceMotion) done(); else setTimeout(done, 4300);
+}
+
+/* ================= EVENTS ================= */
+document.addEventListener("click", e => {
+  const t = e.target.closest("button, [data-modal]");
+  if (!t) return;
+  const d = t.dataset;
+  if (e.detail > 0 && t.blur && t.tagName === "BUTTON") t.blur();
+  if (t.classList.contains("ans")) { reveal(t); return; }
+  if (d.prev != null) { go(cur - 1); return; }
+  if (d.next != null) { go(cur + 1); return; }
+  if (d.menu != null) { $("#menu").hidden = false; return; }
+  if (d.menuClose != null) { $("#menu").hidden = true; return; }
+  if (d.goto != null) { $("#menu").hidden = true; go(+d.goto); return; }
+  if (d.full != null) { const el = document.documentElement; try { if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().catch(() => {}); } catch (err) {} return; }
+  if (d.jump) { const i = slides.findIndex(s => s.dataset.id === d.jump); if (i >= 0) go(i); return; }
+  if (d.score != null) { addScore(+d.score, +d.d); return; }
+  if (d.reset) { if (d.reset === "yes") { teams.forEach(x => x.score = 0); save(); renderLeader(); } confirming = d.reset === "ask"; renderTeams(); return; }
+  if (d.award != null) { addScore(+d.award, +d.pts); t.disabled = true; return; }
+  if (d.start1000 != null) { teams.forEach((x, i) => { if (i < teamCount) x.score += 1000; }); save(); renderTeams(); renderLeader(); burst(t); t.disabled = true; return; }
+  if (d.spotlight) {
+    const cards = $$(".spot", $("#" + d.spotlight)); if (!cards.length) return;
+    let n = 0; const end = 10 + Math.floor(Math.random() * cards.length);
+    const step = () => { cards.forEach(c => c.classList.remove("lit")); cards[n % cards.length].classList.add("lit"); if (n++ < end) setTimeout(step, 70 + n * 12); else burst(cards[(n - 1) % cards.length], 50); };
+    step(); return;
+  }
+  if (d.blur) { const el = $("#" + d.blur); const on = el.classList.toggle("blurred"); t.textContent = on ? "Show teacher lines" : "Hide teacher lines"; return; }
+  if (t.classList.contains("checkit")) { t.classList.toggle("done"); if (t.classList.contains("done")) burst(t, 40); if ($$(".checkit.done").length === 6) burst(stage, 160); return; }
+  if (d.celebrate != null) { burst($("#leaderboard"), 200); setTimeout(() => burst(stage, 160), 300); return; }
+  if (d.startTimer != null) { startTimer(t.closest("[data-timer]")); return; }
+  if (d.restart != null) { const g = slides[cur].dataset.game; delete GS[g]; RENDER[g](); return; }
+  /* auction */
+  if (d.bid != null) { const G = GS.auction, i = +d.bid; G.bids[i] = Math.min(500, Math.max(0, G.bids[i] + +d.d)); RENDER.auction(); return; }
+  if (d.aucReveal != null) { const G = GS.auction, it = G.order[G.i]; G.shown = true; G.bids.slice(0, teamCount).forEach((b, i) => { if (b) addScore(i, it.ok ? b : -b); }); RENDER.auction(); if (it.ok) burst($(".verdict", slides[cur])); return; }
+  if (d.aucNext != null) { const G = GS.auction; G.i++; G.bids = [0,0,0,0]; G.shown = false; RENDER.auction(); return; }
+  /* board */
+  if (d.tile) { const G = GS.board; if (!G.used[d.tile]) { G.open = d.tile; G.shownAns = false; RENDER.board(); } return; }
+  if (d.tileAnswer != null) { GS.board.shownAns = true; clearInterval(timerId); RENDER.board(); return; }
+  if (d.tileClose != null) { const G = GS.board; G.used[G.open] = true; G.open = null; clearInterval(timerId); RENDER.board(); return; }
+  if (d.modal != null && e.target === t) { GS.board.open = null; clearInterval(timerId); RENDER.board(); return; }
+  /* wheel */
+  if (d.spin != null) { spin(); return; }
+  /* builder */
+  if (d.pool != null) { const G = GS.build; G.built.push(+d.pool); G.state = ""; RENDER.build(); return; }
+  if (d.built != null) { const G = GS.build; G.built = G.built.filter(k => k !== +d.built); G.state = ""; RENDER.build(); return; }
+  if (d.bCheck != null) { const G = GS.build, ok = G.built.every((k, i) => k === i); G.state = ok ? "right" : "wrong"; RENDER.build(); if (ok) burst($(".slots", slides[cur])); return; }
+  if (d.bShow != null) { const G = GS.build; G.state = "shown"; G.built = G.order[G.i].w.map((_, k) => k); RENDER.build(); return; }
+  if (d.bNext != null) { const G = GS.build; G.i++; G.pool = null; RENDER.build(); return; }
+  /* boss */
+  if (d.bossNew != null) { const G = GS.boss; G.rev = false; if (Math.random() < .22) G.card = { type: "may", text: pick(BOSS_MAY), yes: Math.random() < .6 }; else { const [en, uz] = pick(BOSS); G.card = { type: "cmd", text: en, uz, please: Math.random() < .6 }; } RENDER.boss(); return; }
+  if (d.bossRev != null) { GS.boss.rev = true; RENDER.boss(); return; }
+  /* mystery */
+  if (d.clue != null) { const G = GS.mystery; G.n = Math.min(3, G.n + 1); RENDER.mystery(); return; }
+  if (d.placeRev != null) { GS.mystery.rev = true; RENDER.mystery(); burst($(".secret", slides[cur])); return; }
+  if (d.placeNext != null) { const G = GS.mystery; G.i++; G.n = 1; G.rev = false; RENDER.mystery(); return; }
+  /* mime */
+  if (d.mimeNext != null) { const G = GS.mime; G.i++; G.st = "hidden"; clearInterval(timerId); RENDER.mime(); return; }
+  if (d.mimePeek != null) { GS.mime.st = "peek"; RENDER.mime(); return; }
+  if (d.mimeHide != null) { GS.mime.st = "hidden"; RENDER.mime(); return; }
+  if (d.mimeRev != null) { GS.mime.st = "shown"; clearInterval(timerId); RENDER.mime(); burst($(".secret", slides[cur])); return; }
+});
+document.addEventListener("keydown", e => {
+  const tag = (document.activeElement && document.activeElement.tagName) || "";
+  if (tag === "INPUT" || tag === "SELECT") return;
+  if (e.key === "Escape") { if (!$("#menu").hidden) { $("#menu").hidden = true; return; } if (GS.board && GS.board.open && slides[cur].dataset.game === "board") { GS.board.open = null; RENDER.board(); } return; }
+  if (e.key === "ArrowRight" || e.key === "PageDown" || (e.key === " " && tag !== "BUTTON")) { e.preventDefault(); next(); }
+  else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(cur - 1); }
+  else if (e.key === "f" || e.key === "F") { const el = document.documentElement; try { if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().catch(() => {}); } catch (err) {} }
+  else if (e.key === "Home") go(0); else if (e.key === "End") go(slides.length - 1);
+});
+let tx = null;
+vp.addEventListener("touchstart", e => { tx = e.touches[0].clientX; }, { passive: true });
+vp.addEventListener("touchend", e => { if (tx == null) return; const dx = e.changedTouches[0].clientX - tx; tx = null; if (Math.abs(dx) > 70 && !e.target.closest("button")) { dx < 0 ? go(cur + 1) : go(cur - 1); } }, { passive: true });
+
+/* ================= START ================= */
+renderTeams();
+fit();
+go(fromHash(), true);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fit(); if (slides[cur].dataset.game === "wheel") drawWheel(); });
+})();
+</script>
+
+</body>
+</html>
