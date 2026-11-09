@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ClivEdu Live · Join</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Nunito:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="../lessons/live.css">
+</head>
+<body class="player">
+<main id="app" class="pscreen"></main>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<script src="../lessons/live-net.js"></script>
+<script src="../lessons/live-ui.js"></script>
+<script>
+(() => {
+"use strict";
+const UI = window.LiveUI, NET = window.LiveNet, esc = UI.esc, $ = s => document.querySelector(s);
+const app = $("#app");
+const me = { id: null, name: "", type: "team", room: "" };
+let client = null, st = null, gotAt = 0, sentQ = -1, myChoice = null, lastPhaseKey = "", timer = 0;
+const saved = k => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
+const keep = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+
+function joinForm(err) {
+  const last = saved("clv-live-last") || {};
+  app.innerHTML = `<div class="pcard">
+    <p class="brand"><i></i>ClivEdu Live</p>
+    <h1>Join the game</h1>
+    <label for="code">Game code</label>
+    <input id="code" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="6" placeholder="ABCDE1" value="${esc((new URLSearchParams(location.search).get("code") || "").toUpperCase())}">
+    <fieldset class="seg"><legend>How are you playing?</legend>
+      <label><input type="radio" name="type" value="team" ${last.type !== "solo" ? "checked" : ""}><span>As a team<small>one phone for the whole team</small></span></label>
+      <label><input type="radio" name="type" value="solo" ${last.type === "solo" ? "checked" : ""}><span>Just me<small>my own phone</small></span></label>
+    </fieldset>
+    <label for="name" id="nameLbl">Team name</label>
+    <input id="name" maxlength="18" autocomplete="off" value="${esc(last.name || "")}" placeholder="Samarkand">
+    ${err ? `<p class="err">${esc(err)}</p>` : ""}
+    <button class="btn y xl full" id="go">Join</button>
+    <p class="muted small">Jamoa bo’lib bitta telefondan yoki o’zingiz alohida qo’shilishingiz mumkin.</p>
+  </div>`;
+  const setLbl = () => { const team = document.querySelector('input[name=type]:checked').value === "team"; $("#nameLbl").textContent = team ? "Team name" : "Your name"; $("#name").placeholder = team ? "Samarkand" : "Aziz"; };
+  document.querySelectorAll('input[name=type]').forEach(r => r.addEventListener("change", setLbl)); setLbl();
+  $("#go").addEventListener("click", start);
+}
+async function start() {
+  const code = $("#code").value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const name = $("#name").value.trim();
+  const type = document.querySelector('input[name=type]:checked').value;
+  if (!/^[A-Z]{5}[1-9]$/.test(code)) return joinForm("The code has 5 letters and 1 number, like ABCDE1.");
+  if (!name) return joinForm(type === "team" ? "Write your team name." : "Write your name.");
+  keep("clv-live-last", { name, type });
+  const prev = saved("clv-live-" + code);
+  Object.assign(me, { id: prev && prev.id || Math.random().toString(36).slice(2, 10), name, type, room: code });
+  keep("clv-live-" + code, { id: me.id });
+  app.innerHTML = `<div class="pcard center"><p class="big2">Connecting…</p></div>`;
+  try {
+    client = await NET.join(code, onMsg, s => UI.status(s));
+    client.subscribe(NET.topic(code, "state"));
+    sendJoin();
+    setTimeout(() => { if (!st) app.innerHTML = `<div class="pcard center"><p class="big2">Looking for the game…</p><p class="muted">Check the code: <b>${esc(code)}</b></p><button class="btn" id="back">Change code</button></div>`, $("#back") && $("#back").addEventListener("click", () => { client.close(); joinForm(); }); }, 6000);
+  } catch (e) { joinForm("Could not connect. Check the internet and try again."); }
+}
+function sendJoin() { client.publish(NET.topic(me.room, "join"), { id: me.id, name: me.name, type: me.type }); }
+function onMsg(topic, payload) {
+  if (!payload) return;
+  try { st = JSON.parse(payload); } catch (e) { return; }
+  gotAt = Date.now();
+  if (st.phase !== "closed" && st.players && !st.players.some(p => p.id === me.id)) { sendJoin(); }
+  render();
+}
+function rankOf() { const r = (st.players || []).slice().sort((a, b) => b.score - a.score); return { pos: r.findIndex(p => p.id === me.id) + 1, of: r.length, mine: r.find(p => p.id === me.id) }; }
+function render() {
+  clearInterval(timer);
+  const head = `<header class="pbar"><span class="who">${me.type === "team" ? "Team" : "Solo"} · <b>${esc(me.name)}</b></span><span id="net" class="net online">Online</span></header>`;
+  const { pos, of, mine } = rankOf();
+  const score = mine ? mine.score : 0;
+  const key = st.phase + ":" + st.qi;
+  if (key !== lastPhaseKey) { lastPhaseKey = key; if (st.phase === "question") myChoice = null; }
+  let body = "";
+  if (st.phase === "closed") body = `<div class="pcard center"><p class="big2">The game has ended.</p><p class="muted">Thanks for playing!</p><a class="btn y" href="../">Back to my lessons</a></div>`;
+  else if (st.phase === "lobby") body = `<div class="pcard center"><p class="big2">You’re in!</p><p class="lead2">Look at the board. The game starts soon.</p><p class="muted">${of} joined</p></div>`;
+  else if (st.phase === "question") {
+    const answered = myChoice != null || (st.answered || []).includes(me.id);
+    if (answered) body = `<div class="pcard center"><p class="big2">Answer sent!</p><p class="lead2">Wait for the others…</p>${myChoice != null ? `<div class="opt o${myChoice} mini">${UI.shape(myChoice)}<span>${esc(st.q.opts[myChoice])}</span></div>` : ""}</div>`;
+    else body = `<div class="pq"><div class="row between"><span class="eb">Question ${st.qi + 1}/${st.total}</span><span class="tbig" id="pt">${Math.ceil(st.left)}</span></div>
+      <p class="pqtext">${esc(st.q.text)}</p>
+      <div class="popts">${st.q.opts.map((t, i) => `<button class="opt o${i}" data-c="${i}">${UI.shape(i)}<span>${esc(t)}</span></button>`).join("")}</div></div>`;
+    if (!answered) timer = setInterval(() => { const l = Math.max(0, st.left - (Date.now() - gotAt) / 1000); const el = $("#pt"); if (el) el.textContent = Math.ceil(l); }, 250);
+  } else if (st.phase === "reveal" || st.phase === "board") {
+    const g = st.gained ? st.gained[me.id] : undefined;
+    const ok = g > 0, none = g === undefined;
+    body = `<div class="pcard center result ${none ? "" : ok ? "good" : "bad"}">
+      <p class="big2">${none ? "Time’s up!" : ok ? "Correct!" : "Not this time"}</p>
+      ${ok ? `<p class="plus">+${g}</p>` : ""}
+      <p class="lead2">The answer: <b>${esc(st.q.opts[st.correct])}</b></p>
+      <p class="muted">Score <b>${score}</b> · place <b>${pos}</b> of ${of}</p></div>`;
+    if (ok && st.phase === "reveal" && !render.boomed) { render.boomed = key; setTimeout(() => UI.confetti(innerWidth / 2, innerHeight / 3, 120), 50); }
+  } else if (st.phase === "end") {
+    body = `<div class="pcard center result ${pos === 1 ? "good" : ""}"><p class="eb">Final result</p><p class="big2">${pos === 1 ? "You won!" : `Place ${pos}`}</p><p class="plus">${score}</p><p class="muted">${of} players</p><a class="btn y" href="../">Back to my lessons</a></div>`;
+    if (pos === 1 && render.endBoom !== st.qi) { render.endBoom = st.qi; setTimeout(() => UI.confetti(innerWidth / 2, innerHeight / 3, 200), 50); }
+  }
+  if (render.boomed && render.boomed !== key && st.phase === "question") render.boomed = null;
+  app.innerHTML = head + body;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-c]"); if (!b || !st || st.phase !== "question" || myChoice != null) return;
+  myChoice = +b.dataset.c;
+  client.publish(NET.topic(me.room, "ans"), { id: me.id, qi: st.qi, choice: myChoice });
+  if (navigator.vibrate) try { navigator.vibrate(30); } catch (er) {}
+  render();
+});
+joinForm();
+})();
+</script>
+</body>
+</html>

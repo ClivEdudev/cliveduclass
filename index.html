@@ -99,7 +99,7 @@ a:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
     : `<p class="empty">Your lessons will appear here after class.</p>`;
 
   document.getElementById("app").innerHTML = `
-    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="pts">My points <b>${total}</b></span></div>
+    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><a class="btn" href="play/" style="padding:10px 18px;font-size:16px">Join a class game</a><span class="pts">My points <b>${total}</b></span></div></div>
     <div class="hello"><h1>My English <span>lessons</span></h1>
       <p>Every lesson from class is here to revise: the rules, examples in Uzbek, quizzes and games. New lessons appear after class.</p>
       <p class="uz">Darsdan keyin har bir dars shu yerda ochiladi. Takrorlang va ball yig’ing!</p></div>
