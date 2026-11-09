@@ -20,12 +20,67 @@
 <script>
 (() => {
 "use strict";
-const P = window.PLAN, UI = window.LiveUI, NET = window.LiveNet, $ = s => document.querySelector(s), esc = UI.esc;
+const P = window.PLAN, UI = window.LiveUI, NET = window.LiveNet, $ = s => document.querySelector(s), esc = UI.esc, shuffle = UI.shuffle;
 if (!P.isTeacher()) { location.replace("../teacher/"); return; }
 const app = $("#app");
-const S = { phase: "setup", room: null, client: null, players: {}, order: [], qi: -1, q: null, qStart: 0, answers: {}, limit: 20, set: null, status: "offline", tick: 0, lastGain: {} };
+const REVEAL_MS = 5000, BOARD_MS = 5000;
+const TYPES = [
+  { id: "mix", name: "Mix of everything", desc: "All game types in one game" },
+  { id: "mcq", name: "Quiz", desc: "Four answers, pick the right one" },
+  { id: "tf", name: "Right or wrong?", desc: "Is the sentence correct?" },
+  { id: "build", name: "Word order race", desc: "Tap the words in the right order" },
+  { id: "clue", name: "Mystery clues", desc: "Guess from clues; earlier = more points" }
+];
+const TYPE_LABEL = { mcq: "Quiz", tf: "Right or wrong?", build: "Word order race", clue: "Mystery clues" };
 const sets = window.LIVE_SETS.map(s => ({ ...s }));
-sets.push({ id: "mix", title: "Mixed review", topic: "10 questions from every set", mix: true });
+sets.push({ id: "all", title: "Everything so far", topic: "Big Revision + lessons 1–5", mixOf: sets.map(s => s.id) });
+const S = { phase: "setup", room: null, client: null, players: {}, rounds: [], qi: -1, q: null, qStart: 0, answers: {}, limit: 20, qLimit: 20,
+  set: sets[0], type: "mix", auto: true, status: "offline", tick: 0, timer: 0, autoAt: 0, lastGain: {}, clueShown: 1 };
+
+/* ---------- content loading ---------- */
+const lessonCache = {};
+function loadLesson(path) {
+  if (lessonCache[path]) return Promise.resolve(lessonCache[path]);
+  return new Promise(res => {
+    window.LESSON = undefined;
+    const sc = document.createElement("script");
+    sc.src = "../" + path;
+    sc.onload = () => { lessonCache[path] = window.LESSON || null; res(lessonCache[path]); };
+    sc.onerror = () => res(null);
+    document.head.appendChild(sc);
+  });
+}
+async function buildRounds() {
+  const src = S.set.mixOf ? sets.filter(s => S.set.mixOf.includes(s.id) || s.id === S.set.id) : [S.set];
+  const mcq = [], tf = [], build = [], clue = [];
+  for (const s of src) {
+    (s.qs || []).forEach(q => mcq.push(q));
+    if (!s.path) continue;
+    const L = await loadLesson(s.path);
+    const g = L && L.games || {};
+    (g.auction || []).forEach(a => tf.push(a));
+    (g.build || []).forEach(b => build.push(b));
+    if (g.mystery && g.mystery.items) g.mystery.items.forEach(it => clue.push({ it, sib: g.mystery.items, title: g.mystery.title || "Mystery" }));
+  }
+  const mk = {
+    mcq: q => { const o = shuffle(q.slice(1).map((t, i) => ({ t, ok: i === 0 }))); return { type: "mcq", text: q[0], opts: o.map(x => x.t), correct: o.findIndex(x => x.ok) }; },
+    tf: a => ({ type: "tf", text: a.s, opts: ["Right", "Wrong"], correct: a.ok ? 0 : 1, fix: a.fix || "" }),
+    build: b => { const words = shuffle(b.w); return { type: "build", text: "Put the words in order", words, answer: b.w, end: b.e }; },
+    clue: c => { const others = shuffle(c.sib.filter(x => x.p !== c.it.p)).slice(0, 3).map(x => x.p); const o = shuffle([{ t: c.it.p, ok: true }, ...others.map(t => ({ t, ok: false }))]);
+      return { type: "clue", text: c.title, clues: c.it.c, opts: o.map(x => x.t), correct: o.findIndex(x => x.ok), uz: c.it.uz || "" }; }
+  };
+  const take = (arr, n, f) => shuffle(arr).slice(0, n).map(f);
+  let rounds;
+  if (S.type === "mix") {
+    const A = { mcq: take(mcq, 4, mk.mcq), tf: take(tf, 3, mk.tf), build: take(build, 2, mk.build), clue: take(clue, 2, mk.clue) };
+    rounds = [];
+    for (const t of ["mcq", "tf", "build", "mcq", "clue", "tf", "mcq", "build", "tf", "mcq", "clue"]) if (A[t].length) rounds.push(A[t].shift());
+  } else {
+    const pool = { mcq: [mcq, 10], tf: [tf, 10], build: [build, 8], clue: [clue, 6] }[S.type];
+    rounds = take(pool[0], pool[1], mk[S.type]);
+  }
+  return rounds;
+}
 
 /* ---------- setup ---------- */
 function setup() {
@@ -33,157 +88,204 @@ function setup() {
   app.innerHTML = `<header class="hbar"><a class="brand" href="../teacher/"><i></i>ClivEdu Live</a><span class="muted">Host a class game</span></header>
     <section class="wrapc">
       <h1 class="big">Start a live game</h1>
-      <p class="lead">Choose the questions. Teams join from one phone each, or students join on their own phones.</p>
-      <div class="setgrid">${sets.map((s, i) => `<button class="setcard ${i === 0 ? "sel" : ""}" data-set="${s.id}"><span class="eb">${esc(s.topic)}</span><b>${esc(s.title)}</b><span class="muted">${s.mix ? "10 random" : s.qs.length + " questions"}</span></button>`).join("")}</div>
-      <div class="row gap">
-        <span class="muted strong">Time per question:</span>
-        ${[10, 20, 30].map(t => `<button class="pill ${t === S.limit ? "sel" : ""}" data-time="${t}">${t} s</button>`).join("")}
-      </div>
+      <p class="lead">Teams join from one phone each, or students join on their own phones.</p>
+      <h2 class="h3">1 · Which lessons?</h2>
+      <div class="setgrid">${sets.map(s => `<button class="setcard ${s === S.set ? "sel" : ""}" data-set="${s.id}"><span class="eb">${esc(s.topic)}</span><b>${esc(s.title)}</b></button>`).join("")}</div>
+      <h2 class="h3">2 · Which game?</h2>
+      <div class="setgrid">${TYPES.map(t => `<button class="setcard ${t.id === S.type ? "sel" : ""}" data-type="${t.id}"><b>${esc(t.name)}</b><span class="muted">${esc(t.desc)}</span></button>`).join("")}</div>
+      <h2 class="h3">3 · Settings</h2>
+      <div class="row gap"><span class="muted strong">Time per question:</span>${[10, 20, 30].map(t => `<button class="pill ${t === S.limit ? "sel" : ""}" data-time="${t}">${t} s</button>`).join("")}</div>
+      <div class="row gap"><span class="muted strong">Move on by itself:</span><button class="pill ${S.auto ? "sel" : ""}" data-auto="1">On</button><button class="pill ${S.auto ? "" : "sel"}" data-auto="0">Off</button>
+        <span class="muted">Answer → scores → next question, ${REVEAL_MS / 1000} seconds each. You can pause any time.</span></div>
       <div class="row gap"><button class="btn y xl" data-create>Create game →</button><span class="muted" id="setupMsg"></span></div>
     </section>`;
-  S.set = sets[0];
-}
-function pickQuestions() {
-  let pool;
-  if (S.set.mix) pool = UI.shuffle(sets.filter(s => !s.mix).flatMap(s => s.qs)).slice(0, 10);
-  else pool = UI.shuffle(S.set.qs);
-  return pool.map(q => { const opts = q.slice(1).map((t, i) => ({ t, ok: i === 0 })); const sh = UI.shuffle(opts); return { text: q[0], opts: sh.map(o => o.t), correct: sh.findIndex(o => o.ok) }; });
 }
 async function create() {
-  $("#setupMsg").textContent = "Connecting to the live server…";
-  $("[data-create]").disabled = true;
+  const msg = $("#setupMsg"); $("[data-create]").disabled = true;
+  msg.textContent = "Preparing questions…";
+  S.rounds = await buildRounds();
+  if (!S.rounds.length) { msg.textContent = "This lesson has no questions for that game. Choose another game."; $("[data-create]").disabled = false; return; }
+  msg.textContent = "Connecting to the live server…";
   try {
     const { client, index } = await NET.hostConnect(onMessage, st => { S.status = st; UI.status(st); });
     S.client = client; S.room = NET.makeRoom(index);
-    client.subscribe(NET.topic(S.room, "join"));
-    client.subscribe(NET.topic(S.room, "ans"));
-    S.order = pickQuestions(); S.qi = -1; S.players = {};
+    client.subscribe(NET.topic(S.room, "join")); client.subscribe(NET.topic(S.room, "ans"));
+    S.qi = -1; S.players = {};
     lobby();
-  } catch (e) {
-    $("#setupMsg").textContent = "Could not reach a live server. Check the internet connection and try again.";
-    $("[data-create]").disabled = false;
-  }
+  } catch (e) { msg.textContent = "Could not reach a live server. Check the internet connection and try again."; $("[data-create]").disabled = false; }
 }
 
-/* ---------- state sent to phones ---------- */
+/* ---------- state for phones (small messages) ---------- */
 function publish() {
   if (!S.client) return;
-  const players = Object.values(S.players).map(p => ({ id: p.id, name: p.name, type: p.type, score: p.score }));
-  const st = { v: 1, phase: S.phase, set: S.set.title, qi: S.qi, total: S.order.length, limit: S.limit, players };
-  if (S.phase === "question") { st.q = { text: S.q.text, opts: S.q.opts }; st.left = Math.max(0, S.limit - (Date.now() - S.qStart) / 1000); st.answered = Object.keys(S.answers); }
-  if (S.phase === "reveal" || S.phase === "board") { st.q = { text: S.q.text, opts: S.q.opts }; st.correct = S.q.correct; st.gained = S.lastGain; st.chosen = Object.fromEntries(Object.entries(S.answers).map(([k, v]) => [k, v.choice])); }
+  const st = { v: 2, phase: S.phase, qi: S.qi, total: S.rounds.length };
+  if (S.phase === "lobby" || S.phase === "board" || S.phase === "end" || S.phase === "reveal") st.players = Object.values(S.players).map(p => [p.id, p.score]);
+  if (S.phase === "lobby") st.n = Object.keys(S.players).length;
+  if (S.phase === "question" || S.phase === "reveal") {
+    const q = S.q;
+    st.q = { type: q.type, text: q.text };
+    if (q.opts) st.q.opts = q.opts;
+    if (q.type === "build") { st.q.words = q.words; st.q.end = q.end; }
+    if (q.type === "clue") st.q.clue = q.clues[Math.min(S.clueShown, q.clues.length) - 1];
+  }
+  if (S.phase === "question") { st.left = Math.max(0, S.qLimit - (Date.now() - S.qStart) / 1000); st.answered = Object.keys(S.answers); }
+  if (S.phase === "reveal") { st.correct = S.q.correct; st.answerText = answerText(S.q); st.gained = S.lastGain; }
   S.client.publish(NET.topic(S.room, "state"), st, true);
 }
+function answerText(q) { return q.type === "build" ? q.answer.join(" ") + q.end : q.type === "tf" ? (q.correct === 0 ? "Right" : "Wrong — " + q.fix) : q.opts[q.correct]; }
 function onMessage(topic, payload) {
   let m; try { m = JSON.parse(payload); } catch (e) { return; }
   if (topic.endsWith("/join") && m.id && m.name) {
     const name = String(m.name).slice(0, 18), type = m.type === "team" ? "team" : "solo";
-    if (!S.players[m.id]) { S.players[m.id] = { id: m.id, name, type, score: 0 }; UI.ding(); }
-    else { S.players[m.id].name = name; S.players[m.id].type = type; }
-    render(); publish();
+    const isNew = !S.players[m.id];
+    if (isNew) { S.players[m.id] = { id: m.id, name, type, score: 0 }; UI.ding(); } else { S.players[m.id].name = name; S.players[m.id].type = type; }
+    if (S.phase === "lobby") renderLobbyList(); else if (isNew) render();
+    publish();
   } else if (topic.endsWith("/ans") && m.id && S.phase === "question" && m.qi === S.qi && S.players[m.id] && !S.answers[m.id]) {
-    S.answers[m.id] = { choice: +m.choice, t: (Date.now() - S.qStart) / 1000 };
-    render(); publish();
+    S.answers[m.id] = { choice: m.choice != null ? +m.choice : null, order: Array.isArray(m.order) ? m.order : null, t: (Date.now() - S.qStart) / 1000 };
+    const c = $("#ansCount"); if (c) c.textContent = `Answers: ${Object.keys(S.answers).length} / ${Object.keys(S.players).length}`;
+    publish();
     if (Object.keys(S.answers).length >= Object.keys(S.players).length) reveal();
   }
 }
 
 /* ---------- game flow ---------- */
 function lobby() { S.phase = "lobby"; render(); publish(); }
+function clearTimers() { clearInterval(S.tick); clearTimeout(S.timer); S.autoAt = 0; }
 function nextQuestion() {
+  clearTimers();
   S.qi++;
-  if (S.qi >= S.order.length) return finish();
-  S.q = S.order[S.qi]; S.answers = {}; S.lastGain = {}; S.phase = "question"; S.qStart = Date.now();
+  if (S.qi >= S.rounds.length) return finish();
+  S.q = S.rounds[S.qi]; S.answers = {}; S.lastGain = {}; S.phase = "question"; S.clueShown = 1;
+  S.qLimit = S.q.type === "build" ? S.limit + 10 : S.q.type === "clue" ? Math.max(30, S.limit * 1.5) : S.limit;
+  S.qStart = Date.now();
   render(); publish();
-  clearInterval(S.tick);
   S.tick = setInterval(() => {
-    const left = S.limit - (Date.now() - S.qStart) / 1000;
-    const el = $("#tleft"); if (el) el.textContent = Math.max(0, Math.ceil(left));
-    const ring = $("#ring"); if (ring) ring.style.setProperty("--p", Math.max(0, left / S.limit));
+    const el = (Date.now() - S.qStart) / 1000, left = S.qLimit - el;
+    const t = $("#tleft"); if (t) t.textContent = Math.max(0, Math.ceil(left));
+    const ring = $("#ring"); if (ring) ring.style.setProperty("--p", Math.max(0, left / S.qLimit).toFixed(3));
+    if (S.q.type === "clue") { const want = Math.min(S.q.clues.length, 1 + Math.floor(el / (S.qLimit / S.q.clues.length))); if (want !== S.clueShown) { S.clueShown = want; render(); publish(); } }
     if (left <= 0) reveal();
   }, 250);
 }
+function isCorrect(q, a) {
+  if (q.type === "build") return Array.isArray(a.order) && a.order.length === q.answer.length && a.order.every((k, i) => q.words[k] === q.answer[i]);
+  return a.choice === q.correct;
+}
 function reveal() {
   if (S.phase !== "question") return;
-  clearInterval(S.tick);
-  S.phase = "reveal";
-  S.lastGain = {};
+  clearTimers();
+  S.phase = "reveal"; S.lastGain = {};
   for (const [id, a] of Object.entries(S.answers)) {
-    if (a.choice === S.q.correct) { const pts = Math.round(1000 * (1 - Math.min(a.t, S.limit) / S.limit / 2)); S.lastGain[id] = pts; S.players[id].score += pts; }
+    if (!S.players[id]) continue;
+    if (isCorrect(S.q, a)) { const pts = Math.round(1000 * (1 - Math.min(a.t, S.qLimit) / S.qLimit / 2)); S.lastGain[id] = pts; S.players[id].score += pts; }
     else S.lastGain[id] = 0;
   }
   render(); publish();
+  if (S.auto) schedule(board, REVEAL_MS);
 }
-function board() { S.phase = "board"; render(); publish(); }
-function finish() { clearInterval(S.tick); S.phase = "end"; render(); publish(); setTimeout(() => UI.confetti(innerWidth / 2, innerHeight / 3, 220), 300); }
-function closeRoom() {
+function board() { clearTimers(); S.phase = "board"; render(); publish(); if (S.auto) schedule(nextQuestion, BOARD_MS); }
+function finish() { clearTimers(); S.phase = "end"; render(); publish(); setTimeout(() => UI.confetti(innerWidth / 2, innerHeight / 3, 220), 300); }
+function schedule(fn, ms) {
+  clearTimeout(S.timer); S.autoAt = Date.now() + ms; S.timer = setTimeout(fn, ms);
   clearInterval(S.tick);
-  if (S.client) { S.client.publish(NET.topic(S.room, "state"), { v: 1, phase: "closed" }, true); setTimeout(() => { S.client.publish(NET.topic(S.room, "state"), "", true); S.client.close(); S.client = null; }, 400); }
+  S.tick = setInterval(() => { const b = $("#autobar"); if (b) b.style.width = Math.max(0, (S.autoAt - Date.now()) / ms * 100) + "%"; }, 100);
+}
+function togglePause() {
+  S.auto = !S.auto;
+  if (!S.auto) { clearTimeout(S.timer); clearInterval(S.tick); S.autoAt = 0; }
+  else if (S.phase === "reveal") schedule(board, REVEAL_MS);
+  else if (S.phase === "board") schedule(nextQuestion, BOARD_MS);
+  render();
+}
+function closeRoom() {
+  clearTimers();
+  if (S.client) { const c = S.client; c.publish(NET.topic(S.room, "state"), { v: 2, phase: "closed" }, true); setTimeout(() => { c.publish(NET.topic(S.room, "state"), "", true); c.close(); }, 500); S.client = null; }
   setup();
 }
 const ranked = () => Object.values(S.players).sort((a, b) => b.score - a.score);
 
 /* ---------- screens ---------- */
+function topBar() {
+  return `<header class="hbar"><span class="brand"><i></i>ClivEdu Live</span><span class="muted">${esc(S.set.title)} · ${esc(TYPES.find(t => t.id === S.type).name)}</span>
+    <span class="code-sm">Code <b>${S.room}</b></span><span id="net" class="net ${S.status}">${S.status === "online" ? "Online" : "Reconnecting…"}</span>
+    ${S.phase !== "lobby" && S.phase !== "end" ? `<button class="pill ${S.auto ? "" : "sel"}" data-pause>${S.auto ? "Pause" : "Resume auto"}</button>` : ""}
+    <button class="pill" data-close>End game</button></header>`;
+}
+function renderLobbyList() {
+  const el = $("#roster"); if (!el) return render();
+  const n = Object.keys(S.players).length;
+  $("#joined").textContent = `${n} joined`;
+  $("[data-start]").disabled = !n;
+  el.innerHTML = Object.values(S.players).map(p => `<span class="chip ${p.type}">${p.type === "team" ? "Team" : "Solo"} · ${esc(p.name)}<button class="x" data-kick="${p.id}" aria-label="Remove ${esc(p.name)}">×</button></span>`).join("") || `<p class="muted">Waiting for players…</p>`;
+}
+function optTiles(q, rev) {
+  if (q.type === "tf") return `<div class="opts two">${q.opts.map((t, i) => `<div class="opt ${i ? "o0" : "o3"} ${rev ? (i === q.correct ? "ok" : "dim") : ""}"><span class="tfmark">${i ? "✗" : "✓"}</span><span>${t}</span></div>`).join("")}</div>`;
+  return `<div class="opts">${q.opts.map((t, i) => `<div class="opt o${i} ${rev ? (i === q.correct ? "ok" : "dim") : ""}">${UI.shape(i)}<span>${esc(t)}</span>${rev && i === q.correct ? '<span class="tick">✓</span>' : ""}</div>`).join("")}</div>`;
+}
 function render() {
   if (S.phase === "setup") return;
-  const top = `<header class="hbar"><span class="brand"><i></i>ClivEdu Live</span><span class="muted">${esc(S.set.title)}</span>
-    <span class="code-sm">Code <b>${S.room}</b></span><span id="net" class="net ${S.status}">${S.status === "online" ? "Online" : "Reconnecting…"}</span>
-    <button class="pill" data-close>End game</button></header>`;
   const n = Object.keys(S.players).length;
   let body = "";
   if (S.phase === "lobby") {
     body = `<section class="lobby">
       <div class="joinbox"><p class="muted strong">Go to</p><p class="url">cliveduclass.netlify.app/play</p><p class="muted strong">and enter the code</p><p class="bigcode">${S.room}</p>
-        <p class="muted">One phone per team, or join on your own.</p></div>
-      <div class="roster"><div class="row between"><h2>${n} joined</h2><button class="btn y xl" data-start ${n ? "" : "disabled"}>Start →</button></div>
-        <div class="chips">${Object.values(S.players).map(p => `<span class="chip ${p.type}">${p.type === "team" ? "Team" : "Solo"} · ${esc(p.name)}<button class="x" data-kick="${p.id}" aria-label="Remove ${esc(p.name)}">×</button></span>`).join("") || `<p class="muted">Waiting for players…</p>`}</div></div>
-    </section>`;
+        <p class="muted">One phone per team, or join on your own. ${S.rounds.length} rounds.</p></div>
+      <div class="roster"><div class="row between"><h2 id="joined">${n} joined</h2><button class="btn y xl" data-start ${n ? "" : "disabled"}>Start →</button></div>
+        <div class="chips" id="roster"></div></div></section>`;
   } else if (S.phase === "question" || S.phase === "reveal") {
-    const rev = S.phase === "reveal";
-    const counts = [0, 0, 0, 0]; Object.values(S.answers).forEach(a => counts[a.choice]++);
-    const max = Math.max(1, ...counts);
-    const leftNow = Math.max(0, S.limit - (Date.now() - S.qStart) / 1000);
+    const q = S.q, rev = S.phase === "reveal";
+    const left = Math.max(0, S.qLimit - (Date.now() - S.qStart) / 1000);
+    let main = "";
+    if (q.type === "build") main = `<h1 class="qtext small">${esc(q.text)}</h1><div class="wordrow">${(rev ? q.answer : q.words).map(w => `<span class="wtile ${rev ? "ok" : ""}">${esc(w)}</span>`).join("")}<span class="wtile end">${q.end}</span></div>`;
+    else if (q.type === "clue") main = `<div class="clues">${q.clues.slice(0, rev ? q.clues.length : S.clueShown).map((c, k) => `<p class="clue"><small>Clue ${k + 1}</small>${esc(c)}</p>`).join("")}</div>${optTiles(q, rev)}`;
+    else if (q.type === "tf") main = `<h1 class="qtext">${esc(q.text)}</h1>${optTiles(q, rev)}${rev && q.fix ? `<p class="fixline">Correct: <b>${esc(q.fix)}</b></p>` : ""}`;
+    else main = `<h1 class="qtext">${esc(q.text)}</h1>${optTiles(q, rev)}`;
+    const nRight = Object.values(S.lastGain).filter(x => x > 0).length;
     body = `<section class="qscreen">
-      <div class="row between"><span class="eb">Question ${S.qi + 1} of ${S.order.length}</span>
-        ${rev ? "" : `<span class="ring" id="ring" style="--p:${(leftNow / S.limit).toFixed(3)}"><b id="tleft">${Math.ceil(leftNow)}</b></span>`}</div>
-      <h1 class="qtext">${esc(S.q.text)}</h1>
-      ${rev ? `<div class="bars">${counts.map((c, i) => `<div class="barc"><span class="bar o${i} ${i === S.q.correct ? "ok" : ""}" style="height:${18 + (c / max) * 82}%"><b>${c}</b></span>${UI.shape(i)}</div>`).join("")}</div>` : ""}
-      <div class="opts">${S.q.opts.map((t, i) => `<div class="opt o${i} ${rev ? (i === S.q.correct ? "ok" : "dim") : ""}">${UI.shape(i)}<span>${esc(t)}</span>${rev && i === S.q.correct ? '<span class="tick">✓</span>' : ""}</div>`).join("")}</div>
+      <div class="row between"><span class="eb">${TYPE_LABEL[q.type]} · ${S.qi + 1} of ${S.rounds.length}</span>
+        ${rev ? `<span class="verdict-sm">${nRight} of ${n} correct</span>` : `<span class="ring" id="ring" style="--p:${(left / S.qLimit).toFixed(3)}"><b id="tleft">${Math.ceil(left)}</b></span>`}</div>
+      ${main}
+      ${rev && q.type === "build" ? `<p class="fixline">${nRight} of ${n} got the order right.</p>` : ""}
       <div class="row between">
-        <span class="muted strong">${rev ? `${Object.values(S.lastGain).filter(x => x > 0).length} of ${n} correct` : `Answers: ${Object.keys(S.answers).length} / ${n}`}</span>
-        ${rev ? `<button class="btn y xl" data-board>Scores →</button>` : `<button class="btn" data-reveal>Show answer now</button>`}
+        ${rev ? `<div class="autowrap">${S.auto ? `<span class="muted">Scores next</span><span class="autotrack"><i id="autobar"></i></span>` : ""}</div><button class="btn y xl" data-board>Scores →</button>`
+              : `<span class="muted strong" id="ansCount">Answers: ${Object.keys(S.answers).length} / ${n}</span><button class="btn" data-reveal>Show answer now</button>`}
       </div></section>`;
   } else if (S.phase === "board") {
-    const r = ranked();
-    body = `<section class="wrapc"><h1 class="big">Scores</h1>
+    const r = ranked(), last = S.qi + 1 >= S.rounds.length;
+    body = `<section class="wrapc"><div class="row between"><h1 class="big">Scores</h1><span class="eb">${S.qi + 1} of ${S.rounds.length} done</span></div>
       <div class="lboard">${r.slice(0, 6).map((p, k) => `<div class="lrow ${k === 0 ? "first" : ""}"><span class="pos">${k + 1}</span><span class="nm">${esc(p.name)} <small>${p.type === "team" ? "Team" : "Solo"}</small></span>${S.lastGain[p.id] ? `<span class="gain">+${S.lastGain[p.id]}</span>` : ""}<b>${p.score}</b></div>`).join("")}</div>
-      <div class="row end"><button class="btn y xl" data-next>${S.qi + 1 >= S.order.length ? "Final results →" : "Next question →"}</button></div></section>`;
+      <div class="row between"><div class="autowrap">${S.auto ? `<span class="muted">${last ? "Final results" : "Next question"} in a moment</span><span class="autotrack"><i id="autobar"></i></span>` : ""}</div>
+        <button class="btn y xl" data-next>${last ? "Final results →" : "Next question →"}</button></div></section>`;
   } else if (S.phase === "end") {
-    const r = ranked();
-    const pod = [r[1], r[0], r[2]];
+    const r = ranked(), pod = [r[1], r[0], r[2]];
     body = `<section class="wrapc"><h1 class="big center">Winners!</h1>
       <div class="podium">${pod.map((p, k) => p ? `<div class="pod p${[2, 1, 3][k]}"><span class="pname">${esc(p.name)}</span><span class="pscore">${p.score}</span><div class="block">${[2, 1, 3][k]}</div></div>` : `<div class="pod empty"></div>`).join("")}</div>
       <div class="lboard compact">${r.slice(3).map((p, k) => `<div class="lrow"><span class="pos">${k + 4}</span><span class="nm">${esc(p.name)}</span><b>${p.score}</b></div>`).join("")}</div>
       <div class="row center gap"><button class="btn y xl" data-again>Play again</button><button class="btn" data-close>Close game</button></div></section>`;
   }
-  app.innerHTML = top + body;
+  app.innerHTML = topBar() + body;
+  if (S.phase === "lobby") renderLobbyList();
 }
 
-document.addEventListener("click", e => {
+document.addEventListener("click", async e => {
   const t = e.target.closest("button"); if (!t) return;
   const d = t.dataset;
-  if (d.set) { S.set = sets.find(s => s.id === d.set); document.querySelectorAll(".setcard").forEach(b => b.classList.toggle("sel", b === t)); }
-  else if (d.time) { S.limit = +d.time; document.querySelectorAll("[data-time]").forEach(b => b.classList.toggle("sel", b === t)); }
+  if (d.set) { S.set = sets.find(s => s.id === d.set); setup(); }
+  else if (d.type) { S.type = d.type; setup(); }
+  else if (d.time) { S.limit = +d.time; setup(); }
+  else if (d.auto) { S.auto = d.auto === "1"; setup(); }
   else if (d.create != null) create();
   else if (d.start != null) nextQuestion();
   else if (d.reveal != null) reveal();
   else if (d.board != null) board();
   else if (d.next != null) nextQuestion();
-  else if (d.kick) { delete S.players[d.kick]; render(); publish(); }
-  else if (d.again != null) { Object.values(S.players).forEach(p => p.score = 0); S.order = pickQuestions(); S.qi = -1; lobby(); }
+  else if (d.pause != null) togglePause();
+  else if (d.kick) { delete S.players[d.kick]; renderLobbyList(); publish(); }
+  else if (d.again != null) { Object.values(S.players).forEach(p => p.score = 0); S.rounds = await buildRounds(); S.qi = -1; lobby(); }
   else if (d.close != null) closeRoom();
 });
-addEventListener("beforeunload", () => { if (S.client && S.room) S.client.publish(NET.topic(S.room, "state"), { v: 1, phase: "closed" }, true); });
+addEventListener("beforeunload", () => { if (S.client && S.room) S.client.publish(NET.topic(S.room, "state"), { v: 2, phase: "closed" }, true); });
 setup();
 })();
 </script>

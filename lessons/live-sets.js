@@ -1,7 +1,7 @@
 /* Question sets for the live class game. The first option is always the correct one;
    the host shuffles the options before showing them. */
 window.LIVE_SETS = [
-  { id: "rev", title: "Big Revision", topic: "to be · questions · commands · may · have to", qs: [
+  { id: "rev", path: "revision/lesson.js", title: "Big Revision", topic: "to be · questions · commands · may · have to", qs: [
     ["She ___ a doctor.", "is", "am", "are", "be"],
     ["___ you like tea?", "Do", "Does", "Are", "Is"],
     ["He ___ like fish.", "doesn’t", "don’t", "isn’t", "not"],
@@ -13,7 +13,7 @@ window.LIVE_SETS = [
     ["She ___ to work today.", "has", "have", "is", "does"],
     ["Which sentence is correct?", "Does he play football?", "Does he plays football?", "Do he play football?", "He does plays football?"]
   ] },
-  { id: "l1", lesson: 1, title: "Can and can’t", topic: "Lesson 1", qs: [
+  { id: "l1", lesson: 1, path: "lessons/01/lesson.js", title: "Can and can’t", topic: "Lesson 1", qs: [
     ["I ___ swim.", "can", "cans", "can to", "am can"],
     ["Make it negative: She can drive.", "She can’t drive.", "She don’t can drive.", "She cans not drive.", "She not can drive."],
     ["Can you cook? (yes)", "Yes, I can.", "Yes, I do.", "Yes, I am.", "Yes, I cook."],
@@ -25,7 +25,7 @@ window.LIVE_SETS = [
     ["“U ovqat pishira olmaydi.”", "He can’t cook.", "He can cook.", "He don’t cook.", "He not cook."],
     ["A baby ___ walk.", "can’t", "can", "cans", "doesn’t can"]
   ] },
-  { id: "l2", lesson: 2, title: "There is and there are", topic: "Lesson 2", qs: [
+  { id: "l2", lesson: 2, path: "lessons/02/lesson.js", title: "There is and there are", topic: "Lesson 2", qs: [
     ["There ___ a cat on the bed.", "is", "are", "be", "am"],
     ["There ___ three apples.", "are", "is", "am", "be"],
     ["___ there a bank near here?", "Is", "Are", "Do", "Does"],
@@ -37,7 +37,7 @@ window.LIVE_SETS = [
     ["There ___ two windows in my room.", "are", "is", "has", "be"],
     ["Short form of “There is”:", "There’s", "Theres’", "There’is", "Th’is"]
   ] },
-  { id: "l3", lesson: 3, title: "This, that, these, those", topic: "Lesson 3", qs: [
+  { id: "l3", lesson: 3, path: "lessons/03/lesson.js", title: "This, that, these, those", topic: "Lesson 3", qs: [
     ["___ is my pen. (in my hand)", "This", "These", "Those", "Them"],
     ["___ are stars. (in the sky)", "Those", "This", "That", "It"],
     ["one box → two ___", "boxes", "boxs", "boxies", "box"],
@@ -49,7 +49,7 @@ window.LIVE_SETS = [
     ["one man → two ___", "men", "mans", "mens", "man"],
     ["What are ___? (far away)", "those", "that", "this", "it"]
   ] },
-  { id: "l4", lesson: 4, title: "My, your, his, her and ’s", topic: "Lesson 4", qs: [
+  { id: "l4", lesson: 4, path: "lessons/04/lesson.js", title: "My, your, his, her and ’s", topic: "Lesson 4", qs: [
     ["I have a cat. ___ cat is white.", "My", "Me", "I", "Mine"],
     ["Lola has a bag. ___ bag is red.", "Her", "His", "She", "Its"],
     ["Ali has a car. ___ car is new.", "His", "Her", "He", "Its"],
@@ -61,7 +61,7 @@ window.LIVE_SETS = [
     ["“Mening ismim Ali.”", "My name is Ali.", "Me name is Ali.", "I name is Ali.", "Mine name is Ali."],
     ["Whose pen is this? (Lola)", "It’s Lola’s.", "It’s Lola.", "It’s to Lola.", "It’s Lolas."]
   ] },
-  { id: "l5", lesson: 5, title: "Present continuous", topic: "Lesson 5", qs: [
+  { id: "l5", lesson: 5, path: "lessons/05/lesson.js", title: "Present continuous", topic: "Lesson 5", qs: [
     ["I ___ reading now.", "am", "is", "are", "be"],
     ["They ___ playing football.", "are", "is", "am", "be"],
     ["swim + ing →", "swimming", "swiming", "swimeing", "swimmming"],
@@ -72,5 +72,6 @@ window.LIVE_SETS = [
     ["Look! It ___ raining.", "is", "are", "does", "am"],
     ["Are you listening? (yes)", "Yes, I am.", "Yes, I do.", "Yes, I listening.", "Yes, I is."],
     ["Which sentence is correct?", "She is dancing now.", "She dancing now.", "She is dance now.", "She are dancing now."]
-  ] }
+  ] },
+  { id: "l6", lesson: 6, path: "lessons/06/lesson.js", title: "Week 1 review", topic: "Lesson 6 · lessons 1–5 mixed", mixOf: ["l1", "l2", "l3", "l4", "l5"], qs: [] }
 ];
