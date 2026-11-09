@@ -270,3 +270,7 @@ body.flow .ans{font-size:38px;min-height:84px}
 body.flow .ans.on{font-size:46px}
 body.flow .sub{font-size:36px}
 body.flow .lname{display:none}
+.viewbtn{border:2px solid var(--ink2);white-space:nowrap}
+body.flow .lname{display:none}
+.nbtn{white-space:nowrap}
+@media (max-width:1100px){.hint{display:none}}

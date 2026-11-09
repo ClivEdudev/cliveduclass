@@ -108,6 +108,7 @@ document.body.innerHTML = `
 <div class="bar">
   <a class="brand" href="${HOME}"><i aria-hidden="true"></i>${STUDENT ? "My lessons" : "ClivEdu Class"}</a>
   <span class="lname">${lname}</span>
+  <button class="lnk viewbtn" id="viewBtn" data-viewtoggle></button>
   ${STUDENT ? `<div class="teams"><span class="mine">My points <b id="mypts">0</b></span></div>` : `<div class="teams" id="teams" aria-label="Team scores"></div>`}
 </div>
 <div class="viewport" id="viewport">
@@ -200,12 +201,14 @@ const burst = (el, n) => { if (!el) return; const r = el.getBoundingClientRect()
 const stage = $("#stage"), vp = $("#viewport");
 const slides = $$("section.s", stage);
 let cur = 0, flow = false;
-const wantFlow = () => innerWidth < 900;
+let viewPref = store.get("clv-view", "auto");
+const wantFlow = () => viewPref === "scroll" || (viewPref === "auto" && STUDENT && innerWidth < 900 && innerHeight > innerWidth);
 function fit() {
   const f = wantFlow();
   if (f !== flow) { flow = f; document.body.classList.toggle("flow", flow); if (flow) { slides.forEach(s => s.classList.add("active")); rerenderGames(); } else { slides.forEach((s, k) => s.classList.toggle("active", k === cur)); } }
   if (flow) { stage.style.transform = "none"; document.body.style.setProperty("--z", ((Math.min(innerWidth, 900) - 32) / 860).toFixed(4)); }
   else { const s = Math.min(vp.clientWidth / 1920, vp.clientHeight / 1080); stage.style.transform = `translate(-50%,-50%) scale(${s})`; }
+  const vb = $("#viewBtn"); if (vb) vb.textContent = flow ? "Slide view" : "Scroll view";
   sizeCv();
 }
 addEventListener("resize", fit);
@@ -397,6 +400,7 @@ document.addEventListener("click", e => {
   if (d.menuClose != null) { $("#menu").hidden = true; return; }
   if (d.goto != null) { $("#menu").hidden = true; go(+d.goto); return; }
   if (d.full != null) { toggleFull(); return; }
+  if (d.viewtoggle != null) { viewPref = flow ? "slides" : "scroll"; store.set("clv-view", viewPref); fit(); if (!flow) go(cur, true); return; }
   if (d.jump) { const i = slides.findIndex(s => s.dataset.id === d.jump); if (i >= 0) go(i); return; }
   if (d.blur) { const el = $("#" + d.blur); const on = el.classList.toggle("blurred"); t.textContent = on ? "Show the lines" : "Hide the lines"; return; }
   if (d.score != null) { addScore(+d.score, +d.d); return; }
