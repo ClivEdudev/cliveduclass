@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ClivEdu Class</title>
+<title>ClivEdu Class · My lessons</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Nunito:wght@400;600;700;800&display=swap">
 <style>
-/* Lesson hub: today's lesson first, then the course plan week by week. Same look as the lesson slides. */
+/* Student home: total points, the newest lesson, then every lesson already taught as a revision card. */
 :root{
   --ink:#12263A; --ink2:#1C3650; --night:#0B1828; --cream:#FFF8E7; --paper:#FFFDF6; --line:#EADFC4;
-  --yellow:#FFC93C; --teal:#0B6E70; --mist:#BFD8D5; --slate:#4B5F73; --blue:#1F5FD1; --green:#157347; --mint:#D5F1E3;
+  --yellow:#FFC93C; --teal:#0B6E70; --mist:#BFD8D5; --slate:#4B5F73; --blue:#1F5FD1; --green:#157347; --mint:#D5F1E3; --peach:#FFE3D3; --sky:#DCE8FB;
   --display:'Rubik',Verdana,sans-serif; --body:'Nunito',Verdana,sans-serif; color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -19,97 +19,93 @@ body{margin:0;background:var(--night);color:var(--cream);font-family:var(--body)
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 60px}
 a{color:inherit}
 h1,h2,h3,p{margin:0}
-.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.wrap{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .brand{font:800 20px var(--display);display:flex;align-items:center;gap:10px}
 .brand i{width:26px;height:26px;border-radius:7px;background:conic-gradient(from 45deg,var(--blue) 0 25%,var(--teal) 0 50%,var(--blue) 0 75%,var(--teal) 0);box-shadow:inset 0 0 0 3px var(--night),inset 0 0 0 5px var(--yellow)}
-.today{background:var(--cream);color:var(--ink);border-radius:28px;padding:clamp(22px,4vw,44px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end;position:relative;overflow:hidden}
-.today .eb{font:800 14px var(--body);letter-spacing:.14em;text-transform:uppercase;color:#C2410C}
-.today h1{font:800 clamp(38px,6.5vw,76px)/1.02 var(--display);margin-top:8px;text-wrap:balance}
-.today .focus{font-size:20px;font-weight:700;color:var(--slate);margin-top:10px}
-.btn{display:inline-flex;align-items:center;gap:10px;padding:16px 28px;border-radius:999px;font:800 20px var(--body);text-decoration:none;background:var(--yellow);color:var(--ink);white-space:nowrap;transition:transform .15s}
+.pts{background:var(--ink);border:2px solid var(--yellow);border-radius:999px;padding:6px 16px;font-weight:800;color:var(--mist)}
+.pts b{font:800 22px var(--display);color:var(--yellow);margin-left:6px;font-variant-numeric:tabular-nums}
+.hello h1{font:800 clamp(36px,7vw,64px)/1.05 var(--display);text-wrap:balance}
+.hello h1 span{color:var(--yellow)}
+.hello p{color:var(--mist);margin-top:8px;font-size:19px}
+.hello .uz{color:#5CCFD2;font-weight:700}
+.feature{background:var(--cream);color:var(--ink);border-radius:28px;padding:clamp(20px,4vw,40px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;position:relative;overflow:hidden}
+.feature .eb{font:800 13px var(--body);letter-spacing:.14em;text-transform:uppercase;color:#C2410C}
+.feature h2{font:800 clamp(32px,6vw,58px)/1.04 var(--display);margin-top:6px;text-wrap:balance}
+.feature .focus{font-size:18px;font-weight:700;color:var(--slate);margin-top:8px}
+.feature.locked{background:var(--ink);color:var(--cream)}
+.feature.locked .eb{color:var(--yellow)}
+.feature.locked .focus{color:var(--mist)}
+.tiles{position:absolute;right:-40px;top:-40px;width:170px;height:170px;border-radius:30px;transform:rotate(18deg);opacity:.16;
+  background:conic-gradient(from 45deg,var(--blue) 0 25%,var(--teal) 0 50%,var(--blue) 0 75%,var(--teal) 0) 0 0/42px 42px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:15px 26px;border-radius:999px;font:800 19px var(--body);text-decoration:none;background:var(--yellow);color:var(--ink);white-space:nowrap;transition:transform .15s}
 .btn:hover{transform:translateY(-2px)}
-.btn.dk{background:var(--ink);color:var(--cream)}
-.btn.ghost{background:transparent;color:var(--cream);box-shadow:inset 0 0 0 2px var(--mist)}
-.tiles{position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:30px;transform:rotate(18deg);opacity:.16;
-  background:conic-gradient(from 45deg,var(--blue) 0 25%,var(--teal) 0 50%,var(--blue) 0 75%,var(--teal) 0) 0 0/45px 45px}
-.quick{display:flex;gap:12px;flex-wrap:wrap}
-.sec h2{font:800 30px var(--display);margin-bottom:6px}
-.sec > p{color:var(--mist)}
-.week{background:var(--ink);border-radius:22px;padding:18px 20px;margin-top:14px}
-.week h3{font:800 20px var(--display);color:var(--yellow);margin-bottom:8px}
-.les{display:grid;grid-template-columns:44px 120px minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 8px;border-top:1px solid var(--ink2)}
-.les:first-of-type{border-top:0}
-.les .n{font:800 22px var(--display);color:var(--mist);font-variant-numeric:tabular-nums}
-.les .d{font-weight:700;color:var(--mist);font-size:15px}
-.les .t{font:700 20px/1.2 var(--display);min-width:0}
-.les .f{display:block;font:600 15px var(--body);color:var(--mist);margin-top:2px}
-.les.now{background:var(--ink2);border-radius:14px;outline:2px solid var(--yellow)}
-.chip{font:800 13px var(--body);padding:6px 14px;border-radius:999px;white-space:nowrap;text-decoration:none}
-.chip.go{background:var(--yellow);color:var(--ink)}
-.chip.soon{background:var(--ink2);color:var(--mist)}
-.chip.past{background:var(--mint);color:var(--ink)}
-.done{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.done span,.done a{font-weight:700;font-size:15px;padding:6px 14px;border-radius:999px;background:var(--ink);color:var(--mist);text-decoration:none}
-.done a{background:var(--teal);color:var(--cream)}
-@media (max-width:640px){
-  .today{grid-template-columns:minmax(0,1fr)}
-  .les{grid-template-columns:34px minmax(0,1fr) auto}
-  .les .d{display:none}
-}
+.lock{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:999px;background:var(--ink2);color:var(--mist);font-weight:800;white-space:nowrap}
+.sec h2{font:800 28px var(--display)}
+.sec > p{color:var(--mist);margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:14px}
+.card{background:var(--ink);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;text-decoration:none;border:2px solid transparent;transition:transform .15s,border-color .15s}
+a.card:hover{transform:translateY(-3px);border-color:var(--yellow)}
+.card .n{font:800 13px var(--body);letter-spacing:.12em;color:var(--yellow);text-transform:uppercase}
+.card h3{font:800 23px/1.15 var(--display)}
+.card .f{color:var(--mist);font-size:15px;font-weight:600}
+.card .foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:6px;font-size:14px;font-weight:800}
+.card .go{color:var(--yellow)}
+.card .my{color:var(--mist)}
+.card.new{background:var(--teal)}
+.card.new .f,.card.new .my{color:var(--cream)}
+.empty{background:var(--ink);border-radius:22px;padding:20px;color:var(--mist)}
+.foot-link{color:var(--mist);font-size:14px;text-align:center}
+.foot-link a{color:var(--mist)}
+a:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+@media (max-width:640px){.feature{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div>
-  <section class="today" id="today" aria-live="polite"></section>
-  <div class="quick">
-    <a class="btn ghost" href="revision/">Open the Big Revision</a>
-    <a class="btn ghost" href="#plan">See the full plan</a>
-  </div>
-  <section class="sec" id="plan">
-    <h2>Course plan</h2>
-    <p>A 30-lesson beginner course, Monday to Saturday. Every lesson has the rule, examples in Uzbek, tap-to-reveal quizzes and team games.</p>
-    <div class="done" aria-label="Already taught"><span style="background:none;padding-left:0;color:var(--cream)">Already taught:</span></div>
-    <div id="weeks"></div>
-  </section>
-</div>
+<div class="wrap" id="app"></div>
 <script src="lessons/plan.js"></script>
 <script>
 (() => {
   const P = window.PLAN;
-  const pad = n => String(n).padStart(2, "0");
-  const key = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  const fmt = d => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-  const all = P.weeks.flatMap(w => w.lessons);
-  const [y, m, dd] = P.start.split("-").map(Number);
-  let d = new Date(y, m - 1, dd);
-  all.forEach(l => {
-    while (!P.teachDays.includes(d.getDay())) d.setDate(d.getDate() + 1);
-    l.date = new Date(d); l.key = key(d); l.href = `lessons/${pad(l.n)}/`;
-    d.setDate(d.getDate() + 1);
-  });
-  const todayKey = key(new Date());
-  const todays = all.find(l => l.key === todayKey);
-  const nextOne = all.find(l => l.key > todayKey);
-  const t = document.getElementById("today");
   const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  let eb, lesson, note = "";
-  if (todays) { eb = `Today · ${fmt(todays.date)} · Lesson ${todays.n}`; lesson = todays; }
-  else if (nextOne) { eb = `No lesson today · next: ${fmt(nextOne.date)} · Lesson ${nextOne.n}`; lesson = nextOne; }
-  else { eb = "Course finished"; lesson = all[all.length - 1]; }
-  if (todayKey < all[0].key) { eb = `First lesson · ${fmt(all[0].date)} · Lesson 1`; lesson = all[0]; }
-  if (!lesson.ready) note = `<p class="focus">This lesson isn’t built yet.</p>`;
-  t.innerHTML = `<span class="tiles" aria-hidden="true"></span><div><p class="eb">${esc(eb)}</p><h1>${esc(lesson.title)}</h1><p class="focus">${esc(lesson.focus)}</p>${note}</div>
-    <div>${lesson.ready ? `<a class="btn" href="${lesson.href}">Start the lesson →</a>` : `<span class="btn dk" aria-disabled="true">Coming soon</span>`}</div>`;
+  const pts = P.points();
+  const total = Object.values(pts).reduce((a, b) => a + (+b || 0), 0);
+  const hh = String(P.unlockHour).padStart(2, "0");
+  const items = [];
+  const rev = P.revision, revDate = P.parse(rev.date);
+  if (P.isOpen(revDate)) items.push({ n: 0, title: rev.title, focus: "sentences · to be · questions · commands · may · must · have to", date: revDate, href: rev.path, key: "rev" });
+  P.all.filter(l => l.ready && P.isOpen(l.date)).forEach(l => items.push({ n: l.n, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: String(l.n) }));
+  items.sort((a, b) => b.date - a.date);
+  const newest = items[0];
+  const upcoming = P.all.find(l => !P.isOpen(l.date));
+  const isToday = it => it && P.key(it.date) === P.key(new Date());
 
-  const doneBox = document.querySelector(".done");
-  P.done.forEach(x => { const el = document.createElement(x.path ? "a" : "span"); el.textContent = x.title; if (x.path) el.href = x.path; doneBox.appendChild(el); });
+  let feature = "";
+  if (newest && isToday(newest)) {
+    feature = `<section class="feature"><span class="tiles" aria-hidden="true"></span><div><p class="eb">New today · ${esc(P.fmt(newest.date))}</p>
+      <h2>${esc(newest.title)}</h2><p class="focus">${esc(newest.focus)}</p></div>
+      <div><a class="btn" href="${newest.href}">Revise today’s lesson →</a></div></section>`;
+  } else if (upcoming) {
+    const at = P.openAt(upcoming.date);
+    feature = `<section class="feature locked"><span class="tiles" aria-hidden="true"></span><div><p class="eb">Next lesson · ${esc(P.fmt(upcoming.date))}</p>
+      <h2>${esc(upcoming.title)}</h2><p class="focus">It opens here after class, at ${hh}:00 on ${esc(P.fmt(at))}.</p></div>
+      <div><span class="lock">🔒 Opens after class</span></div></section>`;
+  }
 
-  document.getElementById("weeks").innerHTML = P.weeks.map(w => `<div class="week"><h3>${esc(w.name)}</h3>${w.lessons.map(l => {
-    const isNow = lesson === l;
-    const status = l.ready ? `<a class="chip ${l.key < todayKey ? "past" : "go"}" href="${l.href}">${l.key < todayKey ? "Open again" : "Open"}</a>` : `<span class="chip soon">Coming soon</span>`;
-    return `<div class="les ${isNow ? "now" : ""}"><span class="n">${l.n}</span><span class="d">${fmt(l.date)}</span><span class="t">${esc(l.title)}<span class="f">${esc(l.focus)}</span></span>${status}</div>`;
-  }).join("")}</div>`).join("");
+  const cards = items.length ? items.map(it => `<a class="card ${isToday(it) ? "new" : ""}" href="${it.href}">
+      <span class="n">${it.n ? "Lesson " + it.n : "Revision"} · ${esc(P.fmt(it.date))}</span>
+      <h3>${esc(it.title)}</h3><span class="f">${esc(it.focus)}</span>
+      <span class="foot"><span class="my">My points: ${pts[it.key] || 0}</span><span class="go">Revise →</span></span></a>`).join("")
+    : `<p class="empty">Your lessons will appear here after class.</p>`;
+
+  document.getElementById("app").innerHTML = `
+    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="pts">My points <b>${total}</b></span></div>
+    <div class="hello"><h1>My English <span>lessons</span></h1>
+      <p>Every lesson from class is here to revise: the rules, examples in Uzbek, quizzes and games. New lessons appear after class.</p>
+      <p class="uz">Darsdan keyin har bir dars shu yerda ochiladi. Takrorlang va ball yig’ing!</p></div>
+    ${feature}
+    <section class="sec"><h2>Lessons to revise</h2><p>${items.length} open · newest first</p><div class="grid">${cards}</div></section>
+    <p class="foot-link"><a href="teacher/">Teacher</a></p>`;
 })();
 </script>
 </body>

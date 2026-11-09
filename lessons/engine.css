@@ -210,3 +210,63 @@ a.brand:hover{color:var(--yellow)}
 .quad .huge{font-size:110px;min-width:330px}
 .quad > div{display:flex;flex-direction:column;gap:8px;min-width:0}
 .plusbtn{font:800 26px/1.2 var(--body);padding:12px 26px;border-radius:999px;background:var(--yellow);color:var(--ink)}
+
+/* ---------- student mode ---------- */
+.mine{font:800 16px var(--body);color:var(--mist);background:var(--ink);border:2px solid var(--yellow);border-radius:999px;padding:5px 16px;white-space:nowrap}
+.mine b{font:800 20px var(--display);color:var(--yellow);margin-left:6px;font-variant-numeric:tabular-nums}
+.selfbtn{font:800 30px/1.2 var(--body);padding:14px 30px;border-radius:999px;background:var(--green);color:var(--cream)}
+.selfbtn[disabled]{opacity:.6}
+.mypts{font:800 180px/1 var(--display);color:var(--yellow);font-variant-numeric:tabular-nums}
+body.student [data-start1000]{display:none}
+body.locked-page{display:grid;place-items:center;min-height:100%;padding-block:24px}
+.lockbox{max-width:560px;background:var(--cream);color:var(--ink);border-radius:28px;padding:36px 32px;display:flex;flex-direction:column;gap:14px}
+.lockbox .eb{font-size:14px}
+.lockbox h1{font:800 clamp(32px,7vw,48px)/1.05 var(--display)}
+.lockbox p{font-size:19px;line-height:1.5}
+.lockbox .uz{font-size:18px}
+.lockbtn{align-self:flex-start;margin-top:8px;background:var(--ink);color:var(--cream);text-decoration:none;font-weight:800;padding:12px 22px;border-radius:999px}
+
+/* ---------- scroll layout for phones (flow) ---------- */
+body.flow{overflow:auto;display:block;height:auto}
+body.flow .bar{position:sticky;top:0;z-index:20;background:var(--night)}
+body.flow .viewport{flex:none;min-height:0}
+body.flow .stage{position:static;width:860px;height:auto;transform:none!important;zoom:var(--z);border-radius:0;box-shadow:none;overflow:visible;margin:0 auto}
+body.flow .nav,body.flow .menu{display:none}
+body.flow .s{position:relative;inset:auto;opacity:1;visibility:visible;transform:none;transition:none;padding:56px 44px;gap:28px;border-radius:32px;margin-bottom:28px;min-height:0;flex-direction:column!important;align-items:stretch!important}
+body.flow .s.active > *{animation:none}
+body.flow .s > div[style*="width"],body.flow .byeside{width:auto!important}
+body.flow .g2,body.flow .g3{grid-template-columns:1fr!important;grid-template-rows:none!important}
+body.flow .cols{flex-direction:column}
+body.flow .flex1{flex:none}
+body.flow .row{flex-wrap:wrap}
+body.flow .qrow{flex-wrap:wrap}
+body.flow .qt{flex-basis:100%}
+body.flow .ans{width:100%!important}
+body.flow .frow{flex-wrap:wrap}
+body.flow .frow .uz{margin-left:0;width:100%}
+body.flow .h1{font-size:110px!important}
+body.flow .h2{font-size:64px}
+body.flow .bigs{font-size:54px!important}
+body.flow .card.big{flex:none}
+body.flow .quad{flex-direction:column;align-items:flex-start}
+body.flow .quad .huge{min-width:0}
+body.flow .board{gap:8px}
+body.flow .bh{font-size:22px;padding:10px 4px}
+body.flow .bt{font-size:40px;min-height:110px}
+body.flow .wheelrow{flex-direction:column;flex-wrap:wrap!important}
+body.flow .wheelwrap{width:600px;height:600px}
+body.flow .wheelwrap canvas{width:600px;height:600px}
+body.flow .chal{min-height:0;width:100%}
+body.flow .bids{grid-template-columns:1fr 1fr}
+body.flow .modal{position:fixed;padding:24px}
+body.flow .mbox{width:auto;padding:40px}
+body.flow .cardx{min-height:420px;flex:none}
+body.flow .tbl{font-size:26px}
+body.flow .wt{font-size:44px}
+body.flow .lbr{font-size:40px}
+body.flow .timer .t{min-width:110px}
+body.flow .numc{width:80px;height:80px;line-height:80px;font-size:44px}
+body.flow .ans{font-size:38px;min-height:84px}
+body.flow .ans.on{font-size:46px}
+body.flow .sub{font-size:36px}
+body.flow .lname{display:none}

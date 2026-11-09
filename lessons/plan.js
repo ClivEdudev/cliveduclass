@@ -1,13 +1,16 @@
 /* The course plan. Lessons are taught Monday to Saturday, starting on PLAN.start.
-   A lesson is "ready" when its folder lessons/NN/ exists with a lesson.js. */
+   Students can open a lesson from unlockHour (local time) on the day it is taught.
+   teacherCode opens the teacher planner at /teacher/ on a device. */
 window.PLAN = {
   start: "2026-11-10",
   teachDays: [1, 2, 3, 4, 5, 6],
+  unlockHour: 13,
+  teacherCode: "clivedu",
+  revision: { title: "Big Revision", date: "2026-11-09", path: "revision/" },
   done: [
     { title: "Making sentences", path: null }, { title: "To be: am / is / are", path: null },
     { title: "Negatives and questions", path: null }, { title: "Commands", path: null },
-    { title: "May", path: null }, { title: "Must and have to", path: null },
-    { title: "Big Revision", path: "revision/" }
+    { title: "May", path: null }, { title: "Must and have to", path: null }
   ],
   weeks: [
     { name: "Week 1 · Things around us", lessons: [
@@ -47,3 +50,23 @@ window.PLAN = {
       { n: 30, title: "Final review", focus: "the big end-of-course game day" } ] }
   ]
 };
+
+/* Helpers shared by the home page, the teacher planner and the lesson engine. */
+(function (P) {
+  const pad = n => String(n).padStart(2, "0");
+  P.key = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  P.parse = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+  P.all = P.weeks.flatMap(w => w.lessons);
+  let d = P.parse(P.start);
+  P.all.forEach(l => {
+    while (!P.teachDays.includes(d.getDay())) d.setDate(d.getDate() + 1);
+    l.date = new Date(d); l.key = P.key(d); l.folder = `lessons/${pad(l.n)}/`;
+    d.setDate(d.getDate() + 1);
+  });
+  P.openAt = date => { const o = new Date(date); o.setHours(P.unlockHour, 0, 0, 0); return o; };
+  P.isOpen = date => Date.now() >= P.openAt(date).getTime();
+  P.lesson = n => P.all.find(l => l.n === n);
+  P.fmt = d => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  P.isTeacher = () => { try { return localStorage.getItem("clv-teacher") === "1"; } catch (e) { return false; } };
+  P.points = () => { try { return JSON.parse(localStorage.getItem("clv-points") || "{}"); } catch (e) { return {}; } };
+})(window.PLAN);

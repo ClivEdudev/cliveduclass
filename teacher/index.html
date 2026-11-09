@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>ClivEdu Class · Teacher planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Teacher planner: today's lesson first, then the full plan with dates and what students can see. */
+:root{
+  --ink:#12263A; --ink2:#1C3650; --night:#0B1828; --cream:#FFF8E7; --paper:#FFFDF6; --line:#EADFC4;
+  --yellow:#FFC93C; --teal:#0B6E70; --mist:#BFD8D5; --slate:#4B5F73; --blue:#1F5FD1; --green:#157347; --mint:#D5F1E3;
+  --display:'Rubik',Verdana,sans-serif; --body:'Nunito',Verdana,sans-serif; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--night);color:var(--cream);font-family:var(--body);font-size:18px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 60px}
+a{color:inherit}
+h1,h2,h3,p{margin:0}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font:800 20px var(--display);display:flex;align-items:center;gap:10px}
+.brand i{width:26px;height:26px;border-radius:7px;background:conic-gradient(from 45deg,var(--blue) 0 25%,var(--teal) 0 50%,var(--blue) 0 75%,var(--teal) 0);box-shadow:inset 0 0 0 3px var(--night),inset 0 0 0 5px var(--yellow)}
+.brand small{font:700 13px var(--body);color:var(--ink);background:var(--yellow);padding:3px 10px;border-radius:999px}
+.today{background:var(--cream);color:var(--ink);border-radius:28px;padding:clamp(22px,4vw,44px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end;position:relative;overflow:hidden}
+.today .eb{font:800 14px var(--body);letter-spacing:.14em;text-transform:uppercase;color:#C2410C}
+.today h1{font:800 clamp(38px,6.5vw,76px)/1.02 var(--display);margin-top:8px;text-wrap:balance}
+.today .focus{font-size:20px;font-weight:700;color:var(--slate);margin-top:10px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:16px 28px;border-radius:999px;font:800 20px var(--body);text-decoration:none;background:var(--yellow);color:var(--ink);white-space:nowrap;transition:transform .15s;border:0;cursor:pointer}
+.btn:hover{transform:translateY(-2px)}
+.btn.dk{background:var(--ink);color:var(--cream)}
+.btn.ghost{background:transparent;color:var(--cream);box-shadow:inset 0 0 0 2px var(--mist)}
+.btn.sm{font-size:15px;padding:9px 16px}
+.tiles{position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:30px;transform:rotate(18deg);opacity:.16;
+  background:conic-gradient(from 45deg,var(--blue) 0 25%,var(--teal) 0 50%,var(--blue) 0 75%,var(--teal) 0) 0 0/45px 45px}
+.quick{display:flex;gap:12px;flex-wrap:wrap}
+.info{background:var(--ink);border-radius:20px;padding:16px 20px;color:var(--mist);font-size:16px}
+.info b{color:var(--cream)}
+.sec h2{font:800 30px var(--display);margin-bottom:6px}
+.sec > p{color:var(--mist)}
+.week{background:var(--ink);border-radius:22px;padding:18px 20px;margin-top:14px}
+.week h3{font:800 20px var(--display);color:var(--yellow);margin-bottom:8px}
+.les{display:grid;grid-template-columns:44px 120px minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:10px 8px;border-top:1px solid var(--ink2)}
+.les:first-of-type{border-top:0}
+.les .n{font:800 22px var(--display);color:var(--mist);font-variant-numeric:tabular-nums}
+.les .d{font-weight:700;color:var(--mist);font-size:15px}
+.les .t{font:700 20px/1.2 var(--display);min-width:0}
+.les .f{display:block;font:600 15px var(--body);color:var(--mist);margin-top:2px}
+.les.now{background:var(--ink2);border-radius:14px;outline:2px solid var(--yellow)}
+.chip{font:800 13px var(--body);padding:6px 14px;border-radius:999px;white-space:nowrap;text-decoration:none}
+.chip.go{background:var(--yellow);color:var(--ink)}
+.chip.soon{background:var(--ink2);color:var(--mist)}
+.chip.past{background:var(--mint);color:var(--ink)}
+.vis{font:700 13px var(--body);white-space:nowrap}
+.vis.on{color:#6CCB8A}.vis.off{color:var(--mist)}
+.done{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.done span,.done a{font-weight:700;font-size:15px;padding:6px 14px;border-radius:999px;background:var(--ink);color:var(--mist);text-decoration:none}
+.done a{background:var(--teal);color:var(--cream)}
+.gate{max-width:460px;margin:12vh auto 0;background:var(--cream);color:var(--ink);border-radius:28px;padding:32px;display:flex;flex-direction:column;gap:14px}
+.gate h1{font:800 34px var(--display)}
+.gate input{font:700 20px var(--body);padding:12px 16px;border-radius:14px;border:2px solid var(--line);background:var(--paper);color:var(--ink)}
+.gate .err{color:#B42318;font-weight:700}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+@media (max-width:700px){
+  .today{grid-template-columns:minmax(0,1fr)}
+  .les{grid-template-columns:34px minmax(0,1fr) auto}
+  .les .d,.les .vis{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="../lessons/plan.js"></script>
+<script>
+(() => {
+  const P = window.PLAN;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const app = document.getElementById("app");
+
+  function gate(err) {
+    app.innerHTML = `<form class="gate" id="gate">
+      <h1>Teacher planner</h1>
+      <p>Enter the teacher code to open the planner on this device. Lessons will also open in teacher mode (team scoreboard and class games).</p>
+      <label for="code" style="font-weight:800">Teacher code</label>
+      <input id="code" type="password" autocomplete="off" autofocus>
+      ${err ? `<p class="err">That code is not right. Try again.</p>` : ""}
+      <button class="btn dk" type="submit">Open planner</button>
+      <a href="../" style="color:var(--slate);font-weight:700">← Back to the student page</a>
+    </form>`;
+    document.getElementById("gate").addEventListener("submit", e => {
+      e.preventDefault();
+      if (document.getElementById("code").value.trim().toLowerCase() === P.teacherCode) {
+        try { localStorage.setItem("clv-teacher", "1"); } catch (er) {}
+        planner();
+      } else gate(true);
+    });
+  }
+
+  function planner() {
+    const all = P.all, todayKey = P.key(new Date());
+    const todays = all.find(l => l.key === todayKey);
+    const nextOne = all.find(l => l.key > todayKey);
+    let eb, lesson;
+    if (todayKey < all[0].key) { eb = `First lesson · ${P.fmt(all[0].date)} · Lesson 1`; lesson = all[0]; }
+    else if (todays) { eb = `Today · ${P.fmt(todays.date)} · Lesson ${todays.n}`; lesson = todays; }
+    else if (nextOne) { eb = `No lesson today · next: ${P.fmt(nextOne.date)} · Lesson ${nextOne.n}`; lesson = nextOne; }
+    else { eb = "Course finished"; lesson = all[all.length - 1]; }
+    const hh = String(P.unlockHour).padStart(2, "0");
+    app.innerHTML = `<div class="wrap">
+      <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class <small>Teacher</small></div>
+        <button class="btn ghost sm" id="logout">Leave teacher mode on this device</button></div>
+      <section class="today"><span class="tiles" aria-hidden="true"></span>
+        <div><p class="eb">${esc(eb)}</p><h1>${esc(lesson.title)}</h1><p class="focus">${esc(lesson.focus)}</p>
+        ${lesson.ready ? "" : `<p class="focus">This lesson isn’t built yet.</p>`}</div>
+        <div>${lesson.ready ? `<a class="btn" href="../${lesson.folder}">Start the lesson →</a>` : `<span class="btn dk" aria-disabled="true">Coming soon</span>`}</div>
+      </section>
+      <div class="quick"><a class="btn ghost" href="../${P.revision.path}">Open the Big Revision</a><a class="btn ghost" href="../">See the student page</a></div>
+      <p class="info"><b>What students see:</b> the student page at <b>cliveduclass.netlify.app</b> shows only lessons you have already taught. Each lesson opens for students at <b>${hh}:00</b> on the day you teach it. On this device you can open every lesson.</p>
+      <section class="sec" id="plan">
+        <h2>Course plan</h2>
+        <p>30 beginner lessons, Monday to Saturday.</p>
+        <div class="done"><span style="background:none;padding-left:0;color:var(--cream)">Already taught:</span>
+          ${P.done.map(x => `<span>${esc(x.title)}</span>`).join("")}<a href="../${P.revision.path}">${esc(P.revision.title)}</a></div>
+        ${P.weeks.map(w => `<div class="week"><h3>${esc(w.name)}</h3>${w.lessons.map(l => {
+          const open = P.isOpen(l.date);
+          const status = l.ready ? `<a class="chip ${l.key < todayKey ? "past" : "go"}" href="../${l.folder}">Open</a>` : `<span class="chip soon">Not built yet</span>`;
+          return `<div class="les ${lesson === l ? "now" : ""}"><span class="n">${l.n}</span><span class="d">${P.fmt(l.date)}</span>
+            <span class="t">${esc(l.title)}<span class="f">${esc(l.focus)}</span></span>
+            <span class="vis ${open ? "on" : "off"}">${open ? "Students: open" : "Students: locked"}</span>${status}</div>`;
+        }).join("")}</div>`).join("")}
+      </section></div>`;
+    document.getElementById("logout").addEventListener("click", () => { try { localStorage.removeItem("clv-teacher"); } catch (e) {} location.href = "../"; });
+  }
+
+  if (P.isTeacher()) planner(); else gate(false);
+})();
+</script>
+</body>
+</html>

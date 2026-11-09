@@ -1,10 +1,13 @@
 /* ClivEdu Class lesson engine.
-   A lesson page sets window.LESSON = { n, title, slides:[...], games:{...} } and then loads this file.
-   It builds the presenter: 1920×1080 scaled stage, tap-to-reveal answers, team scoreboard and games. */
+   A lesson page loads plan.js, sets window.LESSON = { n, title, slides:[...], games:{...} } and then loads this file.
+   Teacher mode (a device unlocked at /teacher/): 16:9 presenter with team scoreboard and team games.
+   Student mode (everyone else): lesson opens only after it is taught, no team bar, self-scored points,
+   and on narrow screens the slides become a scrollable column that is easy to read on a phone. */
 (() => {
 "use strict";
 const L = window.LESSON;
 if (!L) return;
+const P = window.PLAN || null;
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -16,16 +19,41 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
 const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const TEACHER = P ? P.isTeacher() : true;
+const STUDENT = !TEACHER;
+const HOME = TEACHER ? "../../teacher/" : "../../";
 const TC = ["#1F5FD1", "#B42318", "#157347", "#9A6A00"];
 const TC_CHROME = ["#7FA2F5", "#F2788B", "#6CCB8A", "#F2BE4A"];
 const WHEEL_COLORS = [["#1F5FD1",0],["#0B6E70",0],["#B42318",0],["#E7A61C",1],["#157347",0],["#5B3FA8",0]];
 const G0 = L.games || {};
+const CLASS_ONLY = ["mime", "boss"];
+
+/* ================= LOCK (students only) ================= */
+let openDate = null;
+if (P) {
+  if (L.openDate) openDate = P.parse(L.openDate);
+  else { const pl = P.lesson(L.n); if (pl) openDate = pl.date; }
+}
+document.title = `${L.n ? "Lesson " + L.n + " · " : ""}${strip(L.title)}`;
+if (STUDENT && openDate && !P.isOpen(openDate)) {
+  const at = P.openAt(openDate);
+  document.body.classList.add("locked-page");
+  document.body.innerHTML = `<div class="lockbox">
+    <p class="eb">${L.n ? "Lesson " + L.n : "Lesson"}</p>
+    <h1>${esc(strip(L.title))}</h1>
+    <p>This lesson opens after class on <b>${esc(P.fmt(at))}</b> at ${String(at.getHours()).padStart(2, "0")}:00.</p>
+    <p class="uz">Bu dars ${esc(P.fmt(at))} kuni darsdan keyin ochiladi.</p>
+    <a class="lockbtn" href="${HOME}">← Back to my lessons</a></div>`;
+  return;
+}
 
 /* ================= SLIDE TEMPLATES ================= */
 const notes = n => n && n.length ? `<div class="notes">${n.map(x => `<span class="note">${x}</span>`).join("")}</div>` : "";
 const hd = s => `<div>${s.eb ? `<p class="eb">${s.eb}</p>` : ""}<h2 class="h2"${s.eb ? ' style="margin-top:12px"' : ""}>${s.title}</h2>${s.sub ? `<p class="sub" style="margin-top:8px">${s.sub}</p>` : ""}</div>`;
 const BG = { ink: "ink", yel: "yel", sky: "sky", teal: "tealbg", cream: "" };
+const GAME_TITLES = { board: "Quiz Board", auction: "Grammar Auction", build: "Sentence Builder", wheel: "Spin the Wheel", mime: "Mime and Say", mystery: "Mystery Place", boss: "Boss Says…" };
 const R = {
+  raw: s => s.html,
   cover: s => `<div><span class="tag">${s.tag || "Lesson " + L.n}</span></div><h1 class="h1">${s.title}</h1><p class="lead">${s.lead || ""}</p>
     <div class="row">${(s.chips || []).map(([t, c]) => `<span class="bub ${c}">${t}</span>`).join("")}</div>`,
   goals: s => `<h2 class="h2">${s.title || "Today you will…"}</h2><div class="cols flex1">${s.items.map((it, i) => `<div class="card big ${["peach","mint","skyb"][i % 3]}">
@@ -47,38 +75,43 @@ const R = {
         <button class="ans ${r[2] || ""}"${s.w ? ` style="width:${s.w}px"` : ""}>${r[1]}</button></div>`; }).join("")}</div>`,
   gaps: s => `${hd(s)}<div class="g2 r3 flex1">${s.rows.map(([q, a], i) => `<div class="qrow ln"><p class="qt e" style="font-size:${s.fs || 42}px">${i + 1}. ${q}</p><button class="ans sm"${s.w ? ` style="width:${s.w}px"` : ""}>${a}</button></div>`).join("")}</div>`,
   table: s => `${hd(s)}<table class="tbl"><tr>${s.head.map(h => `<th>${h}</th>`).join("")}</tr>${s.rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</table>${notes(s.notes)}`,
-  check: s => `<div><h2 class="h2">Can you…?</h2><p class="sub" style="margin-top:8px">Thumb up = yes. Middle = a little. Down = not yet. Tap a line when the class is confident.</p></div>
+  check: s => `<div><h2 class="h2">Can you…?</h2><p class="sub" style="margin-top:8px">${STUDENT ? "Tap a line when you feel confident." : "Thumb up = yes. Middle = a little. Down = not yet. Tap a line when the class is confident."}</p></div>
     <div class="g2 r3 flex1">${s.items.map(t => `<button class="qrow ln checkit"><span class="tick">✓</span><p class="qt e" style="font-size:40px;text-align:left">${t}</p></button>`).join("")}</div>`,
   bye: s => `<div style="flex:1;display:flex;flex-direction:column;gap:36px">
-      <div><span class="tag">Exit ticket</span></div>
+      <div><span class="tag">${STUDENT ? "Well done" : "Exit ticket"}</span></div>
       <h1 class="h1" style="font-size:130px">Great job!<br><span class="cy">Rahmat!</span></h1>
-      <p class="lead">${s.lead || "Say one sentence on your way out:"}</p>
+      <p class="lead">${STUDENT ? "Say these out loud to practise:" : (s.lead || "Say one sentence on your way out:")}</p>
       <div class="row" style="gap:18px">${(s.chips || []).map(([t, c]) => `<span class="bub ${c}">${t}</span>`).join("")}</div></div>
-    <div style="width:720px;display:flex;flex-direction:column;gap:24px"><p class="eb">Final scores</p><div class="lb" id="leaderboard"></div><div><button class="sbtn y" data-celebrate>Celebrate the winners</button></div></div>`,
+    <div class="byeside" style="width:720px;display:flex;flex-direction:column;gap:24px">${STUDENT
+      ? `<p class="eb">My points in this lesson</p><p class="mypts" id="myptsBig">0</p><div><a class="sbtn y" href="${HOME}" style="text-decoration:none">Back to my lessons</a></div>`
+      : `<p class="eb">Final scores</p><div class="lb" id="leaderboard"></div><div><button class="sbtn y" data-celebrate>Celebrate the winners</button></div>`}</div>`,
   game: s => `<div id="g-${s.g}" style="display:contents"></div>`
 };
+const slideList = L.slides.filter(s => !(STUDENT && s.t === "game" && CLASS_ONLY.includes(s.g)) && !(STUDENT && s.classOnly));
 function sectionHTML(s, i) {
   const cls = ["s"];
   if (s.t === "cover") cls.push("ink", "center");
   else if (s.t === "bye") cls.push("ink");
+  else if (s.t === "raw") cls.push(s.cls || "");
   else if (s.bg && BG[s.bg]) cls.push(BG[s.bg]);
-  const style = s.t === "bye" ? ' style="flex-direction:row;gap:64px;align-items:center"' : "";
-  const title = strip(s.menu || s.title || (s.t === "bye" ? "Winners and exit ticket" : s.t === "check" ? "Can you…?" : s.t === "goals" ? "Today you will…" : GAME_TITLES[s.g] || s.t));
+  let style = s.t === "bye" ? "flex-direction:row;gap:64px;align-items:center" : (s.t === "raw" && s.style) || "";
+  const title = strip(s.menu || s.title || (s.t === "bye" ? "Well done" : s.t === "check" ? "Can you…?" : s.t === "goals" ? "Today you will…" : GAME_TITLES[s.g] || s.t));
   const game = s.t === "game" ? ` data-game="${s.g}"` : s.t === "bye" ? ' data-game="bye"' : "";
-  return `<section class="${cls.join(" ")}" data-title="${esc(title)}"${game}${style}>${R[s.t](s, i)}</section>`;
+  const id = s.id ? ` data-id="${s.id}"` : "";
+  return `<section class="${cls.join(" ").trim()}" data-title="${esc(title)}"${game}${id}${style ? ` style="${style}"` : ""}>${R[s.t](s, i)}</section>`;
 }
-const GAME_TITLES = { board: "Quiz Board", auction: "Grammar Auction", build: "Sentence Builder", wheel: "Spin the Wheel", mime: "Mime and Say", mystery: "Mystery Place", boss: "Boss Says…" };
 
 /* ================= PAGE ================= */
-document.title = `Lesson ${L.n} · ${strip(L.title)}`;
+document.body.classList.add(STUDENT ? "student" : "teacher");
+const lname = `${L.n ? "Lesson " + L.n + " · " : ""}${esc(strip(L.title))}`;
 document.body.innerHTML = `
 <div class="bar">
-  <a class="brand" href="../../"><i aria-hidden="true"></i>ClivEdu Class</a>
-  <span class="lname">Lesson ${L.n} · ${esc(strip(L.title))}</span>
-  <div class="teams" id="teams" aria-label="Team scores"></div>
+  <a class="brand" href="${HOME}"><i aria-hidden="true"></i>${STUDENT ? "My lessons" : "ClivEdu Class"}</a>
+  <span class="lname">${lname}</span>
+  ${STUDENT ? `<div class="teams"><span class="mine">My points <b id="mypts">0</b></span></div>` : `<div class="teams" id="teams" aria-label="Team scores"></div>`}
 </div>
 <div class="viewport" id="viewport">
-  <div class="stage" id="stage">${L.slides.map(sectionHTML).join("")}</div>
+  <div class="stage" id="stage">${slideList.map(sectionHTML).join("")}</div>
   <div class="menu" id="menu" hidden><div class="row" style="justify-content:space-between;max-width:1200px;margin:0 auto 14px"><b style="font:800 22px var(--display)">All slides</b><button class="nbtn" data-menu-close>Close</button></div><div class="menu-grid" id="menuGrid"></div></div>
 </div>
 <div class="nav">
@@ -91,8 +124,9 @@ document.body.innerHTML = `
   <button class="nbtn" data-full>Full screen</button>
 </div>
 <canvas id="confetti" aria-hidden="true"></canvas>`;
+document.body.classList.add(STUDENT ? "student" : "teacher");
 
-/* ================= TEAMS ================= */
+/* ================= POINTS: teams (teacher) or me (student) ================= */
 const DEF = [{ name: "Samarkand", score: 0 },{ name: "Bukhara", score: 0 },{ name: "Khiva", score: 0 },{ name: "Tashkent", score: 0 }];
 let teams = store.get("clv-teams", DEF);
 if (!Array.isArray(teams) || teams.length !== 4) teams = DEF.map(t => ({ ...t }));
@@ -100,7 +134,15 @@ let teamCount = store.get("clv-count", 3);
 if (![2,3,4].includes(teamCount)) teamCount = 3;
 let confirming = false;
 const save = () => { store.set("clv-teams", teams); store.set("clv-count", teamCount); };
+const PKEY = String(L.n || "rev");
+function myPoints() { const all = store.get("clv-points", {}); return all[PKEY] || 0; }
+function addMine(d) {
+  const all = store.get("clv-points", {}); all[PKEY] = (all[PKEY] || 0) + d; store.set("clv-points", all); renderMine();
+  const el = $("#mypts"); if (el && d > 0) { const r = el.getBoundingClientRect(); confetti(r.left, r.top, 40); }
+}
+function renderMine() { const v = myPoints(); const a = $("#mypts"), b = $("#myptsBig"); if (a) a.textContent = v; if (b) b.textContent = v; }
 function renderTeams() {
+  if (STUDENT) { renderMine(); return; }
   const act = teams.slice(0, teamCount), max = Math.max(...act.map(t => t.score));
   $("#teams").innerHTML = act.map((t, i) => `<div class="team" style="--tc:${TC_CHROME[i]}" data-team="${i}">
       <input id="tn-${i}" aria-label="Team ${i + 1} name" value="${esc(t.name)}" maxlength="14">
@@ -117,9 +159,12 @@ function addScore(i, d) {
   const chip = $(`.team[data-team="${i}"]`);
   if (chip) { chip.classList.remove("pulse"); void chip.offsetWidth; chip.classList.add("pulse"); if (d > 0) { const r = chip.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top + r.height / 2, 40); } }
 }
-const award = (pts, label = "Give points:") => `<div class="award"><span class="al">${label}</span>${teams.slice(0, teamCount).map((t, i) =>
-  `<button style="--tc:${TC[i]}" data-award="${i}" data-pts="${pts}">+${pts} ${esc(t.name)}</button>`).join("")}</div>`;
+const award = (pts, label = "Give points:") => STUDENT
+  ? `<div class="award"><button class="selfbtn" data-self="${pts}">I got it right! +${pts}</button></div>`
+  : `<div class="award"><span class="al">${label}</span>${teams.slice(0, teamCount).map((t, i) =>
+    `<button style="--tc:${TC[i]}" data-award="${i}" data-pts="${pts}">+${pts} ${esc(t.name)}</button>`).join("")}</div>`;
 function renderLeader() {
+  if (STUDENT) { renderMine(); return; }
   const el = $("#leaderboard"); if (!el) return;
   const rows = teams.slice(0, teamCount).map((t, i) => ({ ...t, i })).sort((a, b) => b.score - a.score);
   el.innerHTML = rows.map((t, k) => `<div class="lbr ${k === 0 && t.score > 0 ? "first" : ""}"><span class="pos">${k + 1}</span><span class="nm">${esc(t.name)}</span><span style="font-variant-numeric:tabular-nums">${t.score}</span></div>`).join("");
@@ -129,7 +174,7 @@ document.addEventListener("input", e => {
   if (m) { teams[+m[1]].name = e.target.value || `Team ${+m[1] + 1}`; save(); renderLeader(); }
 });
 document.addEventListener("change", e => {
-  if (e.target.id === "team-count") { teamCount = +e.target.value; save(); renderTeams(); renderLeader(); const g = slides[cur].dataset.game; if (g && GR[g]) GR[g](); }
+  if (e.target.id === "team-count") { teamCount = +e.target.value; save(); renderTeams(); renderLeader(); rerenderGames(); }
 });
 
 /* ================= CONFETTI ================= */
@@ -149,18 +194,26 @@ function tick() {
   raf = parts.length ? requestAnimationFrame(tick) : 0;
   if (!raf) cx.clearRect(0, 0, innerWidth, innerHeight);
 }
-const burst = (el, n) => { if (!el) return; const r = el.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top + r.height / 2, n); };
+const burst = (el, n) => { if (!el) return; const r = el.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top + Math.min(r.height / 2, 200), n); };
 
-/* ================= STAGE ================= */
+/* ================= STAGE: presenter or scroll (flow) ================= */
 const stage = $("#stage"), vp = $("#viewport");
 const slides = $$("section.s", stage);
-let cur = 0;
-function fit() { const s = Math.min(vp.clientWidth / 1920, vp.clientHeight / 1080); stage.style.transform = `translate(-50%,-50%) scale(${s})`; sizeCv(); }
+let cur = 0, flow = false;
+const wantFlow = () => innerWidth < 900;
+function fit() {
+  const f = wantFlow();
+  if (f !== flow) { flow = f; document.body.classList.toggle("flow", flow); if (flow) { slides.forEach(s => s.classList.add("active")); rerenderGames(); } else { slides.forEach((s, k) => s.classList.toggle("active", k === cur)); } }
+  if (flow) { stage.style.transform = "none"; document.body.style.setProperty("--z", ((Math.min(innerWidth, 900) - 32) / 860).toFixed(4)); }
+  else { const s = Math.min(vp.clientWidth / 1920, vp.clientHeight / 1080); stage.style.transform = `translate(-50%,-50%) scale(${s})`; }
+  sizeCv();
+}
 addEventListener("resize", fit);
 $$(".ans").forEach(b => { const a = b.textContent; b.innerHTML = `<span class="q">Tap to reveal</span><span class="a">${esc(a)}</span>`; b.setAttribute("aria-label", "Reveal answer"); });
 function go(i, fromHash) {
   i = Math.max(0, Math.min(slides.length - 1, i));
   clearInterval(timerId);
+  if (flow) { cur = i; slides[i].scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" }); return; }
   slides[cur].classList.remove("active");
   cur = i;
   const sl = slides[cur];
@@ -172,10 +225,11 @@ function go(i, fromHash) {
   if (!fromHash) { try { history.replaceState(null, "", "#slide-" + (cur + 1)); } catch (e) {} }
   $("#menuGrid").innerHTML = slides.map((s, k) => `<button data-goto="${k}" ${k === cur ? 'aria-current="true"' : ""}><b>${k + 1}</b>${esc(s.dataset.title || "")}</button>`).join("");
 }
+function rerenderGames() { if (flow) slides.forEach(s => { const g = s.dataset.game; if (g && GR[g]) GR[g](); }); else { const g = slides[cur].dataset.game; if (g && GR[g]) GR[g](); } }
 function reveal(b) { if (b.classList.contains("on")) return; b.classList.add("on"); b.setAttribute("aria-label", "Answer shown"); burst(b, 30); }
 function next() { const sl = slides[cur]; if (!sl.dataset.game) { const h = $(".ans:not(.on)", sl); if (h) { reveal(h); return; } } go(cur + 1); }
 function fromHash() { const m = location.hash.match(/^#slide-(\d+)$/); return m ? +m[1] - 1 : 0; }
-addEventListener("hashchange", () => go(fromHash(), true));
+addEventListener("hashchange", () => { if (!flow) go(fromHash(), true); });
 function toggleFull() { const el = document.documentElement; try { if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().catch(() => {}); } catch (err) {} }
 
 /* ================= GAMES ================= */
@@ -188,26 +242,37 @@ function startTimer(el) {
   timerId = setInterval(() => { left--; t.textContent = Math.max(left, 0); fill.style.width = Math.max(left, 0) / total * 100 + "%"; if (left <= 0) { clearInterval(timerId); t.textContent = "Time!"; } }, 1000);
 }
 const head = (title, how, extra = "") => `<div class="row" style="justify-content:space-between;gap:24px"><h2 class="h2">${title}</h2><div class="row" style="gap:16px">${extra}<button class="sbtn w" data-restart style="font-size:26px;padding:12px 28px">Restart game</button></div></div><p class="sub" style="margin-top:-12px">${how}</p>`;
-const box = id => $("#g-" + id, slides[cur]) || $("#g-" + id);
+const box = id => $("#g-" + id);
+const T = (teacherText, studentText) => STUDENT ? studentText : teacherText;
 
 const GR = {
   auction() {
+    if (!box("auction")) return;
     const G = GS.auction || (GS.auction = {});
-    if (G.i == null) { G.order = shuffle(G0.auction); G.i = 0; G.bids = [0,0,0,0]; G.shown = false; }
+    if (G.i == null) { G.order = shuffle(G0.auction); G.i = 0; G.bids = [0,0,0,0]; G.shown = false; G.guess = null; }
     const it = G.order[G.i];
-    box("auction").innerHTML = head("Grammar Auction", "Teams talk for 20 seconds, then bid 0–500 if they think the sentence is correct. Right = win the bid, wrong = lose it.",
-        `<button class="plusbtn" data-start1000>+1000 to every team</button>`) + `
+    let verdict = "";
+    if (G.shown) {
+      if (STUDENT) verdict = `<span class="verdict ${G.guess === it.ok ? "good" : "bad"}">${G.guess === it.ok ? "You got it! +100" : "Not this time"}</span><p class="en" style="font-size:44px;color:var(--mist)">The sentence is ${it.ok ? "right" : "wrong"}.</p>`;
+      else verdict = `<span class="verdict ${it.ok ? "good" : "bad"}">${it.ok ? "RIGHT! Bids paid" : "WRONG! Bids lost"}</span>`;
+      if (!it.ok) verdict += `<p class="en" style="color:var(--mint);font-size:52px;font-weight:800">${esc(it.fix)}</p>`;
+    }
+    const controls = STUDENT
+      ? (G.shown ? "" : `<div class="row" style="justify-content:center"><button class="sbtn g" data-guess="1">It’s right</button><button class="sbtn r" data-guess="0">It’s wrong</button></div>`)
+      : `<div class="bids">${teams.slice(0, teamCount).map((t, i) => `<div class="bid" style="--tc:${TC[i]}"><b>${esc(t.name)}</b><span class="row" style="gap:10px;flex-wrap:nowrap"><button class="mini" data-bid="${i}" data-d="-100" ${G.shown ? "disabled" : ""} aria-label="Lower bid">−</button><span class="amt" style="color:var(--ink)">${G.bids[i]}</span><button class="mini" data-bid="${i}" data-d="100" ${G.shown ? "disabled" : ""} aria-label="Raise bid">+</button></span></div>`).join("")}</div>`;
+    box("auction").innerHTML = head(T("Grammar Auction", "Right or wrong?"),
+        T("Teams talk for 20 seconds, then bid 0–500 if they think the sentence is correct. Right = win the bid, wrong = lose it.", "Read the sentence. Is it correct? Guess right to win 100 points."),
+        STUDENT ? "" : `<button class="plusbtn" data-start1000>+1000 to every team</button>`) + `
       <div style="background:var(--ink2);border-radius:36px;padding:32px 48px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center">
-        <p class="eb">Sentence ${G.i + 1} of ${G.order.length}</p><p class="bigs" style="font-size:68px">${esc(it.s)}</p>
-        ${G.shown ? `<span class="verdict ${it.ok ? "good" : "bad"}">${it.ok ? "RIGHT! Bids paid" : "WRONG! Bids lost"}</span>${it.ok ? "" : `<p class="en" style="color:var(--mint);font-size:52px;font-weight:800">${esc(it.fix)}</p>`}` : ""}
-      </div>
-      <div class="bids">${teams.slice(0, teamCount).map((t, i) => `<div class="bid" style="--tc:${TC[i]}"><b>${esc(t.name)}</b><span class="row" style="gap:10px;flex-wrap:nowrap"><button class="mini" data-bid="${i}" data-d="-100" ${G.shown ? "disabled" : ""} aria-label="Lower bid">−</button><span class="amt" style="color:var(--ink)">${G.bids[i]}</span><button class="mini" data-bid="${i}" data-d="100" ${G.shown ? "disabled" : ""} aria-label="Raise bid">+</button></span></div>`).join("")}</div>
+        <p class="eb">Sentence ${G.i + 1} of ${G.order.length}</p><p class="bigs" style="font-size:68px">${esc(it.s)}</p>${verdict}
+      </div>${controls}
       <div class="row" style="justify-content:space-between">
-        ${G.shown ? `<button class="sbtn y" data-auc-next ${G.i + 1 >= G.order.length ? "disabled" : ""}>Next sentence →</button>` : `<button class="sbtn y" data-auc-reveal>Reveal</button>`}
-        ${G.shown && !it.ok ? award(100, "Fixed it? Bonus:") : ""}
+        ${G.shown ? `<button class="sbtn y" data-auc-next ${G.i + 1 >= G.order.length ? "disabled" : ""}>Next sentence →</button>` : (STUDENT ? "" : `<button class="sbtn y" data-auc-reveal>Reveal</button>`)}
+        ${G.shown && !it.ok && TEACHER ? award(100, "Fixed it? Bonus:") : ""}
       </div>`;
   },
   board() {
+    if (!box("board")) return;
     const B = G0.board, G = GS.board || (GS.board = { used: {} });
     let tiles = "";
     for (let r = 0; r < 3; r++) B.forEach((c, ci) => { const k = ci + "-" + r, v = (r + 1) * 100; tiles += `<button class="bt v${v} ${G.used[k] ? "used" : ""}" data-tile="${k}" aria-label="${esc(c.cat)} for ${v}">${v}</button>`; });
@@ -220,37 +285,40 @@ const GR = {
         ${G.shownAns ? `<p class="mans">${esc(a)}</p>${award(v, "Points to:")}` : `<div><button class="sbtn g" data-tile-answer>Show answer</button></div>`}
       </div></div>`;
     }
-    box("board").innerHTML = head("Quiz Board", "Teams take turns: choose a topic and a value. 20 seconds to answer. Wrong? The next team can steal.") +
+    box("board").innerHTML = head("Quiz Board", T("Teams take turns: choose a topic and a value. 20 seconds to answer. Wrong? The next team can steal.", "Choose a square. Answer out loud, then check. Got it right? Take the points!")) +
       `<div class="board flex1" style="grid-template-columns:repeat(${B.length},1fr)">${B.map(c => `<div class="bh">${esc(c.cat)}</div>`).join("")}${tiles}</div>${modal}`;
   },
   wheel() {
+    if (!box("wheel")) return;
     const G = GS.wheel || (GS.wheel = { rot: 0 });
-    box("wheel").innerHTML = head("Spin the Wheel", "The wheel picks a topic and a speaking challenge. Answer before the timer ends.") + `
-      <div class="row flex1" style="gap:64px;align-items:center;flex-wrap:nowrap">
+    box("wheel").innerHTML = head("Spin the Wheel", T("The wheel picks a topic and a speaking challenge. Answer before the timer ends.", "Spin, then do the challenge out loud before the timer ends.")) + `
+      <div class="row flex1 wheelrow" style="gap:64px;align-items:center;flex-wrap:nowrap">
         <div class="wheelwrap"><canvas id="wheel" width="1280" height="1280" style="transform:rotate(${G.rot}deg)"></canvas><div class="hubc"></div><div class="ptr"></div></div>
         <div class="chal" id="chal">${G.task ? chalHTML(G.task) : `<p class="eb">Ready?</p><p class="bigs" style="font-size:64px;color:var(--cream)">Spin the wheel to get a challenge.</p><div><button class="sbtn y" data-spin>Spin!</button></div>`}</div>
       </div>`;
     drawWheel();
   },
   build() {
+    if (!box("build")) return;
     const G = GS.build || (GS.build = {});
     if (G.i == null) { G.order = shuffle(G0.build); G.i = 0; }
     if (!G.pool) { G.pool = shuffle(G.order[G.i].w.map((_, k) => k)); G.built = []; G.state = ""; }
     const it = G.order[G.i], answer = it.w.join(" ") + it.e;
-    box("build").innerHTML = head("Sentence Builder", "Teams race to say it. The fastest team taps the tiles in order. Tap a tile in the line to send it back.") + `
+    box("build").innerHTML = head("Sentence Builder", T("Teams race to say it. The fastest team taps the tiles in order. Tap a tile in the line to send it back.", "Tap the words in the right order. Tap a word in the line to send it back.")) + `
       <p class="eb">Round ${G.i + 1} of ${G.order.length}</p>
       <div class="slots">${G.built.length ? G.built.map(k => `<button class="wt" data-built="${k}">${esc(it.w[k])}</button>`).join("") : `<span class="sub">Tap the words below…</span>`}<span class="wt" style="background:none;box-shadow:none;color:var(--slate)">${it.e}</span></div>
       <div class="pool">${G.pool.filter(k => !G.built.includes(k)).map(k => `<button class="wt" data-pool="${k}">${esc(it.w[k])}</button>`).join("")}</div>
       <div class="row">
         <button class="sbtn g" data-b-check ${G.built.length === it.w.length ? "" : "disabled"}>Check</button>
-        <button class="sbtn w" data-b-show style="border:3px solid var(--line)">Show answer</button>
+        <button class="sbtn w" data-b-show>Show answer</button>
         <button class="sbtn" data-b-next ${G.i + 1 >= G.order.length ? "disabled" : ""}>Next →</button>
-        ${G.state === "right" ? `<span class="verdict good">Correct!</span>` : ""}${G.state === "wrong" ? `<span class="verdict bad">Not yet!</span>` : ""}
+        ${G.state === "right" ? `<span class="verdict good">Correct!${STUDENT ? " +100" : ""}</span>` : ""}${G.state === "wrong" ? `<span class="verdict bad">Not yet!</span>` : ""}
         ${G.state === "shown" ? `<span class="en cg" style="font-weight:800">${esc(answer)}</span>` : ""}
       </div>
-      ${G.state === "right" ? award(100) : ""}`;
+      ${G.state === "right" && TEACHER ? award(100) : ""}`;
   },
   mystery() {
+    if (!box("mystery")) return;
     const G = GS.mystery || (GS.mystery = {});
     const M = G0.mystery;
     if (G.i == null) { G.order = shuffle(M.items); G.i = 0; G.n = 1; G.rev = false; }
@@ -262,6 +330,7 @@ const GR = {
       <div class="row"><button class="sbtn b" data-clue ${G.n >= it.c.length || G.rev ? "disabled" : ""}>Next clue</button><button class="sbtn y" data-place-rev ${G.rev ? "disabled" : ""}>Reveal</button><button class="sbtn" data-place-next ${G.i + 1 >= G.order.length ? "disabled" : ""}>Next →</button>${G.rev ? award(pts) : ""}</div>`;
   },
   mime() {
+    if (!box("mime")) return;
     const G = GS.mime || (GS.mime = {});
     if (G.order == null) { G.order = shuffle(G0.mime); G.i = -1; G.st = "idle"; }
     const it = G.order[G.i];
@@ -275,10 +344,22 @@ const GR = {
         <div class="row" style="flex-wrap:nowrap"><button class="sbtn" data-mime-next ${G.i + 1 >= G.order.length ? "disabled" : ""}>Next card</button><button class="sbtn w" data-mime-peek ${G.st === "hidden" ? "" : "disabled"}>Peek</button><button class="sbtn w" data-mime-hide ${G.st === "peek" ? "" : "disabled"}>Hide</button><button class="sbtn y" data-mime-rev ${G.st === "hidden" ? "" : "disabled"}>Reveal</button></div>
         <div style="width:640px">${timerHTML(30)}</div></div>`;
   },
-  bye() { renderLeader(); }
+  boss() {
+    if (!box("boss")) return;
+    const B = G0.boss, G = GS.boss || (GS.boss = {});
+    const c = G.card;
+    let body;
+    if (!c) body = `<div class="cardx"><p class="bigs">Tap “New card”. The Boss reads it aloud.</p></div>`;
+    else if (c.type === "may") body = `<div class="cardx open"><div style="display:flex;flex-direction:column;gap:24px;align-items:center"><p class="eb">Student’s turn</p><p class="bigs">Ask the Boss: “May I ${esc(c.text)}?”</p>${G.rev ? `<span class="verdict ${c.yes ? "good" : "bad"}">${c.yes ? "Yes, you may." : "No, you may not."}</span>` : ""}</div></div>`;
+    else body = `<div class="cardx open"><div style="display:flex;flex-direction:column;gap:20px;align-items:center"><p class="bigs" style="font-size:110px">${esc(c.please ? "Please " + c.text : c.text.charAt(0).toUpperCase() + c.text.slice(1))}!</p><p class="uz">${esc(c.please ? "Iltimos, " + c.uz : c.uz.charAt(0).toUpperCase() + c.uz.slice(1))}!</p>${G.rev ? `<span class="verdict ${c.please ? "good" : "bad"}">${c.please ? "Do it!" : "Freeze! No “please”"}</span>` : ""}</div></div>`;
+    box("boss").innerHTML = head("Boss Says…", "Everyone stands. Obey only if the Boss says “please”. Move without “please”? Sit down. On a “May I…?” card, a student asks the Boss.") + body + `
+      <div class="row" style="justify-content:space-between"><div class="row"><button class="sbtn b" data-boss-new>New card</button><button class="sbtn" data-boss-rev ${c && !G.rev ? "" : "disabled"}>Reveal</button></div>${award(100, "Last one standing:")}</div>`;
+    G._B = B;
+  },
+  bye() { renderLeader(); renderMine(); }
 };
 const chalHTML = t => `<p class="eb">${esc(t.topic)}</p><p class="bigs" style="font-size:60px;color:var(--cream)">${esc(t.text)}</p>${timerHTML(30)}
-  <div class="row"><button class="sbtn y" data-spin>Spin again</button></div>${award(100, "Good:")}${award(200, "Excellent:")}`;
+  <div class="row"><button class="sbtn y" data-spin>Spin again</button></div>${STUDENT ? award(100) : award(100, "Good:") + award(200, "Excellent:")}`;
 function drawWheel() {
   const c = $("#wheel"); if (!c) return;
   const W = G0.wheel, x = c.getContext("2d"), S = c.width, Rr = S / 2, n = W.length, seg = Math.PI * 2 / n;
@@ -298,7 +379,7 @@ function spin() {
   const target = (360 - (k * segDeg + segDeg / 2)) % 360, jitter = (Math.random() - .5) * segDeg * .6;
   G.rot = G.rot - (G.rot % 360) + 360 * 5 + target + jitter;
   const c = $("#wheel"); c.style.transform = `rotate(${G.rot}deg)`;
-  const done = () => { G.task = { topic: W[k].name, text: pick(W[k].tasks) }; const ch = $("#chal"); if (ch && slides[cur].dataset.game === "wheel") { ch.innerHTML = chalHTML(G.task); burst(c); } };
+  const done = () => { G.task = { topic: W[k].name, text: pick(W[k].tasks) }; const ch = $("#chal"); if (ch) { ch.innerHTML = chalHTML(G.task); burst(c); } };
   if (reduceMotion) done(); else setTimeout(done, 4300);
 }
 
@@ -307,6 +388,7 @@ document.addEventListener("click", e => {
   const t = e.target.closest("button, [data-modal]");
   if (!t) return;
   const d = t.dataset;
+  const sec = t.closest("section.s") || slides[cur];
   if (e.detail > 0 && t.tagName === "BUTTON") t.blur();
   if (t.classList.contains("ans")) { reveal(t); return; }
   if (d.prev != null) { go(cur - 1); return; }
@@ -315,9 +397,12 @@ document.addEventListener("click", e => {
   if (d.menuClose != null) { $("#menu").hidden = true; return; }
   if (d.goto != null) { $("#menu").hidden = true; go(+d.goto); return; }
   if (d.full != null) { toggleFull(); return; }
+  if (d.jump) { const i = slides.findIndex(s => s.dataset.id === d.jump); if (i >= 0) go(i); return; }
+  if (d.blur) { const el = $("#" + d.blur); const on = el.classList.toggle("blurred"); t.textContent = on ? "Show the lines" : "Hide the lines"; return; }
   if (d.score != null) { addScore(+d.score, +d.d); return; }
   if (d.reset) { if (d.reset === "yes") { teams.forEach(x => x.score = 0); save(); renderLeader(); } confirming = d.reset === "ask"; renderTeams(); return; }
   if (d.award != null) { addScore(+d.award, +d.pts); t.disabled = true; return; }
+  if (d.self != null) { addMine(+d.self); t.disabled = true; t.textContent = `+${d.self} added`; return; }
   if (d.start1000 != null) { teams.forEach((x, i) => { if (i < teamCount) x.score += 1000; }); save(); renderTeams(); renderLeader(); burst(t); t.disabled = true; return; }
   if (d.spotlight) {
     const cards = $$(".spot", $("#" + d.spotlight)); if (!cards.length) return;
@@ -325,32 +410,43 @@ document.addEventListener("click", e => {
     const step = () => { cards.forEach(c => c.classList.remove("lit")); cards[n % cards.length].classList.add("lit"); if (n++ < end) setTimeout(step, 70 + n * 12); else burst(cards[(n - 1) % cards.length], 50); };
     step(); return;
   }
-  if (t.classList.contains("checkit")) { t.classList.toggle("done"); if (t.classList.contains("done")) burst(t, 40); const all = $$(".checkit", slides[cur]); if (all.length && all.every(x => x.classList.contains("done"))) burst(stage, 160); return; }
+  if (t.classList.contains("checkit")) { t.classList.toggle("done"); if (t.classList.contains("done")) burst(t, 40); const all = $$(".checkit", sec); if (all.length && all.every(x => x.classList.contains("done"))) burst(sec, 160); return; }
   if (d.celebrate != null) { burst($("#leaderboard"), 200); setTimeout(() => burst(stage, 160), 300); return; }
   if (d.startTimer != null) { startTimer(t.closest("[data-timer]")); return; }
-  if (d.restart != null) { const g = slides[cur].dataset.game; delete GS[g]; GR[g](); return; }
+  if (d.restart != null) { const g = sec.dataset.game; delete GS[g]; GR[g](); return; }
+  /* auction */
   if (d.bid != null) { const G = GS.auction, i = +d.bid; G.bids[i] = Math.min(500, Math.max(0, G.bids[i] + +d.d)); GR.auction(); return; }
-  if (d.aucReveal != null) { const G = GS.auction, it = G.order[G.i]; G.shown = true; G.bids.slice(0, teamCount).forEach((b, i) => { if (b) addScore(i, it.ok ? b : -b); }); GR.auction(); if (it.ok) burst($(".verdict", slides[cur])); return; }
-  if (d.aucNext != null) { const G = GS.auction; G.i++; G.bids = [0,0,0,0]; G.shown = false; GR.auction(); return; }
+  if (d.aucReveal != null) { const G = GS.auction, it = G.order[G.i]; G.shown = true; G.bids.slice(0, teamCount).forEach((b, i) => { if (b) addScore(i, it.ok ? b : -b); }); GR.auction(); if (it.ok) burst($(".verdict", sec)); return; }
+  if (d.guess != null) { const G = GS.auction, it = G.order[G.i]; G.guess = d.guess === "1"; G.shown = true; GR.auction(); if (G.guess === it.ok) { addMine(100); burst($(".verdict", sec)); } return; }
+  if (d.aucNext != null) { const G = GS.auction; G.i++; G.bids = [0,0,0,0]; G.shown = false; G.guess = null; GR.auction(); return; }
+  /* board */
   if (d.tile) { const G = GS.board; if (!G.used[d.tile]) { G.open = d.tile; G.shownAns = false; GR.board(); } return; }
   if (d.tileAnswer != null) { GS.board.shownAns = true; clearInterval(timerId); GR.board(); return; }
   if (d.tileClose != null) { const G = GS.board; G.used[G.open] = true; G.open = null; clearInterval(timerId); GR.board(); return; }
   if (d.modal != null && e.target === t) { GS.board.open = null; clearInterval(timerId); GR.board(); return; }
+  /* wheel */
   if (d.spin != null) { spin(); return; }
+  /* builder */
   if (d.pool != null) { const G = GS.build; G.built.push(+d.pool); G.state = ""; GR.build(); return; }
   if (d.built != null) { const G = GS.build; G.built = G.built.filter(k => k !== +d.built); G.state = ""; GR.build(); return; }
-  if (d.bCheck != null) { const G = GS.build, ok = G.built.every((k, i) => k === i); G.state = ok ? "right" : "wrong"; GR.build(); if (ok) burst($(".slots", slides[cur])); return; }
-  if (d.bShow != null) { const G = GS.build; G.state = "shown"; G.built = G.order[G.i].w.map((_, k) => k); GR.build(); return; }
-  if (d.bNext != null) { const G = GS.build; G.i++; G.pool = null; GR.build(); return; }
+  if (d.bCheck != null) { const G = GS.build, ok = G.built.every((k, i) => k === i); G.state = ok ? "right" : "wrong"; if (ok && STUDENT && !G.scored) { G.scored = true; addMine(100); } GR.build(); if (ok) burst($(".slots", sec)); return; }
+  if (d.bShow != null) { const G = GS.build; G.state = "shown"; G.built = G.order[G.i].w.map((_, k) => k); G.scored = true; GR.build(); return; }
+  if (d.bNext != null) { const G = GS.build; G.i++; G.pool = null; G.scored = false; GR.build(); return; }
+  /* mystery */
   if (d.clue != null) { const G = GS.mystery; G.n = Math.min(G.order[G.i].c.length, G.n + 1); GR.mystery(); return; }
-  if (d.placeRev != null) { GS.mystery.rev = true; GR.mystery(); burst($(".secret", slides[cur])); return; }
+  if (d.placeRev != null) { GS.mystery.rev = true; GR.mystery(); burst($(".secret", sec)); return; }
   if (d.placeNext != null) { const G = GS.mystery; G.i++; G.n = 1; G.rev = false; GR.mystery(); return; }
+  /* mime */
   if (d.mimeNext != null) { const G = GS.mime; G.i++; G.st = "hidden"; clearInterval(timerId); GR.mime(); return; }
   if (d.mimePeek != null) { GS.mime.st = "peek"; GR.mime(); return; }
   if (d.mimeHide != null) { GS.mime.st = "hidden"; GR.mime(); return; }
-  if (d.mimeRev != null) { GS.mime.st = "shown"; clearInterval(timerId); GR.mime(); burst($(".secret", slides[cur])); return; }
+  if (d.mimeRev != null) { GS.mime.st = "shown"; clearInterval(timerId); GR.mime(); burst($(".secret", sec)); return; }
+  /* boss */
+  if (d.bossNew != null) { const G = GS.boss, B = G0.boss; G.rev = false; if (Math.random() < .22) G.card = { type: "may", text: pick(B.may), yes: Math.random() < .6 }; else { const [en, uz] = pick(B.cmds); G.card = { type: "cmd", text: en, uz, please: Math.random() < .6 }; } GR.boss(); return; }
+  if (d.bossRev != null) { GS.boss.rev = true; GR.boss(); return; }
 });
 document.addEventListener("keydown", e => {
+  if (flow) return;
   const tag = (document.activeElement && document.activeElement.tagName) || "";
   if (tag === "INPUT" || tag === "SELECT") return;
   if (e.key === "Escape") { if (!$("#menu").hidden) { $("#menu").hidden = true; return; } if (GS.board && GS.board.open && slides[cur].dataset.game === "board") { GS.board.open = null; GR.board(); } return; }
@@ -361,11 +457,12 @@ document.addEventListener("keydown", e => {
 });
 let tx = null;
 vp.addEventListener("touchstart", e => { tx = e.touches[0].clientX; }, { passive: true });
-vp.addEventListener("touchend", e => { if (tx == null) return; const dx = e.changedTouches[0].clientX - tx; tx = null; if (Math.abs(dx) > 70 && !e.target.closest("button")) { dx < 0 ? go(cur + 1) : go(cur - 1); } }, { passive: true });
+vp.addEventListener("touchend", e => { if (flow || tx == null) return; const dx = e.changedTouches[0].clientX - tx; tx = null; if (Math.abs(dx) > 70 && !e.target.closest("button")) { dx < 0 ? go(cur + 1) : go(cur - 1); } }, { passive: true });
 
 /* ================= START ================= */
 renderTeams();
+slides[0].classList.add("active");
 fit();
-go(fromHash(), true);
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fit(); if (slides[cur].dataset.game === "wheel") drawWheel(); });
+if (!flow) go(fromHash(), true);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fit(); drawWheel(); });
 })();
