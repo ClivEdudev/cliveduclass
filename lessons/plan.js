@@ -4,7 +4,7 @@
 window.PLAN = {
   start: "2026-11-10",
   teachDays: [1, 2, 3, 4, 5, 6],
-  unlockHour: 13,
+  unlockHour: 16,
   teacherCode: "clivedu",
   revision: { title: "Big Revision", date: "2026-11-09", path: "revision/" },
   done: [
