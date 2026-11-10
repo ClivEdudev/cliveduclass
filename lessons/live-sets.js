@@ -1,6 +1,38 @@
 /* Question sets for the live class game. The first option is always the correct one;
    the host shuffles the options before showing them. */
 window.LIVE_SETS = [
+  { id: "s1", path: "start/01/lesson.js", title: "Hello! My name is… (new group)", topic: "New group · Lesson 1", qs: [
+    ["“Salom!” in English:", "Hello!", "Goodbye!", "Thank you!", "Sorry!"],
+    ["“Xayr!” in English:", "Goodbye!", "Hello!", "Please!", "Yes!"],
+    ["It’s 8 in the morning. You say:", "Good morning!", "Good evening!", "Good night!", "Good afternoon!"],
+    ["It’s 3 in the afternoon. You say:", "Good afternoon!", "Good morning!", "Good evening!", "Goodbye morning!"],
+    ["It’s 7 in the evening. You say:", "Good evening!", "Good morning!", "Good afternoon!", "Hello night!"],
+    ["“Ismingiz nima?”", "What’s your name?", "How are you?", "Where are you?", "Who are you name?"],
+    ["My name ___ Ali.", "is", "am", "are", "be"],
+    ["I ___ Madina.", "am", "is", "are", "my"],
+    ["I’m = ?", "I am", "I is", "I are", "I my"],
+    ["What’s = ?", "What is", "What are", "What am", "What has"],
+    ["“Tanishganimdan xursandman!”", "Nice to meet you!", "See you tomorrow!", "How are you?", "Thank you!"],
+    ["Nice to meet you! — Answer:", "Nice to meet you, too!", "Goodbye!", "My name is.", "I’m fine."],
+    ["How are you? — Answer:", "I’m fine, thank you.", "My name is Ali.", "Nice to meet you.", "I’m Ali."],
+    ["“Rahmat!” in English:", "Thank you!", "Please!", "Sorry!", "Hello!"],
+    ["“Iltimos” in English:", "Please", "Thank you", "Sorry", "Yes"],
+    ["“Kechirasiz!” in English:", "Sorry!", "Please!", "Thanks!", "Bye!"],
+    ["Thank you! — Answer:", "You’re welcome!", "Thank you!", "Sorry!", "Goodbye!"],
+    ["“Ha” in English:", "Yes", "No", "Hi", "OK no"],
+    ["“Yo‘q” in English:", "No", "Yes", "Not you", "Bye"],
+    ["“Ertaga ko‘rishamiz!”", "See you tomorrow!", "Good morning!", "Nice to meet you!", "How are you?"],
+    ["Which sentence is correct?", "My name is Jasur.", "My name Jasur.", "I name is Jasur.", "Me name is Jasur."],
+    ["Which question is correct?", "How are you?", "How you are?", "How is you?", "Are how you?"],
+    ["3 = ?", "three", "tree", "two", "ten"],
+    ["7 = ?", "seven", "six", "eleven", "five"],
+    ["“to‘rt” in English:", "four", "for", "five", "fourteen"],
+    ["10 = ?", "ten", "two", "three", "teen"],
+    ["“sakkiz” in English:", "eight", "eighty", "nine", "seven"],
+    ["What comes after five?", "six", "four", "seven", "nine"],
+    ["2 + 3 = ?", "five", "four", "six", "three"],
+    ["“Charchadim.” in English:", "I’m tired.", "I’m fine.", "I’m Ali.", "I’m welcome."]
+  ] },
   { id: "rev", path: "revision/lesson.js", title: "Big Revision", topic: "to be · questions · commands · may · have to", qs: [
     ["She ___ a doctor.", "is", "am", "are", "be"],
     ["___ you like tea?", "Do", "Does", "Are", "Is"],

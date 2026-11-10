@@ -7,6 +7,10 @@ window.PLAN = {
   unlockHour: 16,
   teacherCode: "clivedu",
   revision: { title: "Big Revision", date: "2026-11-09", path: "revision/", openNow: true },
+  /* The new beginner group (started 10 Nov) */
+  starter: [
+    { title: "Hello! My name is…", focus: "greetings · names · How are you? · numbers 1–10", date: "2026-11-10", path: "start/01/", key: "s1", openNow: true }
+  ],
   done: [
     { title: "Making sentences", path: null }, { title: "To be: am / is / are", path: null },
     { title: "Negatives and questions", path: null }, { title: "Commands", path: null },

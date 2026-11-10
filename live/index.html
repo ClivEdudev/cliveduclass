@@ -33,7 +33,7 @@ const TYPES = [
 ];
 const TYPE_LABEL = { mcq: "Quiz", tf: "Right or wrong?", build: "Word order race", clue: "Mystery clues" };
 const sets = window.LIVE_SETS.map(s => ({ ...s }));
-sets.push({ id: "all", title: "Everything so far", topic: "Big Revision + lessons 1–5", mixOf: sets.map(s => s.id) });
+sets.push({ id: "all", title: "Everything so far", topic: "Big Revision + lessons 1–5", mixOf: sets.filter(s => !/^s\d/.test(s.id)).map(s => s.id) });
 const S = { phase: "setup", room: null, client: null, players: {}, rounds: [], qi: -1, q: null, qStart: 0, answers: {}, limit: 10, qLimit: 10,
   set: sets[0], type: "mix", auto: true, status: "offline", tick: 0, timer: 0, autoAt: 0, lastGain: {}, clueShown: 1 };
 

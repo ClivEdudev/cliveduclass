@@ -79,6 +79,7 @@ a:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
   const items = [];
   const rev = P.revision, revDate = P.parse(rev.date);
   if (rev.openNow || P.isOpen(revDate)) items.push({ n: 0, title: rev.title, focus: "sentences · to be · questions · commands · may · must · have to", date: revDate, href: rev.path, key: "rev" });
+  (P.starter || []).forEach(s => { const d = P.parse(s.date); if (s.openNow || P.isOpen(d)) items.push({ n: 0, group: "New group", title: s.title, focus: s.focus, date: d, href: s.path, key: s.key }); });
   P.all.filter(l => l.ready && P.isOpen(l.date)).forEach(l => items.push({ n: l.n, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: String(l.n) }));
   items.sort((a, b) => b.date - a.date);
   const newest = items[0];
@@ -98,7 +99,7 @@ a:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
   }
 
   const cards = items.length ? items.map(it => `<a class="card ${isToday(it) ? "new" : ""}" href="${it.href}">
-      <span class="n">${it.n ? "Lesson " + it.n : "Revision"} · ${esc(P.fmt(it.date))}</span>
+      <span class="n">${it.n ? "Lesson " + it.n : (it.group || "Revision")} · ${esc(P.fmt(it.date))}</span>
       <h3>${esc(it.title)}</h3><span class="f">${esc(it.focus)}</span>
       <span class="foot"><span class="my">My points: ${pts[it.key] || 0}</span><span class="go">Revise →</span></span></a>`).join("")
     : `<p class="empty">Your lessons will appear here after class.</p>`;

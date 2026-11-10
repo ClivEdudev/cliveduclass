@@ -117,7 +117,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
         ${lesson.ready ? "" : `<p class="focus">This lesson isn’t built yet.</p>`}</div>
         <div>${lesson.ready ? `<a class="btn" href="../${lesson.folder}">Start the lesson →</a>` : `<span class="btn dk" aria-disabled="true">Coming soon</span>`}</div>
       </section>
-      <div class="quick"><a class="btn" href="../live/">Start a live game</a><a class="btn ghost" href="../${P.revision.path}">Open the Big Revision</a><a class="btn ghost" href="../">See the student page</a></div>
+      <div class="quick"><a class="btn" href="../live/">Start a live game</a>${(P.starter || []).map(s => `<a class="btn" href="../${s.path}">New group: ${esc(s.title)}</a>`).join("")}<a class="btn ghost" href="../${P.revision.path}">Open the Big Revision</a><a class="btn ghost" href="../">See the student page</a></div>
       <p class="info"><b>What students see:</b> the student page at <b>cliveduclass.netlify.app</b> shows only lessons you have already taught. Each lesson opens for students at <b>${hh}:00</b> on the day you teach it. On this device you can open every lesson.</p>
       <section class="sec" id="plan">
         <h2>Course plan</h2>

@@ -55,7 +55,7 @@ const BG = { ink: "ink", yel: "yel", sky: "sky", teal: "tealbg", cream: "" };
 const GAME_TITLES = { board: "Quiz Board", auction: "Grammar Auction", build: "Sentence Builder", wheel: "Spin the Wheel", mime: "Mime and Say", mystery: "Mystery Place", boss: "Boss Says…" };
 const R = {
   raw: s => s.html,
-  cover: s => `<div><span class="tag">${s.tag || "Lesson " + L.n}</span></div><h1 class="h1">${s.title}</h1><p class="lead">${s.lead || ""}</p>
+  cover: s => `<div><span class="tag">${s.tag || (L.n ? "Lesson " + L.n : "Lesson")}</span></div><h1 class="h1">${s.title}</h1><p class="lead">${s.lead || ""}</p>
     <div class="row">${(s.chips || []).map(([t, c]) => `<span class="bub ${c}">${t}</span>`).join("")}</div>`,
   goals: s => `<h2 class="h2">${s.title || "Today you will…"}</h2><div class="cols flex1">${s.items.map((it, i) => `<div class="card big ${["peach","mint","skyb"][i % 3]}">
     <p class="numc">${i + 1}</p><p class="enb">${it[0]}</p><p class="en" style="font-size:40px">${it[1]}</p><p class="uz">${it[2]}</p></div>`).join("")}</div>`,
@@ -137,7 +137,7 @@ let teamCount = store.get("clv-count", 3);
 if (![2,3,4].includes(teamCount)) teamCount = 3;
 let confirming = false;
 const save = () => { store.set("clv-teams", teams); store.set("clv-count", teamCount); };
-const PKEY = String(L.n || "rev");
+const PKEY = String(L.id || L.n || "rev");
 function myPoints() { const all = store.get("clv-points", {}); return all[PKEY] || 0; }
 function addMine(d) {
   const all = store.get("clv-points", {}); all[PKEY] = (all[PKEY] || 0) + d; store.set("clv-points", all); renderMine();
@@ -483,7 +483,7 @@ function followTo(m, force) {
 }
 function startSync() {
   if (!window.LiveNet) return;
-  const id = L.n ? "l" + L.n : "rev";
+  const id = L.id || (L.n ? "l" + L.n : "rev");
   sync = window.LiveNet.syncSlides(id, STUDENT ? m => followTo(m) : null);
   if (TEACHER) sync.send({ i: ORIG[cur], ts: Date.now() });
 }
