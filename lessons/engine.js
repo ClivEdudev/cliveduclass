@@ -86,6 +86,10 @@ const R = {
     <div class="byeside" style="width:720px;display:flex;flex-direction:column;gap:24px">${STUDENT
       ? `<p class="eb">My points in this lesson</p><p class="mypts" id="myptsBig">0</p><div><a class="sbtn y" href="${HOME}" style="text-decoration:none">Back to my lessons</a></div>`
       : `<p class="eb">Final scores</p><div class="lb" id="leaderboard"></div><div><button class="sbtn y" data-celebrate>Celebrate the winners</button></div>`}</div>`,
+  words: s => `${hd(s)}<div class="g3 r2 flex1">${s.items.map(([en, uz, sen, tag]) => `<div class="card word ${s.tint || "skyb"}">
+    <p class="wen">${en}</p><p class="uz small">${uz}</p><p class="wsen">${sen}</p><span class="wtag">${tag}</span></div>`).join("")}</div>`,
+  wall: s => `${hd(s)}<div class="g5 r2 flex1">${s.groups.map(g => `<div class="card ln wallbox">
+    <p class="walltitle">${g.name}</p>${g.words.map(w => `<p class="wallw">${w}</p>`).join("")}</div>`).join("")}</div>`,
   game: s => `<div id="g-${s.g}" style="display:contents"></div>`
 };
 const slideList = L.slides.filter(s => !(STUDENT && s.t === "game" && CLASS_ONLY.includes(s.g)) && !(STUDENT && s.classOnly));
@@ -110,7 +114,7 @@ document.body.innerHTML = `
   <a class="brand" href="${HOME}"><i aria-hidden="true"></i>${STUDENT ? "My lessons" : "ClivEdu Class"}</a>
   <span class="lname">${lname}</span>
   <button class="lnk viewbtn" id="viewBtn" data-viewtoggle></button>
-  ${STUDENT ? `<button class="lnk viewbtn followbtn" id="followBtn" data-follow></button>` : `<span class="lnk viewbtn followbtn" id="shareTag" title="Students' phones follow this slide">Phones follow</span><a class="lnk viewbtn" href="${HOME}../live/">Live game</a>`}
+  ${STUDENT ? `<span class="lnk viewbtn anstag" id="ansTag">\u{1F512} Answers hidden</span><button class="lnk viewbtn followbtn" id="followBtn" data-follow></button>` : `<span class="lnk viewbtn followbtn" id="shareTag" title="Students' phones follow this slide">Phones follow</span><button class="lnk viewbtn ansbtn" id="ansBtn" data-answers></button><a class="lnk viewbtn" href="${HOME}../live/">Live game</a>`}
   ${STUDENT ? `<div class="teams"><span class="mine">My points <b id="mypts">0</b></span></div>` : `<div class="teams" id="teams" aria-label="Team scores"></div>`}
 </div>
 <div class="viewport" id="viewport">
@@ -218,7 +222,7 @@ $$(".ans").forEach(b => { const a = b.textContent; b.innerHTML = `<span class="q
 function go(i, fromHash) {
   i = Math.max(0, Math.min(slides.length - 1, i));
   clearInterval(timerId);
-  if (TEACHER && sync) sync.send({ i: ORIG[i], ts: Date.now() });
+  if (TEACHER) sendSync(i);
   if (flow) { cur = i; const bh = ($(".bar") || {}).offsetHeight || 0; scrollTo({ top: Math.max(0, slides[i].getBoundingClientRect().top + scrollY - bh - 12), behavior: reduceMotion ? "auto" : "smooth" }); return; }
   slides[cur].classList.remove("active");
   cur = i;
@@ -232,7 +236,27 @@ function go(i, fromHash) {
   $("#menuGrid").innerHTML = slides.map((s, k) => `<button data-goto="${k}" ${k === cur ? 'aria-current="true"' : ""}><b>${k + 1}</b>${esc(s.dataset.title || "")}</button>`).join("");
 }
 function rerenderGames() { if (flow) slides.forEach(s => { const g = s.dataset.game; if (g && GR[g]) GR[g](); }); else { const g = slides[cur].dataset.game; if (g && GR[g]) GR[g](); } }
-function reveal(b) { if (b.classList.contains("on")) return; b.classList.add("on"); b.setAttribute("aria-label", "Answer shown"); burst(b, 30); }
+let ansOpen = true;                      /* students may reveal unless a live teacher says otherwise */
+let toastId = null;
+function toast(msg) {
+  let el = document.getElementById("toast");
+  if (!el) { el = document.createElement("div"); el.id = "toast"; el.className = "toast"; document.body.appendChild(el); }
+  el.textContent = msg; el.hidden = false;
+  clearTimeout(toastId); toastId = setTimeout(() => { el.hidden = true; }, 2600);
+}
+function setAnsOpen(v) {
+  if (ansOpen === v) return;
+  ansOpen = v;
+  document.body.classList.toggle("anslock", STUDENT && !ansOpen);
+  toast(v ? "The teacher opened the answers \u2713" : "\u{1F512} Answers are hidden for now");
+}
+function reveal(b) {
+  if (STUDENT && !ansOpen) {
+    b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
+    toast("\u{1F512} Wait for the teacher \u00b7 O\u2018qituvchini kuting");
+    return;
+  }
+  if (b.classList.contains("on")) return; b.classList.add("on"); b.setAttribute("aria-label", "Answer shown"); burst(b, 30); }
 function next() { const sl = slides[cur]; if (!sl.dataset.game) { const h = $(".ans:not(.on)", sl); if (h) { reveal(h); return; } } go(cur + 1); }
 function fromHash() { const m = location.hash.match(/^#slide-(\d+)$/); return m ? +m[1] - 1 : 0; }
 addEventListener("hashchange", () => { if (!flow) go(fromHash(), true); });
@@ -403,6 +427,7 @@ document.addEventListener("click", e => {
   if (d.menuClose != null) { $("#menu").hidden = true; return; }
   if (d.goto != null) { $("#menu").hidden = true; go(+d.goto); return; }
   if (d.full != null) { toggleFull(); return; }
+  if (d.answers != null) { ansShown = !ansShown; paintAns(); sendSync(); toast(ansShown ? "Answers are now open for the class" : "Answers are hidden from the class again"); return; }
   if (d.follow != null) { following = !following; store.set("clv-follow", following); paintFollow(); if (following && lastMsg) followTo(lastMsg, true); return; }
   if (d.viewtoggle != null) { viewPref = flow ? "slides" : "scroll"; store.set("clv-view", viewPref); fit(); if (!flow) go(cur, true); return; }
   if (d.jump) { const i = slides.findIndex(s => s.dataset.id === d.jump); if (i >= 0) go(i); return; }
@@ -470,12 +495,19 @@ vp.addEventListener("touchend", e => { if (flow || tx == null) return; const dx 
 /* ================= FOLLOW THE TEACHER: students' phones show the slide on the board ================= */
 const ORIG = slideList.map(s => L.slides.indexOf(s));
 let sync = null, following = store.get("clv-follow", true), lastMsg = null, lastTs = 0;
+let ansShown = false;                    /* teacher side: are answers released to the class? */
+function paintAns() { const b = $("#ansBtn"); if (b) { b.textContent = ansShown ? "\u25CF Answers shown" : "Show answers"; b.classList.toggle("on", ansShown); } }
+function sendSync(i) { if (sync) sync.send({ i: ORIG[i == null ? cur : i], ts: Date.now(), ans: ansShown }); }
 function paintFollow() { const b = $("#followBtn"); if (b) { b.textContent = following ? "● Following teacher" : "Follow teacher"; b.classList.toggle("on", following); } }
 function followTo(m, force) {
   if (!m || typeof m.i !== "number") return;
-  if (Math.abs(Date.now() - (m.ts || 0)) > 3 * 3600000) return;   // only during class
+  const age = Math.abs(Date.now() - (m.ts || 0));
+  if (age > 3 * 3600000) return;                                  // only during class
   if (!force && (m.ts || 0) <= lastTs) return;
   lastTs = m.ts || 0; lastMsg = m;
+  /* The lock holds only while the teacher is live. Two hours after the last
+     message it lifts by itself, so revising at home always works. */
+  if (typeof m.ans === "boolean" && age < 2 * 3600000) setAnsOpen(m.ans);
   if (!following) return;
   let k = 0; ORIG.forEach((o, j) => { if (o <= m.i) k = j; });
   if (k === cur && !flow) return;
@@ -485,9 +517,9 @@ function startSync() {
   if (!window.LiveNet) return;
   const id = L.id || (L.n ? "l" + L.n : "rev");
   sync = window.LiveNet.syncSlides(id, STUDENT ? m => followTo(m) : null);
-  if (TEACHER) sync.send({ i: ORIG[cur], ts: Date.now() });
+  if (TEACHER) sendSync();
 }
-paintFollow();
+paintFollow(); paintAns();
 if (window.LiveNet) startSync();
 else if (SELF) { const sc = document.createElement("script"); sc.src = SELF.replace(/engine\.js(\?.*)?$/, "live-net.js"); sc.onload = startSync; document.head.appendChild(sc); }
 

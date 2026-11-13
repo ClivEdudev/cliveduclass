@@ -11,6 +11,11 @@ window.PLAN = {
   starter: [
     { title: "Hello! My name is…", focus: "greetings · names · How are you? · numbers 1–10", date: "2026-11-10", path: "start/01/", key: "s1", openNow: true }
   ],
+  /* One-off lessons that sit outside the weekly plan */
+  extras: [
+    { title: "English Word Power", focus: "60 new words · classroom, family, house, food, town, jobs, weather, transport",
+      date: "2026-11-13", path: "vocab/01/", key: "v1", group: "Vocabulary", openNow: true }
+  ],
   done: [
     { title: "Making sentences", path: null }, { title: "To be: am / is / are", path: null },
     { title: "Negatives and questions", path: null }, { title: "Commands", path: null },
