@@ -3,167 +3,357 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0B1828">
-<title>ClivEdu Live · Join</title>
-<link rel="stylesheet" href="../lessons/live.css">
+<meta name="theme-color" content="#FFFFFF">
+<title>ClivEdu Live · Play</title>
+<style>
+/* Phone player. Light, high contrast, system fonts, no animations: quick on any phone.
+   Inputs are 18px or more so iPhones never zoom in when a student types. */
+:root{
+  --pg:#EEF3F8; --card:#FFFFFF; --ink:#12263A; --sub:#4B5F73; --line:#D2DCE6; --teal:#0B6E70;
+  --yel:#FFC93C; --good:#1C8F50; --bad:#C23A47;
+  --o0:#D93A4A; --o1:#2A66D6; --o2:#E8A90A; --o3:#1C8F50;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{height:100%}
+body{margin:0;background:var(--pg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+h1,h2,p{margin:0}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--o1);outline-offset:2px}
+.app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:12px;
+  padding-block:max(10px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px))}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:8px;min-height:40px}
+.brand{font-weight:800;display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink)}
+.brand i{width:20px;height:20px;border-radius:6px;background:conic-gradient(from 45deg,var(--o1) 0 25%,var(--teal) 0 50%,var(--o1) 0 75%,var(--teal) 0)}
+.who{min-width:0;flex:1;font-weight:700;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who b{color:var(--ink)}
+.score{font-weight:800;background:var(--ink);color:#fff;border-radius:999px;padding:5px 12px;white-space:nowrap}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--good);flex:none}
+.dot.off{background:var(--bad)}
+.netbar{background:#FFF0D6;border:2px solid #E8A90A;border-radius:14px;padding:8px 12px;font-weight:700;font-size:14px}
+.netbar small{display:block;font-weight:600;color:var(--sub)}
+
+/* cards */
+.card{background:var(--card);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 0 var(--line)}
+.card.mid{margin-block:auto;align-items:center;text-align:center;padding:26px 18px}
+.card.good{background:var(--good);color:#fff}.card.bad{background:var(--bad);color:#fff}
+.card.good .uz,.card.bad .uz{color:#E8F5EE}
+h1.t{font-size:28px;line-height:1.15}
+.big{font-size:30px;font-weight:800;line-height:1.15}
+.huge{font-size:52px;font-weight:800;line-height:1}
+.lead{font-size:18px}
+.uz{color:var(--teal);font-weight:600;font-size:14px}
+.muted{color:var(--sub)}
+.err{background:#FDECEE;color:#8E1F2B;border-radius:12px;padding:10px 12px;font-weight:700}
+
+/* join form */
+.step{display:flex;flex-direction:column;gap:6px}
+.step > b{font-size:17px}
+.step > b .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:13px;margin-right:6px;vertical-align:1px}
+input.f{font:800 22px/1.2 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:13px 14px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--ink);width:100%}
+input.f:focus{border-color:var(--o1);outline:none}
+#code{letter-spacing:.12em;text-transform:uppercase}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg label{position:relative}
+.seg input{position:absolute;opacity:0;inset:0}
+.seg span{display:flex;flex-direction:column;gap:2px;padding:12px;border-radius:14px;border:2px solid var(--line);font-weight:800;font-size:17px;background:#fff;height:100%}
+.seg small{font-weight:600;font-size:13px;color:var(--sub)}
+.seg input:checked + span{border-color:var(--ink);background:#FFF6D6}
+.seg input:focus-visible + span{outline:3px solid var(--o1)}
+.rooms{display:flex;flex-direction:column;gap:6px}
+.room{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:14px;border:2px solid var(--line);background:#fff}
+.room.sel{border-color:var(--ink);background:#FFF6D6}
+.room span{flex:1;min-width:0}
+.room small{display:block;color:var(--sub);font-size:13px}
+.room b.c{font-size:18px;letter-spacing:.06em}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:16px;font-weight:800;font-size:20px;background:var(--yel);color:var(--ink);text-decoration:none}
+.btn.sec{background:#fff;border:2px solid var(--line);font-size:16px;padding:12px}
+.btn[disabled]{opacity:.45}
+.link{color:var(--sub);font-weight:700;font-size:14px;text-decoration:underline;padding:6px}
+
+/* rules list */
+.rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;text-align:left;width:100%}
+.rules li{display:flex;gap:10px;align-items:flex-start}
+.rules li i{font-style:normal;flex:none;width:28px;height:28px;border-radius:50%;background:#FFF6D6;display:grid;place-items:center;font-weight:800}
+.rules li span small{display:block;color:var(--teal);font-weight:600;font-size:13px}
+
+/* question */
+.qhead{display:flex;align-items:center;gap:10px}
+.qhead .num{font-weight:800;color:var(--sub)}
+.qhead .prac{font-weight:800;background:#FFF6D6;border-radius:999px;padding:4px 10px;font-size:14px}
+.timer{margin-left:auto;width:52px;height:52px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px;flex:none}
+.timer.low{background:var(--bad)}
+.how{font-weight:800;font-size:16px}
+.how small{display:block;color:var(--teal);font-weight:600;font-size:13px}
+.qtext{background:#fff;border-radius:16px;padding:14px;font-weight:800;font-size:21px;line-height:1.3;box-shadow:0 1px 0 var(--line)}
+.qtext small{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:10px;min-height:112px;border-radius:16px;padding:12px;
+  color:#fff;font-weight:800;font-size:19px;line-height:1.2;text-align:left}
+.opt:active{filter:brightness(.92)}
+.opt svg{width:26px;height:26px;fill:#fff;flex:none}
+.o0{background:var(--o0)}.o1{background:var(--o1)}.o2{background:var(--o2);color:var(--ink)}.o2 svg{fill:var(--ink)}.o3{background:var(--o3)}
+.opts.two .opt{min-height:170px;align-items:center;justify-content:center;font-size:24px}
+.opts.two .mk{font-size:44px;line-height:1}
+.slots{min-height:64px;border:2px dashed var(--line);border-radius:14px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff}
+.pool{display:flex;flex-wrap:wrap;gap:8px}
+.w{font-weight:800;font-size:19px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:9px 13px}
+.w.on{background:#FFF6D6;border-color:var(--yel)}
+.w.end{border:0;background:none;color:var(--sub);padding:9px 2px}
+.sent .tick{width:64px;height:64px;border-radius:50%;background:var(--good);color:#fff;display:grid;place-items:center;font-size:36px;font-weight:800}
+.sent .tick.wait{background:var(--line);color:var(--ink);font-size:26px}
+</style>
 </head>
-<body class="player">
-<main id="app" class="pscreen"></main>
+<body>
+<main class="app" id="app"></main>
 <script src="../lessons/live-net.js"></script>
 <script>
 (() => {
 "use strict";
-/* Built for low-end phones: system fonts, no animations, and the screen is only rebuilt when something the player sees changes. */
 const NET = window.LiveNet, $ = s => document.querySelector(s), app = $("#app");
-const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const SH = ['<path d="M20 4 L37 34 L3 34 Z"/>','<path d="M20 2 L37 20 L20 38 L3 20 Z"/>','<circle cx="20" cy="20" r="16"/>','<rect x="5" y="5" width="30" height="30" rx="3"/>'];
-const shape = i => `<svg class="shp" viewBox="0 0 40 40" width="28" height="28" aria-hidden="true">${SH[i]}</svg>`;
-const me = { id: null, name: "", type: "team", room: "" };
-let client = null, st = null, gotAt = 0, lastKey = "", tick = 0, myChoice = null, built = [], sentFor = -1, connected = false;
-const saved = k => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
+const shape = i => `<svg viewBox="0 0 40 40" aria-hidden="true">${SH[i]}</svg>`;
+const load = k => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
 const keep = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const drop = k => { try { localStorage.removeItem(k); } catch (e) {} };
+const SESSION = "clv-live-session";
 
+const me = { id: null, name: "", type: "team", room: "" };
+let client = null, st = null, gotAt = 0, lastK = 0, lastKey = "", tick = 0, online = true;
+let choice = null, built = [], pending = null, sentFor = -1, confirmLeave = false;
+let stopWatch = null, rooms = [], waitT = 0;
+
+/* ---------------- join ---------------- */
 function joinForm(err) {
-  const last = saved("clv-live-last") || {};
+  clearInterval(tick); lastKey = "";
+  const last = load("clv-live-last") || {};
   const qcode = (new URLSearchParams(location.search).get("code") || "").toUpperCase();
-  app.innerHTML = `<div class="pcard">
-    <p class="brand"><i></i>ClivEdu Live</p>
-    <h1>Join the game</h1>
-    <div class="proomwrap"><p class="strong">Games now</p><div id="rooms" class="proomlist"><p class="muted small">Looking for games…</p></div></div>
-    <label for="code">Game code</label>
-    <input id="code" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="6" placeholder="ABCDE1" value="${esc(qcode)}">
-    <fieldset class="seg"><legend>How are you playing?</legend>
-      <label><input type="radio" name="type" value="team" ${last.type !== "solo" ? "checked" : ""}><span>As a team<small>one phone for the team</small></span></label>
-      <label><input type="radio" name="type" value="solo" ${last.type === "solo" ? "checked" : ""}><span>Just me<small>my own phone</small></span></label>
-    </fieldset>
-    <label for="name" id="nameLbl">Team name</label>
-    <input id="name" maxlength="18" autocomplete="off" value="${esc(last.name || "")}">
+  app.innerHTML = `<div class="top"><a class="brand" href="../"><i></i>ClivEdu Live</a></div>
+  <div class="card">
+    <h1 class="t">Join the class game<br><span class="uz" style="font-size:16px">O‘yinga qo‘shiling</span></h1>
     ${err ? `<p class="err">${esc(err)}</p>` : ""}
-    <button class="btn y xl full" id="go">Join</button>
-    <p class="muted small">Jamoa bo’lib bitta telefondan yoki o’zingiz alohida qo’shilishingiz mumkin.</p></div>`;
-  const setLbl = () => { const team = document.querySelector('input[name=type]:checked').value === "team"; $("#nameLbl").textContent = team ? "Team name" : "Your name"; $("#name").placeholder = team ? "Samarkand" : "Aziz"; };
+    <div class="step"><b><span class="n">1</span>Game code <span class="uz">· O‘yin kodi</span></b>
+      <div class="rooms" id="rooms"><p class="muted">Looking for games…</p></div>
+      <input class="f" id="code" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="6" placeholder="ABCDE1" value="${esc(qcode)}" aria-label="Game code"></div>
+    <div class="step"><b><span class="n">2</span>How do you play? <span class="uz">· Qanday o‘ynaysiz?</span></b>
+      <div class="seg">
+        <label><input type="radio" name="type" value="team" ${last.type !== "solo" ? "checked" : ""}><span>Team<small>one phone for the team · jamoa</small></span></label>
+        <label><input type="radio" name="type" value="solo" ${last.type === "solo" ? "checked" : ""}><span>Just me<small>my own phone · yakka</small></span></label>
+      </div></div>
+    <div class="step"><b><span class="n">3</span><span id="nameLbl">Team name</span> <span class="uz" id="nameUz">· Jamoa nomi</span></b>
+      <input class="f" id="name" maxlength="18" autocomplete="off" value="${esc(last.name || "")}" aria-label="Name"></div>
+    <button class="btn" id="go">Join · Qo‘shilish</button>
+  </div>`;
+  const setLbl = () => {
+    const team = document.querySelector("input[name=type]:checked").value === "team";
+    $("#nameLbl").textContent = team ? "Team name" : "Your name";
+    $("#nameUz").textContent = team ? "· Jamoa nomi" : "· Ismingiz";
+    $("#name").placeholder = team ? "Samarkand" : "Aziz";
+  };
   document.querySelectorAll("input[name=type]").forEach(r => r.addEventListener("change", setLbl)); setLbl();
-  $("#go").addEventListener("click", start);
+  $("#go").addEventListener("click", () => {
+    const code = $("#code").value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const name = $("#name").value.trim();
+    const type = document.querySelector("input[name=type]:checked").value;
+    if (!/^[A-Z]{5}[1-9]$/.test(code)) return joinForm("The code has 5 letters and 1 number, like ABCDE1. · Kod 5 ta harf va 1 ta raqamdan iborat.");
+    if (!name) return joinForm(type === "team" ? "Write your team name. · Jamoa nomini yozing." : "Write your name. · Ismingizni yozing.");
+    keep("clv-live-last", { name, type });
+    const prev = load("clv-live-" + code);
+    enter({ code, name, type, id: prev && prev.id || Math.random().toString(36).slice(2, 10) });
+  });
   if (!stopWatch) stopWatch = NET.watchRooms(list => { rooms = list; drawRooms(); });
   drawRooms();
 }
-let stopWatch = null, rooms = [];
 function drawRooms() {
   const el = $("#rooms"); if (!el) return;
-  el.innerHTML = rooms.length ? rooms.map(r => `<button class="proom" data-room="${esc(r.code)}"><b>${esc(r.set || "Class game")}</b><span>${esc(r.type || "")}</span><span class="muted small">${r.phase === "lobby" ? `Waiting to start · ${r.n || 0} joined` : `Playing now · question ${(r.qi || 0) + 1} of ${r.total || "?"}`}</span><span class="pcode">${esc(r.code)}</span></button>`).join("")
-    : `<p class="muted small">No games right now. Ask your teacher for the code.</p>`;
+  el.innerHTML = rooms.length ? rooms.map(r => `<button class="room" data-room="${esc(r.code)}"><span><b>${esc(r.set || "Class game")}</b><small>${r.phase === "lobby" ? `Waiting to start · ${r.n || 0} joined` : `Playing now · ${r.n || 0} players`}</small></span><b class="c">${esc(r.code)}</b></button>`).join("")
+    : `<p class="muted">No game found yet. Type the code from the board. <span class="uz">Kodni doskadan yozing.</span></p>`;
 }
-async function start() {
-  const code = $("#code").value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-  const name = $("#name").value.trim();
-  const type = document.querySelector("input[name=type]:checked").value;
-  if (!/^[A-Z]{5}[1-9]$/.test(code)) return joinForm("The code has 5 letters and 1 number, like ABCDE1.");
-  if (!name) return joinForm(type === "team" ? "Write your team name." : "Write your name.");
-  keep("clv-live-last", { name, type });
+
+/* ---------------- connect, and stay connected ---------------- */
+async function enter(sess, quiet) {
   if (stopWatch) { stopWatch(); stopWatch = null; }
-  const prev = saved("clv-live-" + code);
-  Object.assign(me, { id: prev && prev.id || Math.random().toString(36).slice(2, 10), name, type, room: code });
-  keep("clv-live-" + code, { id: me.id });
-  app.innerHTML = `<div class="pcard center"><p class="big2">Connecting…</p></div>`;
+  Object.assign(me, { id: sess.id, name: sess.name, type: sess.type, room: sess.code });
+  keep("clv-live-" + me.room, { id: me.id });
+  saveSession();
+  setCodeInUrl(me.room);
+  st = null; lastK = 0; lastKey = ""; sentFor = -1; pending = null;
+  app.innerHTML = `${top()}<div class="card mid"><p class="big">${quiet ? "Coming back to your game…" : "Connecting…"}</p><p class="uz">${quiet ? "O‘yiningizga qaytilmoqda…" : "Ulanmoqda…"}</p></div>`;
   try {
-    client = await NET.join(code, onMsg, s => { const n = $("#net"); if (n) { n.className = "net " + s; n.textContent = s === "online" ? "Online" : "Reconnecting…"; } });
-    client.subscribe(NET.topic(code, "state"));
+    client = await NET.join(me.room, onMsg, s => { online = s === "online"; drawNet(); if (online) sendJoin(); });
+    client.subscribe(NET.topic(me.room, "state"));
     sendJoin();
-    setTimeout(() => { if (!st) { app.innerHTML = `<div class="pcard center"><p class="big2">Looking for the game…</p><p class="muted">Check the code: <b>${esc(code)}</b></p><button class="btn" id="back">Change code</button></div>`; $("#back").addEventListener("click", () => { client.close(); joinForm(); }); } }, 7000);
-  } catch (e) { joinForm("Could not connect. Check the internet and try again."); }
+    clearTimeout(waitT);
+    waitT = setTimeout(() => { if (!st) notFound(); }, 9000);
+  } catch (e) {
+    if (quiet) return joinForm("We could not reach the game. Check the internet, then join again. · Internetni tekshiring.");
+    joinForm("Could not connect. Check the internet and try again. · Ulanib bo‘lmadi.");
+  }
 }
-function sendJoin() { client.publish(NET.topic(me.room, "join"), { id: me.id, name: me.name, type: me.type }); }
+function notFound() {
+  app.innerHTML = `${top()}<div class="card mid"><p class="big">Looking for the game…</p><p class="lead">Check the code: <b>${esc(me.room)}</b></p><p class="uz">Kodni tekshiring.</p>
+    <button class="btn sec" data-leave>Change code · Kodni o‘zgartirish</button></div>`;
+}
+/* keep the code in the address so a reload lands in the same game (other parameters stay) */
+function setCodeInUrl(code) {
+  try { const u = new URL(location.href); if (code) u.searchParams.set("code", code); else u.searchParams.delete("code"); history.replaceState(null, "", u.pathname + u.search); } catch (e) {}
+}
+function saveSession() { keep(SESSION, { code: me.room, id: me.id, name: me.name, type: me.type, at: Date.now() }); }
+function leave() {
+  drop(SESSION); confirmLeave = false;
+  if (client) { client.close(); client = null; }
+  st = null; clearTimeout(waitT);
+  setCodeInUrl("");
+  joinForm();
+}
+function sendJoin() { if (client && me.room) client.publish(NET.topic(me.room, "join"), { id: me.id, name: me.name, type: me.type }); }
+
 function onMsg(topic, payload) {
   if (!payload) return;
   let s; try { s = JSON.parse(payload); } catch (e) { return; }
-  st = s; gotAt = Date.now();
+  /* the same message can arrive from more than one server: keep only the newest */
+  if (s.k != null) { if (s.k < lastK) return; lastK = s.k; }
+  st = s; gotAt = Date.now(); clearTimeout(waitT);
+  if (st.phase === "closed") { drop(SESSION); }
+  else saveSession();
   if (st.players && st.phase !== "closed" && !st.players.some(p => p[0] === me.id)) sendJoin();
-  if (st.phase === "question" && sentFor !== st.qi) { /* new question */ }
+  resendIfLost();
   update();
 }
+/* An answer sent just as the connection dropped can be lost: send it again until the board has it. */
+function resendIfLost() {
+  if (!pending || !st || !client) return;
+  const open = st.phase === "question" && st.qi === pending.qi;
+  if (!open || (st.answered || []).includes(me.id)) { pending = null; return; }
+  if (Date.now() - pending.at > 1500) { pending.at = Date.now(); client.publish(NET.topic(me.room, "ans"), pending.data); }
+}
+setInterval(resendIfLost, 1500);
+
+/* ---------------- screens ---------------- */
 function myScore() {
-  const r = (st.players || []).slice().sort((a, b) => b[1] - a[1]);
+  const r = (st && st.players || []).slice().sort((a, b) => b[1] - a[1]);
   const i = r.findIndex(p => p[0] === me.id);
   return { pos: i + 1, of: r.length, score: i >= 0 ? r[i][1] : 0 };
 }
+let lastScore = 0;
+function top() {
+  const sc = st && st.players ? myScore().score : lastScore; lastScore = sc;
+  return `<div class="top"><span class="dot ${online ? "" : "off"}" title="${online ? "Online" : "Reconnecting"}"></span>
+    <span class="who">${me.type === "team" ? "Team" : "Me"} · <b>${esc(me.name)}</b></span>
+    <span class="score">⭐ ${sc}</span></div>
+    <div id="net">${online ? "" : netMsg()}</div>`;
+}
+const netMsg = () => `<p class="netbar">Reconnecting… stay on this page. Your points are safe.<small>Qayta ulanmoqda… sahifadan chiqmang. Ballaringiz saqlanadi.</small></p>`;
+function drawNet() { const n = $("#net"); if (n) n.innerHTML = online ? "" : netMsg(); const d = $(".dot"); if (d) d.classList.toggle("off", !online); }
+function answeredNow() { return !!st && ((st.answered || []).includes(me.id) || sentFor === st.qi); }
 function screenKey() {
   if (!st) return "";
-  const answered = sentFor === st.qi || (st.answered || []).includes(me.id);
-  return [st.phase, st.qi, st.q && st.q.clue || "", st.phase === "question" ? answered : "", st.phase === "lobby" ? st.n : ""].join("|");
+  const ack = (st.answered || []).includes(me.id);
+  return [st.phase, st.qi, st.q && st.q.clue || "", st.phase === "question" ? (answeredNow() ? (ack ? "ack" : "sent") : "") : "", st.phase === "lobby" ? st.n : "", confirmLeave].join("|");
 }
 function update() {
   const k = screenKey();
   if (k === lastKey) return;
-  if (st.phase === "question" && lastKey.split("|")[1] !== String(st.qi)) { myChoice = null; built = []; }
+  if (st.phase === "question" && lastKey.split("|")[1] !== String(st.qi)) { choice = null; built = []; }
   lastKey = k;
   render();
 }
-function header() { return `<header class="pbar"><span class="who">${me.type === "team" ? "Team" : "Solo"} · <b>${esc(me.name)}</b></span><span id="net" class="net online">Online</span></header>`; }
+const rulesHTML = () => `<ul class="rules">
+  <li><i>1</i><span>Look at the board. Read the question.<small>Doskaga qarang, savolni o‘qing.</small></span></li>
+  <li><i>2</i><span>Tap your answer on this phone.<small>Javobni shu telefonda bosing.</small></span></li>
+  <li><i>3</i><span>Right and fast = more points.<small>To‘g‘ri va tez = ko‘proq ball.</small></span></li>
+  <li><i>4</i><span>The first question is practice. No points.<small>Birinchi savol — mashq, ball yo‘q.</small></span></li></ul>`;
 function render() {
   clearInterval(tick);
+  if (!st) return;
+  if (confirmLeave) {
+    app.innerHTML = `${top()}<div class="card mid"><p class="big">Leave the game?</p><p class="uz">O‘yindan chiqasizmi?</p>
+      <button class="btn" data-stay>No, keep playing · Yo‘q</button><button class="btn sec" data-leave>Yes, leave · Ha, chiqish</button></div>`;
+    return;
+  }
   let body = "";
-  const q = st.q;
-  if (st.phase === "closed") body = `<div class="pcard center"><p class="big2">The game has ended.</p><p class="muted">Thanks for playing!</p><a class="btn y" href="../">Back to my lessons</a></div>`;
-  else if (st.phase === "lobby") body = `<div class="pcard center"><p class="big2">You’re in!</p><p class="lead2">Look at the board. The game starts soon.</p><p class="muted">${st.n || 0} joined</p></div>`;
+  const q = st.q, num = st.num != null ? st.num : st.qi + 1, of = st.of || st.total;
+  if (st.phase === "closed") body = `<div class="card mid"><p class="big">The game has ended.</p><p class="uz">O‘yin tugadi.</p><a class="btn" href="../">Back to my lessons</a><button class="link" data-leave>Join another game</button></div>`;
+  else if (st.phase === "lobby") body = `<div class="card mid"><div class="sent"><div class="tick">✓</div></div><p class="big">You’re in!</p><p class="uz">Siz o‘yindasiz!</p>
+      <p class="lead">Wait for the teacher to start. <span class="muted">${st.n || 0} joined</span></p>${rulesHTML()}</div>`;
   else if (st.phase === "question") {
-    const answered = sentFor === st.qi || (st.answered || []).includes(me.id);
-    if (answered) body = `<div class="pcard center"><p class="big2">Answer sent!</p><p class="lead2">Wait for the others…</p></div>`;
+    const ack = (st.answered || []).includes(me.id);
+    const head = `<div class="qhead">${st.practice ? `<span class="prac">Practice · Mashq</span>` : `<span class="num">Question ${num} of ${of}</span>`}<span class="timer" id="pt">${Math.ceil(st.left || 0)}</span></div>`;
+    if (answeredNow()) body = `${head}<div class="card mid sent"><div class="tick ${ack ? "" : "wait"}">${ack ? "✓" : "…"}</div>
+        <p class="big">${ack ? "Answer received!" : "Sending your answer…"}</p><p class="uz">${ack ? "Javobingiz qabul qilindi!" : "Javob yuborilmoqda…"}</p>
+        <p class="lead muted">Wait for the others. Look at the board.</p></div>`;
     else {
-      const top = `<div class="row between"><span class="eb">${st.qi + 1} / ${st.total}</span><span class="tbig" id="pt">${Math.ceil(st.left)}</span></div>`;
-      if (q.type === "build") {
-        body = `<div class="pq">${top}<p class="pqtext">Tap the words in order</p>
-          <div class="pslots" id="slots"></div><div class="ppool" id="pool"></div>
-          <button class="btn y xl full" id="sendBuild" disabled>Send</button></div>`;
-      } else if (q.type === "tf") {
-        body = `<div class="pq">${top}<p class="pqtext">${esc(q.text)}</p><div class="popts two">
-          <button class="opt o3" data-c="0"><span class="tfmark">✓</span><span>Right</span></button>
-          <button class="opt o0" data-c="1"><span class="tfmark">✗</span><span>Wrong</span></button></div></div>`;
-      } else {
-        body = `<div class="pq">${top}${q.type === "clue" ? `<p class="pqtext"><small>Clue</small> ${esc(q.clue)}</p>` : `<p class="pqtext">${esc(q.text)}</p>`}
-          <div class="popts">${q.opts.map((t, i) => `<button class="opt o${i}" data-c="${i}">${shape(i)}<span>${esc(t)}</span></button>`).join("")}</div></div>`;
-      }
+      const how = q.how || ["Tap the right answer.", "To‘g‘ri javobni bosing."];
+      const howHTML = `<p class="how">${esc(how[0])}<small>${esc(how[1])}</small></p>`;
+      if (q.type === "build") body = `${head}${howHTML}<div class="slots" id="slots"></div><div class="pool" id="pool"></div><button class="btn" id="sendBuild" disabled>Send · Yuborish</button>`;
+      else if (q.type === "tf") body = `${head}${howHTML}<p class="qtext">${esc(q.text)}</p><div class="opts two">
+          <button class="opt o3" data-c="0"><span class="mk">✓</span><span>Right<br><small>To‘g‘ri</small></span></button>
+          <button class="opt o0" data-c="1"><span class="mk">✗</span><span>Wrong<br><small>Noto‘g‘ri</small></span></button></div>`;
+      else body = `${head}${howHTML}${q.type === "clue" ? `<p class="qtext"><small>Clue · Ishora</small>${esc(q.clue)}</p>` : `<p class="qtext">${esc(q.text)}</p>`}
+          <div class="opts">${(q.opts || []).map((t, i) => `<button class="opt o${i}" data-c="${i}">${shape(i)}<span>${esc(t)}</span></button>`).join("")}</div>`;
     }
   } else if (st.phase === "reveal" || st.phase === "board") {
-    const g = st.gained ? st.gained[me.id] : undefined, ok = g > 0, none = g === undefined;
-    const { pos, of, score } = myScore();
-    body = `<div class="pcard center ${none ? "" : ok ? "good" : "bad"}">
-      <p class="big2">${none ? (st.phase === "board" ? "Scores" : "Time’s up!") : ok ? "Correct!" : "Not this time"}</p>
-      ${ok ? `<p class="plus">+${g}</p>` : ""}
-      ${st.answerText ? `<p class="lead2">Answer: <b>${esc(st.answerText)}</b></p>` : ""}
-      <p class="lead2">Score <b>${score}</b> · place <b>${pos}</b> of ${of}</p></div>`;
+    const g = st.gained ? st.gained[me.id] : undefined, none = g === undefined, ok = g > 0;
+    const { pos, of: n, score } = myScore();
+    const title = none ? (st.phase === "board" ? "Scores" : "Time’s up!") : ok ? "Correct!" : "Not this time";
+    const uz = none ? (st.phase === "board" ? "Ballar" : "Vaqt tugadi!") : ok ? "To‘g‘ri!" : "Bu safar emas";
+    body = `<div class="card mid ${none ? "" : ok ? "good" : "bad"}"><p class="big">${title}</p><p class="uz">${uz}</p>
+      ${ok ? (st.practice ? `<p class="lead">Well done! Now the real game starts.</p>` : `<p class="huge">+${g}</p>`) : ""}
+      ${st.answerText ? `<p class="lead">Answer: <b>${esc(st.answerText)}</b></p>` : ""}
+      ${st.practice ? "" : `<p class="lead">Score <b>${score}</b> · place <b>${pos}</b> of ${n}</p>`}</div>`;
   } else if (st.phase === "end") {
-    const { pos, of, score } = myScore();
-    body = `<div class="pcard center ${pos === 1 ? "good" : ""}"><p class="eb">Final result</p><p class="big2">${pos === 1 ? "You won!" : `Place ${pos} of ${of}`}</p><p class="plus">${score}</p><a class="btn y" href="../">Back to my lessons</a></div>`;
+    const { pos, of: n, score } = myScore();
+    body = `<div class="card mid ${pos === 1 ? "good" : ""}"><p class="muted" style="font-weight:800">Final result · Natija</p><p class="big">${pos === 1 ? "You won! 🏆" : `Place ${pos} of ${n}`}</p><p class="huge">${score}</p>
+      <a class="btn" href="../">Back to my lessons</a><button class="link" data-leave>Join another game</button></div>`;
   }
-  app.innerHTML = header() + body;
+  const leaveLink = st.phase === "lobby" || st.phase === "question" || st.phase === "board" ? `<button class="link" data-askleave>Leave game · Chiqish</button>` : "";
+  app.innerHTML = top() + body + leaveLink;
   if (st.phase === "question" && $("#pt")) {
-    tick = setInterval(() => { const el = $("#pt"); if (!el) return clearInterval(tick); el.textContent = Math.max(0, Math.ceil(st.left - (Date.now() - gotAt) / 1000)); }, 1000);
-    if (q.type === "build") drawBuild();
+    const paint = () => { const el = $("#pt"); if (!el) return clearInterval(tick); const left = Math.max(0, Math.ceil((st.left || 0) - (Date.now() - gotAt) / 1000)); el.textContent = left; el.classList.toggle("low", left <= 5); };
+    paint(); tick = setInterval(paint, 500);
+    if (q.type === "build" && !answeredNow()) drawBuild();
   }
 }
 function drawBuild() {
   const q = st.q;
-  $("#slots").innerHTML = built.length ? built.map((k, i) => `<button class="pw on" data-out="${i}">${esc(q.words[k])}</button>`).join("") + `<span class="pw end">${q.end}</span>` : `<span class="muted">Your sentence…</span>`;
-  $("#pool").innerHTML = q.words.map((w, k) => built.includes(k) ? "" : `<button class="pw" data-in="${k}">${esc(w)}</button>`).join("");
+  $("#slots").innerHTML = built.length ? built.map((k, i) => `<button class="w on" data-out="${i}">${esc(q.words[k])}</button>`).join("") + `<span class="w end">${esc(q.end)}</span>`
+    : `<span class="muted">Tap the words below… · Pastdagi so‘zlarni bosing…</span>`;
+  $("#pool").innerHTML = q.words.map((w, k) => built.includes(k) ? "" : `<button class="w" data-in="${k}">${esc(w)}</button>`).join("");
   $("#sendBuild").disabled = built.length !== q.words.length;
 }
 function send(data) {
   if (!st || st.phase !== "question" || sentFor === st.qi) return;
   sentFor = st.qi;
-  client.publish(NET.topic(me.room, "ans"), Object.assign({ id: me.id, qi: st.qi }, data));
+  const msg = Object.assign({ id: me.id, qi: st.qi }, data);
+  pending = { qi: st.qi, data: msg, at: Date.now() };
+  client.publish(NET.topic(me.room, "ans"), msg);
   try { navigator.vibrate && navigator.vibrate(25); } catch (e) {}
   update();
 }
 document.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
-  if (b.dataset.room) { const c = $("#code"); if (c) { c.value = b.dataset.room; document.querySelectorAll(".proom").forEach(x => x.classList.toggle("sel", x === b)); $("#name").focus(); } return; }
+  if (b.dataset.room) { const c = $("#code"); if (c) { c.value = b.dataset.room; document.querySelectorAll(".room").forEach(x => x.classList.toggle("sel", x === b)); const n = $("#name"); if (n && !n.value) n.focus(); } return; }
+  if (b.dataset.leave != null) return leave();
+  if (b.dataset.askleave != null) { confirmLeave = true; lastKey = ""; return update(); }
+  if (b.dataset.stay != null) { confirmLeave = false; lastKey = ""; return update(); }
   if (!st) return;
   if (b.dataset.c != null) send({ choice: +b.dataset.c });
   else if (b.dataset.in != null) { built.push(+b.dataset.in); drawBuild(); }
   else if (b.dataset.out != null) { built.splice(+b.dataset.out, 1); drawBuild(); }
   else if (b.id === "sendBuild") send({ order: built.slice() });
 });
-joinForm();
+
+/* ---------------- start: go straight back into a game that was interrupted ---------------- */
+const sess = load(SESSION);
+const urlCode = (new URLSearchParams(location.search).get("code") || "").toUpperCase();
+if (sess && Date.now() - sess.at < 3 * 3600000 && (!urlCode || urlCode === sess.code)) enter(sess, true);
+else joinForm();
 })();
 </script>
 </body>

@@ -114,9 +114,14 @@ document.body.innerHTML = `
   <a class="brand" href="${HOME}"><i aria-hidden="true"></i>${STUDENT ? "My lessons" : "ClivEdu Class"}</a>
   <span class="lname">${lname}</span>
   <button class="lnk viewbtn" id="viewBtn" data-viewtoggle></button>
-  ${STUDENT ? `<span class="lnk viewbtn anstag" id="ansTag">\u{1F512} Answers hidden</span><button class="lnk viewbtn followbtn" id="followBtn" data-follow></button>` : `<span class="lnk viewbtn followbtn" id="shareTag" title="Students' phones follow this slide">Phones follow</span><button class="lnk viewbtn ansbtn" id="ansBtn" data-answers></button><button class="lnk viewbtn ansbtn" id="ansAllBtn" data-answers-all></button><a class="lnk viewbtn" href="${HOME}../live/">Live game</a>`}
-  ${STUDENT ? `<div class="teams"><span class="mine">My points <b id="mypts">0</b></span></div>` : `<div class="teams" id="teams" aria-label="Team scores"></div>`}
+  ${STUDENT ? `<span class="lnk viewbtn anstag" id="ansTag">\u{1F512}<span class="long"> Answers hidden</span></span><button class="lnk viewbtn followbtn" id="followBtn" data-follow></button>` : `<span class="lnk viewbtn followbtn" id="shareTag" title="Students' phones follow this slide">Phones follow</span><button class="lnk viewbtn ansbtn" id="ansBtn" data-answers></button><button class="lnk viewbtn ansbtn" id="ansAllBtn" data-answers-all></button><a class="lnk viewbtn" href="${HOME}../live/">Live game</a>`}
+  ${STUDENT ? `<div class="teams"><span class="mine"><span class="long">My points</span><span class="short">\u2B50</span> <b id="mypts">0</b></span></div>` : `<div class="teams" id="teams" aria-label="Team scores"></div>`}
 </div>
+${STUDENT && !store.get("clv-tip-done", false) ? `<div class="tip" id="tip"><b class="t">How to use this page \u00b7 Sahifadan foydalanish</b>
+  <p><i>\u2193</i><span>Scroll down to read the lesson.<small>Darsni o\u2018qish uchun pastga suring.</small></span></p>
+  <p><i>\u{1F446}</i><span>Tap \u201cTap to reveal\u201d to check an answer. \u{1F512} means wait for the teacher.<small>Javobni ko\u2018rish uchun bosing. \u{1F512} \u2014 o\u2018qituvchini kuting.</small></span></p>
+  <p><i>\u25CF</i><span>\u201cFollowing teacher\u201d: your screen moves with the board.<small>Ekraningiz doska bilan birga harakatlanadi.</small></span></p>
+  <button data-tipclose>Got it \u00b7 Tushundim</button></div>` : ""}
 <div class="viewport" id="viewport">
   <div class="stage" id="stage">${slideList.map(sectionHTML).join("")}</div>
   <div class="menu" id="menu" hidden><div class="row" style="justify-content:space-between;max-width:1200px;margin:0 auto 14px"><b style="font:800 22px var(--display)">All slides</b><button class="nbtn" data-menu-close>Close</button></div><div class="menu-grid" id="menuGrid"></div></div>
@@ -187,7 +192,8 @@ document.addEventListener("change", e => {
 /* ================= CONFETTI ================= */
 const cv = $("#confetti"), cx = cv.getContext("2d");
 let parts = [], raf = 0;
-const sizeCv = () => { cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; };
+const DPR = Math.min(window.devicePixelRatio || 1, 1.5);   /* cheaper confetti on low-end phones */
+const sizeCv = () => { cv.width = innerWidth * DPR; cv.height = innerHeight * DPR; };
 function confetti(x, y, n = 90) {
   if (reduceMotion) return;
   const cols = ["#1F5FD1","#B42318","#157347","#FFC93C","#0B6E70","#FFF8E7"];
@@ -195,7 +201,7 @@ function confetti(x, y, n = 90) {
   if (!raf) raf = requestAnimationFrame(tick);
 }
 function tick() {
-  cx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0); cx.clearRect(0, 0, innerWidth, innerHeight);
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0); cx.clearRect(0, 0, innerWidth, innerHeight);
   parts = parts.filter(p => p.life-- > 0);
   for (const p of parts) { p.vy += .35; p.x += p.vx; p.y += p.vy; p.a += .2; cx.save(); cx.translate(p.x, p.y); cx.rotate(p.a); cx.fillStyle = p.c; cx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); cx.restore(); }
   raf = parts.length ? requestAnimationFrame(tick) : 0;
@@ -208,16 +214,45 @@ const stage = $("#stage"), vp = $("#viewport");
 const slides = $$("section.s", stage);
 let cur = 0, flow = false;
 let viewPref = store.get("clv-view", "auto");
-const wantFlow = () => viewPref === "scroll" || (viewPref === "auto" && STUDENT && innerWidth < 900 && innerHeight > innerWidth);
+/* Measure the layout viewport, never window.innerWidth: on many phones innerWidth
+   follows pinch-zoom, which used to make the page shrink while a student zoomed in. */
+const vw = () => document.documentElement.clientWidth || innerWidth;
+const vh = () => document.documentElement.clientHeight || innerHeight;
+const isPhone = () => Math.min(vw(), vh()) < 600;
+const pinched = () => !!(window.visualViewport && visualViewport.scale > 1.05);
+const ZOOM_OK = !!(window.CSS && CSS.supports && CSS.supports("zoom", "0.5"));
+const FLOW_W = 720;                       /* phone layout width before scaling */
+/* Students on a phone always get the phone layout, upright or sideways.
+   Turning the phone used to switch to the tiny board layout. */
+const wantFlow = () => viewPref === "scroll" || (viewPref === "auto" && STUDENT && (isPhone() || (vw() < 900 && vh() > vw())));
+let fitRaf = 0;
+function queueFit() { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(fit); }
+let flowRO = null;
 function fit() {
+  if (flow && pinched()) return;          /* the student is zooming in: leave the layout alone */
   const f = wantFlow();
   if (f !== flow) { flow = f; document.body.classList.toggle("flow", flow); if (flow) { slides.forEach(s => s.classList.add("active")); rerenderGames(); } else { slides.forEach((s, k) => s.classList.toggle("active", k === cur)); } }
-  if (flow) { stage.style.transform = "none"; document.body.style.setProperty("--z", ((Math.min(innerWidth, 900) - 32) / 860).toFixed(4)); }
-  else { const s = Math.min(vp.clientWidth / 1920, vp.clientHeight / 1080); stage.style.transform = `translate(-50%,-50%) scale(${s})`; }
+  if (flow) {
+    /* fill the width, but not so big that a sideways phone shows one word at a time */
+    const z = Math.max(0.3, Math.min((vw() - 20) / FLOW_W, isPhone() && vw() > vh() ? 0.8 : 1.05));
+    document.body.style.setProperty("--z", z.toFixed(4));
+    if (ZOOM_OK) { stage.style.transform = "none"; vp.style.height = ""; }
+    else {                                /* browsers without CSS zoom: scale and keep the page height right */
+      stage.style.transform = `scale(${z})`; stage.style.transformOrigin = "0 0";
+      const sync = () => { vp.style.height = Math.ceil(stage.offsetHeight * z) + "px"; };
+      sync(); if (!flowRO && window.ResizeObserver) { flowRO = new ResizeObserver(sync); flowRO.observe(stage); }
+    }
+  } else {
+    vp.style.height = "";
+    const s = Math.min(vp.clientWidth / 1920, vp.clientHeight / 1080);
+    stage.style.transformOrigin = ""; stage.style.transform = `translate(-50%,-50%) scale(${s})`;
+  }
   const vb = $("#viewBtn"); if (vb) vb.textContent = flow ? "Slide view" : "Scroll view";
   sizeCv();
 }
-addEventListener("resize", fit);
+addEventListener("resize", queueFit);
+addEventListener("orientationchange", () => setTimeout(fit, 250));
+if (window.visualViewport) visualViewport.addEventListener("resize", () => { if (!pinched()) queueFit(); });
 $$(".ans").forEach(b => { const a = b.textContent; b.innerHTML = `<span class="q">Tap to reveal</span><span class="a">${esc(a)}</span>`; b.setAttribute("aria-label", "Reveal answer"); });
 function go(i, fromHash) {
   i = Math.max(0, Math.min(slides.length - 1, i));
@@ -241,7 +276,10 @@ function rerenderGames() { if (flow) slides.forEach(s => { const g = s.dataset.g
    openSet holds the slide numbers the teacher has released. */
 const LOCK = L.lockAnswers !== false;
 let openSet = new Set(STUDENT ? store.get("clv-ans-" + PKEY, []) : []);
-const ansLocked = () => STUDENT && LOCK && !openSet.has(ORIG[cur]);
+/* locked is decided per slide: on a phone every slide is on one page, and a student
+   may scroll ahead to a slide the teacher has not opened yet */
+const ansLocked = (k = cur) => STUDENT && LOCK && !openSet.has(ORIG[k]);
+const slideOf = el => { const sec = el && el.closest("section.s"); const k = sec ? slides.indexOf(sec) : -1; return k < 0 ? cur : k; };
 let toastId = null;
 function toast(msg) {
   let el = document.getElementById("toast");
@@ -250,7 +288,11 @@ function toast(msg) {
   clearTimeout(toastId); toastId = setTimeout(() => { el.hidden = true; }, 2600);
 }
 function paintBars() { if (TEACHER) paintAns(); else paintLock(); }
-function paintLock() { if (STUDENT && LOCK) document.body.classList.toggle("anslock", ansLocked()); }
+function paintLock() {
+  if (!STUDENT || !LOCK) return;
+  document.body.classList.toggle("anslock", ansLocked());
+  slides.forEach((sl, k) => sl.classList.toggle("alock", ansLocked(k)));
+}
 function setOpen(list) {
   const had = openSet.has(ORIG[cur]);
   openSet = new Set(list);
@@ -259,7 +301,7 @@ function setOpen(list) {
   if (!had && openSet.has(ORIG[cur])) toast("The teacher opened the answers \u2713");
 }
 function reveal(b) {
-  if (ansLocked()) {
+  if (ansLocked(slideOf(b))) {
     b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
     toast("\u{1F512} Wait for the teacher \u00b7 O\u2018qituvchini kuting");
     return;
@@ -435,6 +477,7 @@ document.addEventListener("click", e => {
   if (d.menuClose != null) { $("#menu").hidden = true; return; }
   if (d.goto != null) { $("#menu").hidden = true; go(+d.goto); return; }
   if (d.full != null) { toggleFull(); return; }
+  if (d.tipclose != null) { store.set("clv-tip-done", true); const tp = $("#tip"); if (tp) tp.remove(); return; }
   if (d.answers != null) { const o = ORIG[cur];
     if (openSet.has(o)) { openSet.delete(o); toast("Answers hidden from the class again"); }
     else { openSet.add(o); toast("Answers open for the class on this slide"); }
@@ -469,7 +512,7 @@ document.addEventListener("click", e => {
   if (d.aucNext != null) { const G = GS.auction; G.i++; G.bids = [0,0,0,0]; G.shown = false; G.guess = null; GR.auction(); return; }
   /* board */
   if (d.tile) { const G = GS.board; if (!G.used[d.tile]) { G.open = d.tile; G.shownAns = false; GR.board(); } return; }
-  if (d.tileAnswer != null && ansLocked()) { toast("\u{1F512} Wait for the teacher \u00b7 O\u2018qituvchini kuting"); return; }
+  if (d.tileAnswer != null && ansLocked(slideOf(t))) { toast("\u{1F512} Wait for the teacher \u00b7 O\u2018qituvchini kuting"); return; }
   if (d.tileAnswer != null) { GS.board.shownAns = true; clearInterval(timerId); GR.board(); return; }
   if (d.tileClose != null) { const G = GS.board; G.used[G.open] = true; G.open = null; clearInterval(timerId); GR.board(); return; }
   if (d.modal != null && e.target === t) { GS.board.open = null; clearInterval(timerId); GR.board(); return; }
@@ -518,7 +561,7 @@ function paintAns() {
   if (a) { const all = ORIG.every(o => openSet.has(o)); a.textContent = all ? "\u25CF All open" : "Open all"; a.classList.toggle("on", all); }
 }
 function sendSync(i) { if (sync) sync.send({ i: ORIG[i == null ? cur : i], ts: Date.now(), open: [...openSet] }); }
-function paintFollow() { const b = $("#followBtn"); if (b) { b.textContent = following ? "● Following teacher" : "Follow teacher"; b.classList.toggle("on", following); } }
+function paintFollow() { const b = $("#followBtn"); if (b) { b.innerHTML = following ? "● Following<span class=\"long\"> teacher</span>" : "Follow<span class=\"long\"> teacher</span>"; b.classList.toggle("on", following); } }
 function followTo(m, force) {
   if (!m || typeof m.i !== "number") return;
   const age = Math.abs(Date.now() - (m.ts || 0));

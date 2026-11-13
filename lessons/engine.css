@@ -230,9 +230,9 @@ body.locked-page{display:grid;place-items:center;min-height:100%;padding-block:2
 body.flow{overflow:auto;display:block;height:auto}
 body.flow .bar{position:sticky;top:0;z-index:20;background:var(--night)}
 body.flow .viewport{flex:none;min-height:0}
-body.flow .stage{position:static;width:860px;height:auto;transform:none!important;zoom:var(--z);border-radius:0;box-shadow:none;overflow:visible;margin:0 auto}
+body.flow .stage{position:static;width:720px;height:auto;transform:none!important;zoom:var(--z);border-radius:0;box-shadow:none;overflow:visible;margin:0 auto}
 body.flow .nav,body.flow .menu{display:none}
-body.flow .s{position:relative;inset:auto;opacity:1;visibility:visible;transform:none;transition:none;padding:56px 44px;gap:28px;border-radius:32px;margin-bottom:28px;min-height:0;flex-direction:column!important;align-items:stretch!important}
+body.flow .s{position:relative;inset:auto;opacity:1;visibility:visible;transform:none;transition:none;padding:46px 30px;gap:28px;border-radius:32px;margin-bottom:28px;min-height:0;flex-direction:column!important;align-items:stretch!important}
 body.flow .s.active > *{animation:none}
 body.flow .s > div[style*="width"],body.flow .byeside{width:auto!important}
 body.flow .g2,body.flow .g3{grid-template-columns:1fr!important;grid-template-rows:none!important}
@@ -254,8 +254,8 @@ body.flow .board{gap:8px}
 body.flow .bh{font-size:22px;padding:10px 4px}
 body.flow .bt{font-size:40px;min-height:110px}
 body.flow .wheelrow{flex-direction:column;flex-wrap:wrap!important}
-body.flow .wheelwrap{width:600px;height:600px}
-body.flow .wheelwrap canvas{width:600px;height:600px}
+body.flow .wheelwrap{width:560px;height:560px}
+body.flow .wheelwrap canvas{width:560px;height:560px}
 body.flow .chal{min-height:0;width:100%}
 body.flow .bids{grid-template-columns:1fr 1fr}
 body.flow .modal{position:fixed;padding:24px}
@@ -296,10 +296,49 @@ body.flow section.s{scroll-margin-top:calc(var(--barh,0px) + 12px)}
 .ansbtn.on{border-color:#6CCB8A;color:#BDF0CC}
 .anstag{display:none;border-color:var(--yellow);color:var(--yellow)}
 body.anslock .anstag{display:inline-flex}
-body.anslock .ans{opacity:.65;cursor:not-allowed}
-body.anslock .ans .q::before{content:"🔒 "}
+.s.alock .ans{opacity:.65;cursor:not-allowed}
+.s.alock .ans .q::before{content:"🔒 "}
 .shake{animation:shake .4s}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
 .toast{position:fixed;left:50%;bottom:118px;transform:translateX(-50%);z-index:60;max-width:90vw;text-align:center;
   background:var(--ink);color:var(--cream);font:800 28px/1.3 var(--body);padding:16px 32px;border-radius:999px;box-shadow:0 12px 34px rgba(0,0,0,.35)}
 body.flow .toast{bottom:24px;font-size:20px;padding:12px 22px}
+
+/* ================= Phones: no surprise zooming, a calmer student view ================= */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+
+/* Student phone view: light page, one compact bar, cards keep their colours */
+body.flow.student{--pg:#E9EFF5;--pgline:#D2DCE6;background:var(--pg);color:var(--ink)}
+body.flow.student .bar{background:#fff;color:var(--ink);flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:8px;padding-block:8px;
+  box-shadow:0 0 0 100vmax #fff,0 1px 0 100vmax var(--pgline);clip-path:inset(0 -100vmax -1px)}
+body.flow.student .bar::-webkit-scrollbar{display:none}
+body.flow.student a.brand{color:var(--ink);font-size:16px}
+body.flow.student .brand i{box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 5px var(--yellow)}
+body.flow.student .lnk{color:var(--slate);font-size:13px;padding:6px 11px;flex:none}
+body.flow.student .viewbtn{border-color:var(--pgline);background:#fff}
+body.flow.student .followbtn.on{border-color:#1C8F50;color:#156B3D;background:#E3F5EA}
+body.flow.student .anstag{border-color:#E0A800;color:#7A5A00;background:#FFF6D6}
+body.flow.student .teams{flex:none;margin-left:auto}
+body.flow.student .mine{background:var(--ink);color:#fff;border:0;font-size:13px;padding:6px 12px}
+body.flow.student .mine b{font-size:16px}
+body.flow.student .stage{background:transparent}
+body.flow.student .s{box-shadow:0 1px 0 var(--pgline)}
+body.flow.student .toast{background:var(--ink);color:#fff}
+
+/* A short guide the first time a student opens a lesson on a phone */
+.tip{display:none}
+body.flow.student .tip{display:flex;flex-direction:column;gap:8px;background:#fff;border:2px solid var(--yellow);border-radius:18px;padding:14px 16px;margin:12px 0 4px;font:600 15px/1.4 var(--body);color:var(--ink)}
+.tip b.t{font:800 17px var(--display)}
+.tip p{display:flex;gap:10px;align-items:flex-start}
+.tip p i{font-style:normal;flex:none;width:24px;text-align:center}
+.tip small{display:block;color:var(--teal);font-weight:700}
+.tip button{align-self:flex-start;background:var(--yellow);color:var(--ink);font:800 15px var(--body);padding:9px 20px;border-radius:999px}
+body.flow .g5{grid-template-columns:1fr 1fr!important;grid-template-rows:none!important}
+.short{display:none}
+@media (max-width:520px){
+  body.flow.student .viewbtn#viewBtn{display:none}
+  body.flow.student .long{display:none}
+  body.flow.student .short{display:inline}
+  body.flow.student a.brand{font-size:15px}
+}

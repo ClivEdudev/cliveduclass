@@ -4,65 +4,70 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ClivEdu Class · My lessons</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..800&family=Nunito:wght@400;600;700;800&display=swap">
+<meta name="theme-color" content="#FFFFFF">
 <style>
-/* Student home: total points, the newest lesson, then every lesson already taught as a revision card. */
+/* Student home. Light and plain so it opens fast on any phone and reads well in daylight.
+   Three jobs, in order: join today's class game, open today's lesson, revise older lessons. */
 :root{
-  --ink:#12263A; --ink2:#1C3650; --night:#0B1828; --cream:#FFF8E7; --paper:#FFFDF6; --line:#EADFC4;
-  --yellow:#FFC93C; --teal:#0B6E70; --mist:#BFD8D5; --slate:#4B5F73; --blue:#1F5FD1; --green:#157347; --mint:#D5F1E3; --peach:#FFE3D3; --sky:#DCE8FB;
-  --display:'Rubik',Verdana,sans-serif; --body:'Nunito',Verdana,sans-serif; color-scheme:dark;
+  --pg:#EEF3F8; --card:#FFFFFF; --ink:#12263A; --sub:#4B5F73; --line:#D2DCE6; --teal:#0B6E70;
+  --yel:#FFC93C; --yelsoft:#FFF6D6; --blue:#1F5FD1; --green:#1C8F50; --greensoft:#E3F5EA;
+  color-scheme:light;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--night);color:var(--cream);font-family:var(--body);font-size:18px;line-height:1.5;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 60px}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--pg);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 48px}
 a{color:inherit}
 h1,h2,h3,p{margin:0}
-.wrap{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.brand{font:800 20px var(--display);display:flex;align-items:center;gap:10px}
-.brand i{width:26px;height:26px;border-radius:7px;background:conic-gradient(from 45deg,var(--blue) 0 25%,var(--teal) 0 50%,var(--blue) 0 75%,var(--teal) 0);box-shadow:inset 0 0 0 3px var(--night),inset 0 0 0 5px var(--yellow)}
-.pts{background:var(--ink);border:2px solid var(--yellow);border-radius:999px;padding:6px 16px;font-weight:800;color:var(--mist)}
-.pts b{font:800 22px var(--display);color:var(--yellow);margin-left:6px;font-variant-numeric:tabular-nums}
-.hello h1{font:800 clamp(36px,7vw,64px)/1.05 var(--display);text-wrap:balance}
-.hello h1 span{color:var(--yellow)}
-.hello p{color:var(--mist);margin-top:8px;font-size:19px}
-.hello .uz{color:#5CCFD2;font-weight:700}
-.feature{background:var(--cream);color:var(--ink);border-radius:28px;padding:clamp(20px,4vw,40px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;position:relative;overflow:hidden}
-.feature .eb{font:800 13px var(--body);letter-spacing:.14em;text-transform:uppercase;color:#C2410C}
-.feature h2{font:800 clamp(32px,6vw,58px)/1.04 var(--display);margin-top:6px;text-wrap:balance}
-.feature .focus{font-size:18px;font-weight:700;color:var(--slate);margin-top:8px}
-.feature.locked{background:var(--ink);color:var(--cream)}
-.feature.locked .eb{color:var(--yellow)}
-.feature.locked .focus{color:var(--mist)}
-.tiles{position:absolute;right:-40px;top:-40px;width:170px;height:170px;border-radius:30px;transform:rotate(18deg);opacity:.16;
-  background:conic-gradient(from 45deg,var(--blue) 0 25%,var(--teal) 0 50%,var(--blue) 0 75%,var(--teal) 0) 0 0/42px 42px}
-.btn{display:inline-flex;align-items:center;gap:10px;padding:15px 26px;border-radius:999px;font:800 19px var(--body);text-decoration:none;background:var(--yellow);color:var(--ink);white-space:nowrap;transition:transform .15s}
-.btn:hover{transform:translateY(-2px)}
-.lock{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:999px;background:var(--ink2);color:var(--mist);font-weight:800;white-space:nowrap}
-.sec h2{font:800 28px var(--display)}
-.sec > p{color:var(--mist);margin-top:4px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:14px}
-.card{background:var(--ink);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;text-decoration:none;border:2px solid transparent;transition:transform .15s,border-color .15s}
-a.card:hover{transform:translateY(-3px);border-color:var(--yellow)}
-.card .n{font:800 13px var(--body);letter-spacing:.12em;color:var(--yellow);text-transform:uppercase}
-.card h3{font:800 23px/1.15 var(--display)}
-.card .f{color:var(--mist);font-size:15px;font-weight:600}
-.card .foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:6px;font-size:14px;font-weight:800}
-.card .go{color:var(--yellow)}
-.card .my{color:var(--mist)}
-.card.new{background:var(--teal)}
-.card.new .f,.card.new .my{color:var(--cream)}
-.empty{background:var(--ink);border-radius:22px;padding:20px;color:var(--mist)}
-.foot-link{color:var(--mist);font-size:14px;text-align:center}
-.foot-link a{color:var(--mist)}
-a:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
-.live-on{display:flex;align-items:center;gap:14px;background:var(--teal);color:var(--cream);text-decoration:none;border-radius:20px;padding:14px 18px}
-.live-on .dot{width:14px;height:14px;border-radius:50%;background:#6CCB8A;box-shadow:0 0 0 6px rgba(108,203,138,.25);flex:none}
-.live-on span:nth-child(2){flex:1}
-.live-on .go{font-weight:800;color:var(--yellow)}
-@media (max-width:640px){.feature{grid-template-columns:minmax(0,1fr)}}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.brand{font-weight:800;font-size:18px;display:flex;align-items:center;gap:9px}
+.brand i{width:22px;height:22px;border-radius:6px;background:conic-gradient(from 45deg,var(--blue) 0 25%,var(--teal) 0 50%,var(--blue) 0 75%,var(--teal) 0)}
+.pts{background:var(--ink);color:#fff;border-radius:999px;padding:6px 14px;font-weight:800;white-space:nowrap}
+.pts b{color:var(--yel);margin-left:4px;font-variant-numeric:tabular-nums}
+.hello h1{font-size:clamp(30px,7vw,46px);line-height:1.1;font-weight:800;text-wrap:balance}
+.hello p{color:var(--sub);margin-top:6px}
+.hello .uz{color:var(--teal);font-weight:600;font-size:15px}
+
+/* 1 · class game */
+.game{display:flex;align-items:center;gap:14px;background:var(--ink);color:#fff;border-radius:22px;padding:16px 18px;text-decoration:none}
+.game .ic{width:48px;height:48px;border-radius:14px;background:var(--yel);color:var(--ink);display:grid;place-items:center;font-size:24px;flex:none}
+.game span.t{flex:1;min-width:0}
+.game b{display:block;font-size:19px}
+.game small{display:block;color:#BFD8D5;font-size:14px}
+.game .go{font-weight:800;color:var(--yel);white-space:nowrap}
+.game.live{background:var(--green)}
+.game.live .ic{background:#fff}
+.game.live small{color:#E3F5EA}
+.game.live .go{color:#fff}
+
+/* 2 · today */
+.feature{background:var(--card);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:12px;border:2px solid var(--yel)}
+.feature .eb{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#B45309}
+.feature h2{font-size:clamp(26px,6vw,38px);line-height:1.1;font-weight:800;text-wrap:balance}
+.feature .focus{color:var(--sub);font-weight:600}
+.feature.locked{border-color:var(--line)}
+.feature.locked .eb{color:var(--sub)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 22px;border-radius:14px;font-weight:800;font-size:18px;text-decoration:none;background:var(--yel);color:var(--ink);align-self:flex-start}
+.lock{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;background:var(--pg);color:var(--sub);font-weight:800;align-self:flex-start}
+
+/* 3 · revise */
+.sec h2{font-size:22px;font-weight:800}
+.sec > p{color:var(--sub);margin-top:2px;font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:12px}
+.card{background:var(--card);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;text-decoration:none;border:2px solid transparent;box-shadow:0 1px 0 var(--line)}
+a.card:active,a.card:hover{border-color:var(--ink)}
+.card .n{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.card h3{font-size:20px;line-height:1.2;font-weight:800}
+.card .f{color:var(--sub);font-size:14px}
+.card .foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:4px;font-size:14px;font-weight:800}
+.card .go{color:var(--blue)}
+.card .my{color:var(--sub)}
+.card.new{border-color:var(--yel);background:var(--yelsoft)}
+.empty{background:var(--card);border-radius:18px;padding:18px;color:var(--sub)}
+.foot-link{color:var(--sub);font-size:14px;text-align:center}
+a:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
 </style>
 </head>
 <body>
@@ -85,19 +90,19 @@ a:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
   P.all.filter(l => l.ready && ((P.openNowLessons || []).includes(l.n) || P.isOpen(l.date))).forEach(l => items.push({ n: l.n, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: String(l.n) }));
   items.sort((a, b) => b.date - a.date);
   const newest = items[0];
-  const upcoming = P.all.find(l => !P.isOpen(l.date));
+  const upcoming = P.all.find(l => !P.isOpen(l.date) && !(P.openNowLessons || []).includes(l.n));
   const isToday = it => it && P.key(it.date) === P.key(new Date());
 
   let feature = "";
-  if (newest && isToday(newest)) {
-    feature = `<section class="feature"><span class="tiles" aria-hidden="true"></span><div><p class="eb">New today · ${esc(P.fmt(newest.date))}</p>
-      <h2>${esc(newest.title)}</h2><p class="focus">${esc(newest.focus)}</p></div>
-      <div><a class="btn" href="${newest.href}">Revise today’s lesson →</a></div></section>`;
+  if (newest && (isToday(newest) || newest.date > new Date())) {   /* opened early counts as today */
+    feature = `<section class="feature"><p class="eb">Today’s lesson · Bugungi dars</p>
+      <h2>${esc(newest.title)}</h2><p class="focus">${esc(newest.focus)}</p>
+      <a class="btn" href="${newest.href}">Open the lesson →</a></section>`;
   } else if (upcoming) {
     const at = P.openAt(upcoming.date);
-    feature = `<section class="feature locked"><span class="tiles" aria-hidden="true"></span><div><p class="eb">Next lesson · ${esc(P.fmt(upcoming.date))}</p>
-      <h2>${esc(upcoming.title)}</h2><p class="focus">It opens here after class, at ${hh}:00 on ${esc(P.fmt(at))}.</p></div>
-      <div><span class="lock">🔒 Opens after class</span></div></section>`;
+    feature = `<section class="feature locked"><p class="eb">Next lesson · ${esc(P.fmt(upcoming.date))}</p>
+      <h2>${esc(upcoming.title)}</h2><p class="focus">It opens here after class, at ${hh}:00 on ${esc(P.fmt(at))}. · Darsdan keyin ochiladi.</p>
+      <span class="lock">🔒 Opens after class</span></section>`;
   }
 
   const cards = items.length ? items.map(it => `<a class="card ${isToday(it) ? "new" : ""}" href="${it.href}">
@@ -107,18 +112,20 @@ a:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
     : `<p class="empty">Your lessons will appear here after class.</p>`;
 
   document.getElementById("app").innerHTML = `
-    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><a class="btn" href="play/" style="padding:10px 18px;font-size:16px">Join a class game</a><span class="pts">My points <b>${total}</b></span></div></div>
+    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="pts">⭐ My points <b>${total}</b></span></div>
     <div class="hello"><h1>My English <span>lessons</span></h1>
-      <p>Every lesson from class is here to revise: the rules, examples in Uzbek, quizzes and games. New lessons appear after class.</p>
-      <p class="uz">Darsdan keyin har bir dars shu yerda ochiladi. Takrorlang va ball yig’ing!</p></div>
-    <div id="liveBanner"></div>
+      <p>Every lesson from class is here: rules, Uzbek examples, quizzes and games.</p>
+      <p class="uz">Har bir dars shu yerda. Takrorlang va ball yig‘ing!</p></div>
+    <div id="liveBanner"><a class="game" href="play/"><span class="ic" aria-hidden="true">🎮</span><span class="t"><b>Join the class game</b><small>Get the code from the board · Kodni doskadan oling</small></span><span class="go">Join →</span></a></div>
     ${feature}
-    <section class="sec"><h2>Lessons to revise</h2><p>${items.length} open · newest first</p><div class="grid">${cards}</div></section>
+    <section class="sec"><h2>Revise my lessons</h2><p>${items.length} open · newest first · Darslarni takrorlang</p><div class="grid">${cards}</div></section>
     <p class="foot-link"><a href="teacher/">Teacher</a></p>`;
   if (window.LiveNet) {
     const stop = window.LiveNet.watchRooms(list => {
       const el = document.getElementById("liveBanner"); if (!el) return;
-      el.innerHTML = list.length ? `<a class="live-on" href="play/?code=${encodeURIComponent(list[0].code)}"><span class="dot" aria-hidden="true"></span><span><b>A class game is on now!</b><br>${esc(list[0].set || "")} · code ${esc(list[0].code)}</span><span class="go">Join →</span></a>` : "";
+      el.innerHTML = list.length
+        ? `<a class="game live" href="play/?code=${encodeURIComponent(list[0].code)}"><span class="ic" aria-hidden="true">🎮</span><span class="t"><b>A class game is on now!</b><small>${esc(list[0].set || "")} · code ${esc(list[0].code)} · Hozir o‘yin bor!</small></span><span class="go">Join →</span></a>`
+        : `<a class="game" href="play/"><span class="ic" aria-hidden="true">🎮</span><span class="t"><b>Join the class game</b><small>Get the code from the board · Kodni doskadan oling</small></span><span class="go">Join →</span></a>`;
     });
     setTimeout(stop, 10 * 60000);
   }

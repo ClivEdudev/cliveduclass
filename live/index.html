@@ -32,9 +32,22 @@ const TYPES = [
   { id: "clue", name: "Mystery clues", desc: "Guess from clues; earlier = more points" }
 ];
 const TYPE_LABEL = { mcq: "Quiz", tf: "Right or wrong?", build: "Word order race", clue: "Mystery clues" };
+/* One short instruction per question type, in English and Uzbek, on the board and on phones */
+const HOW = {
+  mcq: ["Tap the right answer.", "To\u2018g\u2018ri javobni bosing."],
+  tf: ["Is the sentence right or wrong?", "Gap to\u2018g\u2018rimi yoki noto\u2018g\u2018ri?"],
+  build: ["Tap the words in order, then Send.", "So\u2018zlarni tartib bilan bosing, keyin Yuborish."],
+  clue: ["Read the clues. Guess early for more points.", "Ishoralarni o\u2018qing. Tez topsangiz \u2014 ko\u2018proq ball."]
+};
+/* A warm-up question so beginners learn how to play before points count */
+const PRACTICE = { type: "mcq", practice: true, text: "Practice: which one is a colour? \u00b7 Mashq: qaysi biri rang?", opts: ["blue", "bread", "bus", "bed"], correct: 0 };
+const withPractice = rounds => { const o = shuffle(PRACTICE.opts.map((t, i) => ({ t, ok: i === 0 }))); return [Object.assign({}, PRACTICE, { opts: o.map(x => x.t), correct: o.findIndex(x => x.ok) })].concat(rounds); };
+const hasPractice = () => !!(S.rounds[0] && S.rounds[0].practice);
+const qNum = () => S.qi + (hasPractice() ? 0 : 1);                 /* question number shown to people */
+const qTotal = () => S.rounds.length - (hasPractice() ? 1 : 0);
 const sets = window.LIVE_SETS.map(s => ({ ...s }));
 sets.push({ id: "all", title: "Everything so far", topic: "Big Revision + lessons 1–5 + vocabulary", mixOf: sets.filter(s => !/^s\d/.test(s.id)).map(s => s.id) });
-const S = { phase: "setup", room: null, client: null, players: {}, rounds: [], qi: -1, q: null, qStart: 0, answers: {}, limit: 10, qLimit: 10,
+const S = { phase: "setup", room: null, client: null, players: {}, rounds: [], qi: -1, q: null, qStart: 0, answers: {}, limit: 15, qLimit: 15, seq: 0,
   set: sets[0], type: "mix", auto: true, status: "offline", tick: 0, timer: 0, autoAt: 0, lastGain: {}, clueShown: 1 };
 
 /* ---------- content loading ---------- */
@@ -125,7 +138,7 @@ async function endRemote(code) {
     const c = await NET.join(code, () => {}, () => {});
     c.publish(NET.topic(code, "state"), { v: 2, phase: "closed" }, true);
     c.publish(NET.roomTopic(code), "", true);
-    setTimeout(() => c.close(), 600);
+    setTimeout(() => c.close(), 1800);
   } catch (e) {}
   const snap = readSnap(); if (snap && snap.room === code) dropSnap();
   roomList = roomList.filter(r => r.code !== code); drawRooms();
@@ -149,6 +162,7 @@ async function create() {
   const msg = $("#setupMsg"); $("[data-create]").disabled = true;
   msg.textContent = "Preparing questions…";
   S.rounds = await buildRounds();
+  if (S.rounds.length) S.rounds = withPractice(S.rounds);
   if (!S.rounds.length) { msg.textContent = "This lesson has no questions for that game. Choose another game."; $("[data-create]").disabled = false; return; }
   msg.textContent = "Connecting to the live server…";
   try {
@@ -164,12 +178,13 @@ async function create() {
 /* ---------- state for phones (small messages) ---------- */
 function publish() {
   if (!S.client) return;
-  const st = { v: 2, phase: S.phase, qi: S.qi, total: S.rounds.length };
+  const st = { v: 3, phase: S.phase, qi: S.qi, total: S.rounds.length, num: qNum(), of: qTotal(), k: Date.now() * 100 + (S.seq++ % 100) };
+  if (S.q && S.q.practice && S.phase !== "lobby" && S.phase !== "end") st.practice = true;
   if (S.phase === "lobby" || S.phase === "board" || S.phase === "end" || S.phase === "reveal") st.players = Object.values(S.players).map(p => [p.id, p.score]);
   if (S.phase === "lobby") st.n = Object.keys(S.players).length;
   if (S.phase === "question" || S.phase === "reveal") {
     const q = S.q;
-    st.q = { type: q.type, text: q.text };
+    st.q = { type: q.type, text: q.text, how: HOW[q.type] };
     if (q.opts) st.q.opts = q.opts;
     if (q.type === "build") { st.q.words = q.words; st.q.end = q.end; }
     if (q.type === "clue") st.q.clue = q.clues[Math.min(S.clueShown, q.clues.length) - 1];
@@ -177,6 +192,7 @@ function publish() {
   if (S.phase === "question") { st.left = Math.max(0, S.qLimit - (Date.now() - S.qStart) / 1000); st.answered = Object.keys(S.answers); }
   if (S.phase === "reveal") { st.correct = S.q.correct; st.answerText = answerText(S.q); st.gained = S.lastGain; }
   S.client.publish(NET.topic(S.room, "state"), st, true);
+  S.lastPub = Date.now();
   announce(); saveSnap();
 }
 let lastAnn = "", annAt = 0;
@@ -228,6 +244,7 @@ function nextQuestion() {
     const ring = $("#ring"); if (ring) ring.style.setProperty("--p", Math.max(0, left / S.qLimit).toFixed(3));
     if (S.q.type === "clue") { const want = Math.min(S.q.clues.length, 1 + Math.floor(el / (S.qLimit / S.q.clues.length))); if (want !== S.clueShown) { S.clueShown = want; render(); publish(); } }
     if (left <= 0) reveal();
+    if (Date.now() - (S.lastPub || 0) > 4000) publish();
   }, 250);
 }
 function isCorrect(q, a) {
@@ -240,13 +257,13 @@ function reveal() {
   S.phase = "reveal"; S.lastGain = {};
   for (const [id, a] of Object.entries(S.answers)) {
     if (!S.players[id]) continue;
-    if (isCorrect(S.q, a)) { const pts = Math.round(1000 * (1 - Math.min(a.t, S.qLimit) / S.qLimit / 2)); S.lastGain[id] = pts; S.players[id].score += pts; }
+    if (isCorrect(S.q, a)) { const pts = S.q.practice ? 1 : Math.round(1000 * (1 - Math.min(a.t, S.qLimit) / S.qLimit / 2)); S.lastGain[id] = pts; if (!S.q.practice) S.players[id].score += pts; }
     else S.lastGain[id] = 0;
   }
   render(); publish();
   if (S.auto) schedule(showBoard() ? board : nextQuestion, REVEAL_MS);
 }
-function showBoard() { return (S.qi + 1) % BOARD_EVERY === 0 || S.qi + 1 >= S.rounds.length; }
+function showBoard() { if (S.q && S.q.practice) return false; return qNum() % BOARD_EVERY === 0 || S.qi + 1 >= S.rounds.length; }
 function board() { clearTimers(); S.phase = "board"; render(); publish(); if (S.auto) schedule(nextQuestion, BOARD_MS); }
 function finish() { clearTimers(); S.phase = "end"; render(); publish(); setTimeout(() => UI.confetti(innerWidth / 2, innerHeight / 3, 220), 300); }
 function schedule(fn, ms) {
@@ -293,10 +310,16 @@ function render() {
   let body = "";
   if (S.phase === "lobby") {
     body = `<section class="lobby">
-      <div class="joinbox"><p class="muted strong">Go to</p><p class="url">cliveduclass.netlify.app/play</p><p class="muted strong">and enter the code</p><p class="bigcode">${S.room}</p>
-        <p class="muted">One phone per team, or join on your own. ${S.rounds.length} rounds.</p></div>
+      <div class="joinbox"><p class="muted strong">Go to \u00b7 Saytga kiring</p><p class="url">cliveduclass.netlify.app/play</p><p class="muted strong">Code \u00b7 Kod</p><p class="bigcode">${S.room}</p>
+        <p class="muted">${qTotal()} questions \u00b7 a practice question first</p></div>
       <div class="roster"><div class="row between"><h2 id="joined">${n} joined</h2><button class="btn y xl" data-start ${n ? "" : "disabled"}>Start →</button></div>
-        <div class="chips" id="roster"></div></div></section>`;
+        <div class="chips" id="roster"></div></div></section>
+      <section class="howto"><h2>How to play \u00b7 Qanday o\u2018ynaladi</h2><ol>
+        <li><b>Open the website on a phone.</b><span>Telefonda saytni oching.</span></li>
+        <li><b>Type the code and your name.</b><span>Kodni va ismingizni yozing.</span></li>
+        <li><b>Team = one phone for the team. Just me = your own phone.</b><span>Jamoa \u2014 bitta telefon. Yakka \u2014 o\u2018z telefoningiz.</span></li>
+        <li><b>Read the question on the board. Tap your answer on the phone.</b><span>Savolni doskadan o\u2018qing, javobni telefonda bosing.</span></li>
+        <li><b>Right and fast = more points!</b><span>To\u2018g\u2018ri va tez = ko\u2018proq ball!</span></li></ol></section>`;
   } else if (S.phase === "question" || S.phase === "reveal") {
     const q = S.q, rev = S.phase === "reveal";
     const left = Math.max(0, S.qLimit - (Date.now() - S.qStart) / 1000);
@@ -307,17 +330,18 @@ function render() {
     else main = `<h1 class="qtext">${esc(q.text)}</h1>${optTiles(q, rev)}`;
     const nRight = Object.values(S.lastGain).filter(x => x > 0).length;
     body = `<section class="qscreen">
-      <div class="row between"><span class="eb">${TYPE_LABEL[q.type]} · ${S.qi + 1} of ${S.rounds.length}</span>
+      <div class="row between"><span class="eb">${q.practice ? "Practice \u00b7 Mashq \u2014 no points" : `${TYPE_LABEL[q.type]} \u00b7 ${qNum()} of ${qTotal()}`}</span>
+        <span class="howline">${esc(HOW[q.type][0])}<small>${esc(HOW[q.type][1])}</small></span>
         ${rev ? `<span class="verdict-sm">${nRight} of ${n} correct</span>` : `<span class="ring" id="ring" style="--p:${(left / S.qLimit).toFixed(3)}"><b id="tleft">${Math.ceil(left)}</b></span>`}</div>
       ${main}
       ${rev && q.type === "build" ? `<p class="fixline">${nRight} of ${n} got the order right.</p>` : ""}
       <div class="row between">
-        ${rev ? `<div class="autowrap">${S.auto ? `<span class="muted">Scores next</span><span class="autotrack"><i id="autobar"></i></span>` : ""}</div><button class="btn y xl" data-board>Scores →</button>`
+        ${rev ? `<div class="autowrap">${S.auto ? `<span class="muted">${showBoard() ? "Scores next" : "Next question"}</span><span class="autotrack"><i id="autobar"></i></span>` : ""}</div>${showBoard() ? `<button class="btn y xl" data-board>Scores →</button>` : `<button class="btn y xl" data-next>Next question →</button>`}`
               : `<span class="muted strong" id="ansCount">Answers: ${Object.keys(S.answers).length} / ${n}</span><button class="btn" data-reveal>Show answer now</button>`}
       </div></section>`;
   } else if (S.phase === "board") {
     const r = ranked(), last = S.qi + 1 >= S.rounds.length;
-    body = `<section class="wrapc"><div class="row between"><h1 class="big">Scores</h1><span class="eb">${S.qi + 1} of ${S.rounds.length} done</span></div>
+    body = `<section class="wrapc"><div class="row between"><h1 class="big">Scores</h1><span class="eb">${qNum()} of ${qTotal()} done</span></div>
       <div class="lboard">${r.slice(0, 6).map((p, k) => `<div class="lrow ${k === 0 ? "first" : ""}"><span class="pos">${k + 1}</span><span class="nm">${esc(p.name)} <small>${p.type === "team" ? "Team" : "Solo"}</small></span>${S.lastGain[p.id] ? `<span class="gain">+${S.lastGain[p.id]}</span>` : ""}<b>${p.score}</b></div>`).join("")}</div>
       <div class="row between"><div class="autowrap">${S.auto ? `<span class="muted">${last ? "Final results" : "Next question"} in a moment</span><span class="autotrack"><i id="autobar"></i></span>` : ""}</div>
         <button class="btn y xl" data-next>${last ? "Final results →" : "Next question →"}</button></div></section>`;
@@ -346,7 +370,7 @@ document.addEventListener("click", async e => {
   else if (d.next != null) nextQuestion();
   else if (d.pause != null) togglePause();
   else if (d.kick) { delete S.players[d.kick]; renderLobbyList(); publish(); }
-  else if (d.again != null) { Object.values(S.players).forEach(p => p.score = 0); S.rounds = await buildRounds(); S.qi = -1; lobby(); }
+  else if (d.again != null) { Object.values(S.players).forEach(p => p.score = 0); S.rounds = withPractice(await buildRounds()); S.qi = -1; lobby(); }
   else if (d.close != null) closeRoom();
   else if (d.resume) resume(d.resume);
   else if (d.endroom) { t.disabled = true; t.textContent = "Ending…"; endRemote(d.endroom); }
