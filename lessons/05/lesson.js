@@ -2,6 +2,7 @@ window.LESSON = {
   n: 5,
   title: "Present continuous",
   openNow: true,
+  lockAnswers: false,      /* taught on 13 Nov: answers open for revision */
   slides: [
     { t: "cover", title: "What are you <span class='cy'>doing?</span>", lead: "Present continuous: actions happening now · Hozirgi davomli zamon", chips: [["Men o’qiyapman.", "peach"], ["U uxlayapti.", "mint"], ["Nima qilyapsiz?", "skyb"]] },
     { t: "goals", items: [
