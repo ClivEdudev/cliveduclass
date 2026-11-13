@@ -1,6 +1,7 @@
 window.LESSON = {
   n: 3,
   title: "This, that, these, those",
+  lockAnswers: false,
   slides: [
     { t: "cover", title: "This or <span class='cy'>that?</span>", lead: "This, that, these, those, and plurals", chips: [["Bu nima?", "peach"], ["Anavi nima?", "mint"]] },
     { t: "goals", items: [

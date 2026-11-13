@@ -1,6 +1,7 @@
 window.LESSON = {
   n: 4,
   title: "My, your, his, her and ’s",
+  lockAnswers: false,
   slides: [
     { t: "cover", title: "Whose is <span class='cy'>it?</span>", lead: "my, your, his, her… and ’s", chips: [["Bu mening kitobim.", "peach"], ["Bu Alining mashinasi.", "mint"]] },
     { t: "goals", items: [

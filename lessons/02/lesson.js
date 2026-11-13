@@ -1,6 +1,7 @@
 window.LESSON = {
   n: 2,
   title: "There is and there are",
+  lockAnswers: false,
   slides: [
     { t: "cover", title: "There is…<br><span class='cy'>There are…</span>", lead: "Talking about places and things", chips: [["Xonada stol bor.", "peach"], ["Ko’p kitoblar bor.", "mint"]] },
     { t: "goals", items: [

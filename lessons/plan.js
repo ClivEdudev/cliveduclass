@@ -5,6 +5,7 @@ window.PLAN = {
   start: "2026-11-10",
   teachDays: [1, 2, 3, 4, 5, 6],
   unlockHour: 16,
+  openNowLessons: [5],      /* taught out of order; open to students straight away */
   teacherCode: "clivedu",
   revision: { title: "Big Revision", date: "2026-11-09", path: "revision/", openNow: true },
   /* The new beginner group (started 10 Nov) */

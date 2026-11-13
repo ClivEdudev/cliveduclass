@@ -82,7 +82,7 @@ a:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
   [[P.starter, "New group"], [P.extras, "Vocabulary"]].forEach(([list, label]) =>
     (list || []).forEach(s => { const d = P.parse(s.date); if (s.openNow || P.isOpen(d))
       items.push({ n: 0, group: s.group || label, title: s.title, focus: s.focus, date: d, href: s.path, key: s.key }); }));
-  P.all.filter(l => l.ready && P.isOpen(l.date)).forEach(l => items.push({ n: l.n, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: String(l.n) }));
+  P.all.filter(l => l.ready && ((P.openNowLessons || []).includes(l.n) || P.isOpen(l.date))).forEach(l => items.push({ n: l.n, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: String(l.n) }));
   items.sort((a, b) => b.date - a.date);
   const newest = items[0];
   const upcoming = P.all.find(l => !P.isOpen(l.date));

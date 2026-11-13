@@ -3,6 +3,7 @@ window.LESSON = {
   title: "Hello! My name is…",
   openDate: "2026-11-10",
   openNow: true,
+  lockAnswers: false,
   slides: [
     { t: "cover", tag: "New group · Lesson 1", title: "Hello! <span class='cy'>My name is…</span>", lead: "First words in English · Ingliz tilida birinchi so‘zlar", chips: [["Salom!", "peach"], ["Mening ismim…", "mint"]] },
     { t: "goals", items: [

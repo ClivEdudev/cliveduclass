@@ -67,6 +67,7 @@ window.LESSON = {
   title: "Big Revision",
   openDate: "2026-11-09",
   openNow: true,
+  lockAnswers: false,
   slides: [
  {
   "t": "raw",

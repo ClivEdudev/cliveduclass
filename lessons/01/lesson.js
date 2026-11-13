@@ -1,6 +1,7 @@
 window.LESSON = {
   n: 1,
   title: "Can and can’t",
+  lockAnswers: false,
   slides: [
     { t: "cover", title: "I <span class='cy'>can!</span>", lead: "Ability: can and can’t", chips: [["Men suza olaman.", "peach"], ["Men ucha olmayman.", "mint"]] },
     { t: "goals", items: [
