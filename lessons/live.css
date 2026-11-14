@@ -188,3 +188,8 @@ body.player .opt{min-height:96px}
 .howto li span{color:var(--mist);font-size:.9em}
 @media (max-width:900px){.howto ol{grid-template-columns:1fr 1fr}}
 .bigcode{font-size:clamp(56px,8.6vw,140px)}
+
+/* listening questions on the board */
+.qlisten{display:flex;align-items:center;gap:clamp(16px,2vw,32px)}
+.qplay{width:clamp(80px,9vw,140px);height:clamp(80px,9vw,140px);border-radius:50%;background:var(--yellow);color:var(--ink);font-size:clamp(36px,4.4vw,70px);flex:none;display:grid;place-items:center}
+.qplay.on{background:#fff;box-shadow:0 0 0 10px rgba(255,201,60,.35)}

@@ -35,6 +35,7 @@ const TYPE_LABEL = { mcq: "Quiz", tf: "Right or wrong?", build: "Word order race
 /* One short instruction per question type, in English and Uzbek, on the board and on phones */
 const HOW = {
   mcq: ["Tap the right answer.", "To\u2018g\u2018ri javobni bosing."],
+  listen: ["Listen to the board. Tap the sentence you hear.", "Doskani tinglang. Eshitgan gapingizni bosing."],
   tf: ["Is the sentence right or wrong?", "Gap to\u2018g\u2018rimi yoki noto\u2018g\u2018ri?"],
   build: ["Tap the words in order, then Send.", "So\u2018zlarni tartib bilan bosing, keyin Yuborish."],
   clue: ["Read the clues. Guess early for more points.", "Ishoralarni o\u2018qing. Tez topsangiz \u2014 ko\u2018proq ball."]
@@ -46,9 +47,12 @@ const hasPractice = () => !!(S.rounds[0] && S.rounds[0].practice);
 const qNum = () => S.qi + (hasPractice() ? 0 : 1);                 /* question number shown to people */
 const qTotal = () => S.rounds.length - (hasPractice() ? 1 : 0);
 const sets = window.LIVE_SETS.map(s => ({ ...s }));
-sets.push({ id: "all", title: "Everything so far", topic: "Big Revision + lessons 1–5 + vocabulary", mixOf: sets.filter(s => !/^s\d/.test(s.id)).map(s => s.id) });
+const QP = new URLSearchParams(location.search);
+const EMBED = QP.get("embed") === "1" && window.parent !== window;
+const tellLesson = msg => { if (EMBED) try { window.parent.postMessage(Object.assign({ clv: "room" }, msg), location.origin); } catch (e) {} };
+sets.push({ id: "all", title: "Everything so far", topic: "Big Revision + lessons 1–5 + vocabulary", mixOf: sets.filter(s => !/^s\d|^lis/.test(s.id)).map(s => s.id) });
 const S = { phase: "setup", room: null, client: null, players: {}, rounds: [], qi: -1, q: null, qStart: 0, answers: {}, limit: 15, qLimit: 15, seq: 0,
-  set: sets[0], type: "mix", auto: true, status: "offline", tick: 0, timer: 0, autoAt: 0, lastGain: {}, clueShown: 1 };
+  set: sets.find(x => x.id === QP.get("set")) || sets[0], type: "mix", auto: true, status: "offline", tick: 0, timer: 0, autoAt: 0, lastGain: {}, clueShown: 1 };
 
 /* ---------- content loading ---------- */
 const lessonCache = {};
@@ -76,7 +80,11 @@ async function buildRounds() {
     if (g.mystery && g.mystery.items) g.mystery.items.forEach(it => clue.push({ it, sib: g.mystery.items, title: g.mystery.title || "Mystery" }));
   }
   const mk = {
-    mcq: q => { const o = shuffle(q.slice(1).map((t, i) => ({ t, ok: i === 0 }))); return { type: "mcq", text: q[0], opts: o.map(x => x.t), correct: o.findIndex(x => x.ok) }; },
+    mcq: q => {
+      const row = Array.isArray(q) ? { q: q[0], o: q.slice(1) } : q;          /* a row, or { q, o, audio, dur } */
+      const o = shuffle(row.o.map((t, i) => ({ t, ok: i === 0 })));
+      return { type: "mcq", text: row.q, opts: o.map(x => x.t), correct: o.findIndex(x => x.ok), audio: row.audio || null, dur: row.dur || 3 };
+    },
     tf: a => ({ type: "tf", text: a.s, opts: ["Right", "Wrong"], correct: a.ok ? 0 : 1, fix: a.fix || "" }),
     build: b => { const words = shuffle(b.w); return { type: "build", text: "Put the words in order", words, answer: b.w, end: b.e }; },
     clue: c => { const others = shuffle(c.sib.filter(x => x.p !== c.it.p)).slice(0, 3).map(x => x.p); const o = shuffle([{ t: c.it.p, ok: true }, ...others.map(t => ({ t, ok: false }))]);
@@ -99,7 +107,7 @@ async function buildRounds() {
 /* ---------- setup ---------- */
 function setup() {
   S.phase = "setup";
-  app.innerHTML = `<header class="hbar"><a class="brand" href="../teacher/"><i></i>ClivEdu Live</a><span class="muted">Host a class game</span></header>
+  app.innerHTML = `<header class="hbar">${EMBED ? `<span class="brand"><i></i>ClivEdu Live</span>` : `<a class="brand" href="../teacher/"><i></i>ClivEdu Live</a>`}<span class="muted">Host a class game</span></header>
     <section class="wrapc">
       <h1 class="big">Start a live game</h1>
       <p class="lead">Teams join from one phone each, or students join on their own phones.</p>
@@ -153,6 +161,7 @@ async function resume(code) {
     S.status = "online";
     S.client.subscribe(NET.topic(S.room, "join")); S.client.subscribe(NET.topic(S.room, "ans"));
     if (stopWatch) { stopWatch(); stopWatch = null; }
+    tellLesson({ code: S.room });
     if (snap.phase === "lobby" || snap.qi < 0) lobby();
     else if (snap.phase === "question") { S.qi = snap.qi - 1; nextQuestion(); }
     else { S.q = S.rounds[S.qi]; S.lastGain = {}; board(); }
@@ -171,7 +180,7 @@ async function create() {
     if (stopWatch) { stopWatch(); stopWatch = null; }
     client.subscribe(NET.topic(S.room, "join")); client.subscribe(NET.topic(S.room, "ans"));
     S.qi = -1; S.players = {};
-    lobby();
+    lobby(); tellLesson({ code: S.room });
   } catch (e) { msg.textContent = "Could not reach a live server. Check the internet connection and try again."; $("[data-create]").disabled = false; }
 }
 
@@ -184,7 +193,8 @@ function publish() {
   if (S.phase === "lobby") st.n = Object.keys(S.players).length;
   if (S.phase === "question" || S.phase === "reveal") {
     const q = S.q;
-    st.q = { type: q.type, text: q.text, how: HOW[q.type] };
+    st.q = { type: q.type, text: q.text, how: q.audio ? HOW.listen : HOW[q.type] };
+    if (q.audio) st.q.listen = 1;
     if (q.opts) st.q.opts = q.opts;
     if (q.type === "build") { st.q.words = q.words; st.q.end = q.end; }
     if (q.type === "clue") st.q.clue = q.clues[Math.min(S.clueShown, q.clues.length) - 1];
@@ -236,6 +246,7 @@ function nextQuestion() {
   if (S.qi >= S.rounds.length) return finish();
   S.q = S.rounds[S.qi]; S.answers = {}; S.lastGain = {}; S.phase = "question"; S.clueShown = 1;
   S.qLimit = S.q.type === "build" ? S.limit + 10 : S.q.type === "clue" ? Math.max(30, S.limit * 1.5) : S.limit;
+  if (S.q.audio) { S.qLimit = S.limit + Math.ceil(S.q.dur * 2) + 3; setTimeout(() => playQ(), 700); setTimeout(() => playQ(true), 700 + (S.q.dur + 1.5) * 1000); }
   S.qStart = Date.now();
   render(); publish();
   S.tick = setInterval(() => {
@@ -247,12 +258,24 @@ function nextQuestion() {
     if (Date.now() - (S.lastPub || 0) > 4000) publish();
   }, 250);
 }
+/* the sound of a listening question: played twice by itself, and again on "Play again" */
+const QAU = new Audio();
+function playQ(second) {
+  const q = S.q; if (!q || !q.audio || S.phase !== "question") return;
+  if (second && S.playedTwice === S.qi) return;
+  if (second) S.playedTwice = S.qi;
+  QAU.src = q.audio; QAU.currentTime = 0;
+  const b = $("#qplay"); if (b) b.classList.add("on");
+  QAU.onended = () => { const b2 = $("#qplay"); if (b2) b2.classList.remove("on"); };
+  QAU.play().catch(() => { if (b) b.classList.remove("on"); });
+}
 function isCorrect(q, a) {
   if (q.type === "build") return Array.isArray(a.order) && a.order.length === q.answer.length && a.order.every((k, i) => q.words[k] === q.answer[i]);
   return a.choice === q.correct;
 }
 function reveal() {
   if (S.phase !== "question") return;
+  QAU.pause();
   clearTimers();
   S.phase = "reveal"; S.lastGain = {};
   for (const [id, a] of Object.entries(S.answers)) {
@@ -281,7 +304,7 @@ function togglePause() {
 function closeRoom() {
   clearTimers();
   if (S.client) { const c = S.client, room = S.room; c.publish(NET.topic(room, "state"), { v: 2, phase: "closed" }, true); c.publish(NET.roomTopic(room), "", true); setTimeout(() => { c.publish(NET.topic(room, "state"), "", true); c.close(); }, 500); S.client = null; }
-  S.room = null; dropSnap();
+  S.room = null; dropSnap(); tellLesson({ code: null });
   setup();
 }
 const ranked = () => Object.values(S.players).sort((a, b) => b.score - a.score);
@@ -327,11 +350,12 @@ function render() {
     if (q.type === "build") main = `<h1 class="qtext small">${esc(q.text)}</h1><div class="wordrow">${(rev ? q.answer : q.words).map(w => `<span class="wtile ${rev ? "ok" : ""}">${esc(w)}</span>`).join("")}<span class="wtile end">${q.end}</span></div>`;
     else if (q.type === "clue") main = `<div class="clues">${q.clues.slice(0, rev ? q.clues.length : S.clueShown).map((c, k) => `<p class="clue"><small>Clue ${k + 1}</small>${esc(c)}</p>`).join("")}</div>${optTiles(q, rev)}`;
     else if (q.type === "tf") main = `<h1 class="qtext">${esc(q.text)}</h1>${optTiles(q, rev)}${rev && q.fix ? `<p class="fixline">Correct: <b>${esc(q.fix)}</b></p>` : ""}`;
+    else if (q.audio) main = `<div class="qlisten"><button class="qplay" id="qplay" data-qplay aria-label="Play the sound again">\u{1F50A}</button><div><h1 class="qtext">${esc(q.text)}</h1><p class="muted strong">Tap \u{1F50A} to hear it again \u00b7 Yana eshitish uchun bosing</p></div></div>${optTiles(q, rev)}`;
     else main = `<h1 class="qtext">${esc(q.text)}</h1>${optTiles(q, rev)}`;
     const nRight = Object.values(S.lastGain).filter(x => x > 0).length;
     body = `<section class="qscreen">
       <div class="row between"><span class="eb">${q.practice ? "Practice \u00b7 Mashq \u2014 no points" : `${TYPE_LABEL[q.type]} \u00b7 ${qNum()} of ${qTotal()}`}</span>
-        <span class="howline">${esc(HOW[q.type][0])}<small>${esc(HOW[q.type][1])}</small></span>
+        <span class="howline">${esc((q.audio ? HOW.listen : HOW[q.type])[0])}<small>${esc((q.audio ? HOW.listen : HOW[q.type])[1])}</small></span>
         ${rev ? `<span class="verdict-sm">${nRight} of ${n} correct</span>` : `<span class="ring" id="ring" style="--p:${(left / S.qLimit).toFixed(3)}"><b id="tleft">${Math.ceil(left)}</b></span>`}</div>
       ${main}
       ${rev && q.type === "build" ? `<p class="fixline">${nRight} of ${n} got the order right.</p>` : ""}
@@ -359,6 +383,7 @@ function render() {
 document.addEventListener("click", async e => {
   const t = e.target.closest("button"); if (!t) return;
   const d = t.dataset;
+  if (d.qplay != null) { S.playedTwice = S.qi; playQ(); return; }
   if (d.set) { S.set = sets.find(s => s.id === d.set); setup(); }
   else if (d.type) { S.type = d.type; setup(); }
   else if (d.time) { S.limit = +d.time; setup(); }

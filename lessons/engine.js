@@ -36,8 +36,8 @@ if (P) {
   else { const pl = P.lesson(L.n); if (pl) openDate = pl.date; }
 }
 document.title = `${L.n ? "Lesson " + L.n + " · " : ""}${strip(L.title)}`;
-if (STUDENT && openDate && !L.openNow && !P.isOpen(openDate)) {
-  const at = P.openAt(openDate);
+if (STUDENT && openDate && !L.openNow && !P.isOpen(openDate, L.openHour)) {
+  const at = P.openAt(openDate, L.openHour);
   document.body.classList.add("locked-page");
   document.body.innerHTML = `<div class="lockbox">
     <p class="eb">${L.n ? "Lesson " + L.n : "Lesson"}</p>
@@ -53,6 +53,14 @@ const notes = n => n && n.length ? `<div class="notes">${n.map(x => `<span class
 const hd = s => `<div>${s.eb ? `<p class="eb">${s.eb}</p>` : ""}<h2 class="h2"${s.eb ? ' style="margin-top:12px"' : ""}>${s.title}</h2>${s.sub ? `<p class="sub" style="margin-top:8px">${s.sub}</p>` : ""}</div>`;
 const BG = { ink: "ink", yel: "yel", sky: "sky", teal: "tealbg", cream: "" };
 const GAME_TITLES = { board: "Quiz Board", auction: "Grammar Auction", build: "Sentence Builder", wheel: "Spin the Wheel", mime: "Mime and Say", mystery: "Mystery Place", boss: "Boss Says…" };
+const fmtT = x => { x = Math.max(0, Math.round(x || 0)); return Math.floor(x / 60) + ":" + String(x % 60).padStart(2, "0"); };
+function playerHTML(src, dur, times, mini) {
+  return `<div class="player${mini ? " small" : ""}" data-src="${src}" data-dur="${dur || 0}"${times ? ` data-times="${times.join(",")}"` : ""}>
+    <button class="pbtn" data-play aria-label="Play">▶</button>
+    <div class="pmid"><div class="ptrack" data-seek><i class="pfill"></i></div>
+      <div class="prow"><span class="ptime">0:00 / ${fmtT(dur)}</span>${mini ? `<span class="plbl">Play the story again</span>` : `<span class="plays">Listened <b>0</b>×</span>`}</div></div>
+    ${mini ? "" : `<button class="psm" data-replay>↺ Again</button><button class="psm" data-speed>Slow</button>`}</div>`;
+}
 const R = {
   raw: s => s.html,
   cover: s => `<div><span class="tag">${s.tag || (L.n ? "Lesson " + L.n : "Lesson")}</span></div><h1 class="h1">${s.title}</h1><p class="lead">${s.lead || ""}</p>
@@ -90,6 +98,27 @@ const R = {
     <p class="wen">${en}</p><p class="uz small">${uz}</p><p class="wsen">${sen}</p><span class="wtag">${tag}</span></div>`).join("")}</div>`,
   wall: s => `${hd(s)}<div class="g5 r2 flex1">${s.groups.map(g => `<div class="card ln wallbox">
     <p class="walltitle">${g.name}</p>${g.words.map(w => `<p class="wallw">${w}</p>`).join("")}</div>`).join("")}</div>`,
+  /* A listening track: player, then the script (hidden from students until the teacher opens it) */
+  listen: s => `${hd(s)}<div class="lsn flex1">${playerHTML(s.src, s.dur, s.times)}
+    <div class="trw"><button class="sbtn trbtn" data-script>Show the script · Matnni ko‘rsatish</button>
+      <div class="tr" hidden>${s.lines.map(([n, t], k) => `<p data-k="${k}"><b>${n}:</b> ${t}</p>`).join("")}</div></div>
+    ${s.credit ? `<p class="credit">${s.credit}</p>` : ""}</div>`,
+  /* Questions students answer on their phones; right and wrong show when the teacher opens them */
+  pick: s => `${hd(s)}${s.src ? `<div class="replaybox">${playerHTML(s.src, s.dur, null, true)}</div>` : ""}
+    <div class="pks ${s.one ? "one" : ""} flex1">${s.items.map((it, k) => `<div class="pk" data-k="${k}" data-a="${it.a}">
+      <div class="pkq"><span class="pn">${k + 1}</span>${it.clip ? `<button class="pclip" data-clip="${it.clip}" aria-label="Play">▶</button>` : ""}<span class="pt">${it.q || ""}</span></div>
+      <div class="pko">${it.o.map((t, j) => `<button class="po" data-po="${j}">${t}</button>`).join("")}</div></div>`).join("")}</div>`,
+  /* Listen and write */
+  write: s => `${hd(s)}<div class="wrs flex1">${s.items.map((it, k) => `<div class="wr" data-k="${k}" data-ans="${esc(it.a)}">
+      <span class="pn">${k + 1}</span><button class="pclip" data-clip="${it.clip}" aria-label="Play">▶</button>
+      <input class="win" type="text" autocomplete="off" autocapitalize="sentences" spellcheck="false" aria-label="Sentence ${k + 1}" placeholder="Write what you hear…">
+      <span class="wa">${it.a}</span></div>`).join("")}</div>`,
+  /* A slide that opens the class game right here */
+  golive: s => `${hd(s)}<div class="golive flex1"><div class="glcard"><span class="glic" aria-hidden="true">\u{1F3AE}</span>
+      <div><b>${s.big || "Class game"}</b><p>${s.text || ""}</p></div>
+      ${TEACHER ? `<button class="sbtn y" data-livegame>Start the game here →</button>` : `<button class="sbtn y" data-joingame>Join the game · Qo‘shilish →</button>`}</div></div>`,
+  /* Where the audio comes from */
+  sources: s => `${hd(s)}<div class="srcs flex1">${s.items.map(([a, b]) => `<div class="src"><b>${a}</b><span>${b}</span></div>`).join("")}</div>`,
   game: s => `<div id="g-${s.g}" style="display:contents"></div>`
 };
 const slideList = L.slides.filter(s => !(STUDENT && s.t === "game" && CLASS_ONLY.includes(s.g)) && !(STUDENT && s.classOnly));
@@ -111,10 +140,10 @@ document.body.classList.add(STUDENT ? "student" : "teacher");
 const lname = `${L.n ? "Lesson " + L.n + " · " : ""}${esc(strip(L.title))}`;
 document.body.innerHTML = `
 <div class="bar">
-  <a class="brand" href="${HOME}"><i aria-hidden="true"></i>${STUDENT ? "My lessons" : "ClivEdu Class"}</a>
+  <a class="back" href="${HOME}" aria-label="Back to ${STUDENT ? "my lessons" : "the teacher page"}">\u2190<span class="long"> ${STUDENT ? "My lessons" : "Teacher page"}</span><span class="short"> Back</span></a>
   <span class="lname">${lname}</span>
   <button class="lnk viewbtn" id="viewBtn" data-viewtoggle></button>
-  ${STUDENT ? `<span class="lnk viewbtn anstag" id="ansTag">\u{1F512}<span class="long"> Answers hidden</span></span><button class="lnk viewbtn followbtn" id="followBtn" data-follow></button>` : `<span class="lnk viewbtn followbtn" id="shareTag" title="Students' phones follow this slide">Phones follow</span><button class="lnk viewbtn ansbtn" id="ansBtn" data-answers></button><button class="lnk viewbtn ansbtn" id="ansAllBtn" data-answers-all></button><a class="lnk viewbtn" href="${HOME}../live/">Live game</a>`}
+  ${STUDENT ? `<button class="lnk viewbtn gamebtn" id="gameBtn" data-joingame>\u{1F3AE}<span class="long"> Join game</span></button><span class="lnk viewbtn anstag" id="ansTag">\u{1F512}<span class="long"> Answers hidden</span></span><button class="lnk viewbtn followbtn" id="followBtn" data-follow></button>` : `<span class="lnk viewbtn followbtn" id="shareTag" title="Students' phones follow this slide">Phones follow</span><button class="lnk viewbtn ansbtn" id="ansBtn" data-answers></button><button class="lnk viewbtn ansbtn" id="ansAllBtn" data-answers-all></button><button class="lnk viewbtn gamebtn" id="gameBtn" data-livegame>\u{1F3AE} Live game</button>`}
   ${STUDENT ? `<div class="teams"><span class="mine"><span class="long">My points</span><span class="short">\u2B50</span> <b id="mypts">0</b></span></div>` : `<div class="teams" id="teams" aria-label="Team scores"></div>`}
 </div>
 ${STUDENT && !store.get("clv-tip-done", false) ? `<div class="tip" id="tip"><b class="t">How to use this page \u00b7 Sahifadan foydalanish</b>
@@ -256,6 +285,7 @@ if (window.visualViewport) visualViewport.addEventListener("resize", () => { if 
 $$(".ans").forEach(b => { const a = b.textContent; b.innerHTML = `<span class="q">Tap to reveal</span><span class="a">${esc(a)}</span>`; b.setAttribute("aria-label", "Reveal answer"); });
 function go(i, fromHash) {
   i = Math.max(0, Math.min(slides.length - 1, i));
+  if (!flow && i !== cur) stopAudio();
   clearInterval(timerId);
   if (TEACHER) sendSync(i);
   if (flow) { cur = i; paintBars(); const bh = ($(".bar") || {}).offsetHeight || 0; scrollTo({ top: Math.max(0, slides[i].getBoundingClientRect().top + scrollY - bh - 12), behavior: reduceMotion ? "auto" : "smooth" }); return; }
@@ -295,7 +325,13 @@ function paintLock() {
 }
 function setOpen(list) {
   const had = openSet.has(ORIG[cur]);
+  const before = new Set(openSet);
   openSet = new Set(list);
+  slides.forEach((sec, k) => {
+    const o = ORIG[k];
+    if (openSet.has(o) && !before.has(o)) { lateOpen.add(o); gradeAnswered(sec, false); }
+    if (!openSet.has(o)) $$(".trbtn", sec).forEach(b => toggleScript(b, false));
+  });
   store.set("clv-ans-" + PKEY, [...openSet]);
   paintLock();
   if (!had && openSet.has(ORIG[cur])) toast("The teacher opened the answers \u2713");
@@ -307,7 +343,129 @@ function reveal(b) {
     return;
   }
   if (b.classList.contains("on")) return; b.classList.add("on"); b.setAttribute("aria-label", "Answer shown"); burst(b, 30); }
-function next() { const sl = slides[cur]; if (!sl.dataset.game && !ansLocked()) { const h = $(".ans:not(.on)", sl); if (h) { reveal(h); return; } } go(cur + 1); }
+function next() {
+  const sl = slides[cur];
+  if (!sl.dataset.game && !ansLocked()) {
+    const h = $(".ans:not(.on), .pk:not(.on), .wr:not(.on)", sl);
+    if (h) { if (h.classList.contains("pk")) checkPick(h); else if (h.classList.contains("wr")) checkWrite(h); else reveal(h); return; }
+  }
+  go(cur + 1);
+}
+
+/* ================= LISTENING: one audio element for the whole page ================= */
+const AU = new Audio(); AU.preload = "none";
+let curPlayer = null, clipBtn = null;
+function paintPlayer(pl, playing) {
+  const b = $(".pbtn", pl); if (!b) return;
+  b.textContent = playing ? "❚❚" : "▶"; b.setAttribute("aria-label", playing ? "Pause" : "Play");
+  pl.classList.toggle("on", playing);
+}
+function stopAudio() {
+  AU.pause();
+  if (curPlayer) paintPlayer(curPlayer, false);
+  if (clipBtn) { clipBtn.classList.remove("on"); clipBtn = null; }
+}
+function playPlayer(pl, restart) {
+  if (curPlayer === pl && !restart && !AU.paused) { AU.pause(); paintPlayer(pl, false); return; }
+  if (clipBtn) { clipBtn.classList.remove("on"); clipBtn = null; }
+  if (curPlayer && curPlayer !== pl) paintPlayer(curPlayer, false);
+  const abs = new URL(pl.dataset.src, location.href).href;
+  if (AU.src !== abs) AU.src = abs;
+  if (restart) { try { AU.currentTime = 0; } catch (e) {} }
+  curPlayer = pl; AU.playbackRate = pl.classList.contains("slow") ? 0.8 : 1;
+  paintPlayer(pl, true);
+  AU.play().catch(() => { paintPlayer(pl, false); toast("Tap ▶ to play · ▶ ni bosing"); });
+}
+function playClip(btn) {
+  if (clipBtn === btn && !AU.paused) { stopAudio(); return; }
+  stopAudio(); curPlayer = null;
+  AU.src = new URL((L.audioBase || "") + btn.dataset.clip + ".mp3", location.href).href; AU.playbackRate = 1;
+  clipBtn = btn; btn.classList.add("on");
+  AU.play().catch(() => { btn.classList.remove("on"); clipBtn = null; });
+}
+AU.addEventListener("timeupdate", () => {
+  const pl = curPlayer; if (!pl) return;
+  const d = AU.duration || +pl.dataset.dur || 1, t = AU.currentTime;
+  const f = $(".pfill", pl), tm = $(".ptime", pl);
+  if (f) f.style.width = Math.min(100, t / d * 100) + "%";
+  if (tm) tm.textContent = fmtT(t) + " / " + fmtT(d);
+  if (pl.dataset.times) {                               /* light up the line being spoken */
+    const ts = pl.dataset.times.split(",").map(Number); let k = -1;
+    ts.forEach((x, j) => { if (t >= x - 0.1) k = j; });
+    $$(".tr p", pl.closest("section.s")).forEach((p, j) => p.classList.toggle("now", j === k));
+  }
+});
+AU.addEventListener("ended", () => {
+  if (clipBtn) { clipBtn.classList.remove("on"); clipBtn = null; return; }
+  const pl = curPlayer; if (!pl) return;
+  paintPlayer(pl, false);
+  const c = $(".plays b", pl); if (c) c.textContent = +c.textContent + 1;
+  $$(".tr p", pl.closest("section.s")).forEach(p => p.classList.remove("now"));
+});
+function seek(track, x) {
+  const pl = track.closest(".player"), r = track.getBoundingClientRect();
+  const fr = Math.max(0, Math.min(1, (x - r.left) / r.width));
+  if (curPlayer !== pl) { playPlayer(pl, true); }
+  const go2 = () => { try { AU.currentTime = fr * (AU.duration || +pl.dataset.dur || 0); } catch (e) {} };
+  if (AU.readyState >= 1) go2(); else AU.addEventListener("loadedmetadata", go2, { once: true });
+}
+function lockedTap(el) { el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); toast("\u{1F512} Wait for the teacher · O‘qituvchini kuting"); }
+function toggleScript(btn, show) {
+  const tr = btn.nextElementSibling; if (!tr) return;
+  if (show == null && ansLocked(slideOf(btn))) return lockedTap(btn);
+  tr.hidden = show == null ? !tr.hidden : !show;
+  btn.textContent = tr.hidden ? "Show the script · Matnni ko‘rsatish" : "Hide the script · Matnni yashirish";
+}
+
+/* ================= ANSWERS ON PHONES: pick an option, or write what you hear ================= */
+const PICKS_KEY = "clv-picks-" + PKEY, AWARD_KEY = "clv-awarded-" + PKEY;
+let picks = STUDENT ? store.get(PICKS_KEY, {}) : {};
+let awarded = new Set(STUDENT ? store.get(AWARD_KEY, []) : []);
+const lateOpen = new Set();     /* slides opened while this page was open: answers given after that earn no points */
+const itemKey = el => { const sec = el.closest("section.s"); return ORIG[slides.indexOf(sec)] + ":" + (el.classList.contains("wr") ? "w" : "") + el.dataset.k; };
+function earn(el) {
+  if (!STUDENT) return;
+  const key = itemKey(el); if (awarded.has(key)) return;
+  awarded.add(key); store.set(AWARD_KEY, [...awarded]); addMine(10);
+}
+function choose(btn) {
+  const pk = btn.closest(".pk"); if (pk.classList.contains("on")) return;
+  $$(".po", pk).forEach(b => b.classList.toggle("sel", b === btn));
+  if (!STUDENT) return;                                          /* on the board: just mark the class's choice */
+  const k = slideOf(pk); picks[itemKey(pk)] = +btn.dataset.po; store.set(PICKS_KEY, picks);
+  if (!ansLocked(k)) checkPick(pk, lateOpen.has(ORIG[k]));
+  else if (!pk.dataset.told) { pk.dataset.told = 1; toast("✓ Saved · Saqlandi"); }
+}
+function checkPick(pk, noPoints) {
+  if (pk.classList.contains("on")) return;
+  pk.classList.add("on");
+  const a = +pk.dataset.a, opts = $$(".po", pk), sel = opts.findIndex(b => b.classList.contains("sel"));
+  opts.forEach((b, j) => b.classList.toggle("ok", j === a));
+  if (sel >= 0 && sel !== a) opts[sel].classList.add("no");
+  if (sel === a && !noPoints) earn(pk);
+}
+const NUM = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"];
+const norm = x => String(x).toLowerCase().replace(/[‘’`]/g, "'").replace(/\b(\d{1,2})\b/g, (m, d) => NUM[+d] || d)
+  .replace(/\b(\w+)n't\b/g, "$1 not").replace(/\bi'm\b/g, "i am").replace(/\b(he|she|it|what|that)'s\b/g, "$1 is").replace(/\b(we|you|they)'re\b/g, "$1 are")
+  .replace(/\bcan not\b/g, "cannot").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+function checkWrite(wr, noPoints) {
+  if (wr.classList.contains("on")) return;
+  wr.classList.add("on");
+  const v = $(".win", wr).value;
+  const good = !!v.trim() && norm(v) === norm(wr.dataset.ans);
+  wr.classList.toggle("good", good); wr.classList.toggle("bad", !good && !!v.trim());
+  if (good && !noPoints) earn(wr);
+}
+function gradeAnswered(sec, late) {
+  $$(".pk", sec).forEach(pk => { if ($(".po.sel", pk)) checkPick(pk, late); });
+  $$(".wr", sec).forEach(wr => { if ($(".win", wr).value.trim()) checkWrite(wr, late); });
+}
+function revealAll(sec) {
+  $$(".pk", sec).forEach(pk => checkPick(pk, true));
+  $$(".wr", sec).forEach(wr => checkWrite(wr, true));
+  $$(".ans", sec).forEach(b => { if (!b.classList.contains("on")) { b.classList.add("on"); } });
+  $$(".trbtn", sec).forEach(b => toggleScript(b, true));
+}
 function fromHash() { const m = location.hash.match(/^#slide-(\d+)$/); return m ? +m[1] - 1 : 0; }
 addEventListener("hashchange", () => { if (!flow) go(fromHash(), true); });
 function toggleFull() { const el = document.documentElement; try { if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().catch(() => {}); } catch (err) {} }
@@ -464,6 +622,16 @@ function spin() {
 }
 
 /* ================= EVENTS ================= */
+document.addEventListener("pointerdown", e => { const tr = e.target.closest("[data-seek]"); if (tr) seek(tr, e.clientX); });
+document.addEventListener("input", e => {
+  const w = e.target.closest(".win"); if (!w || !STUDENT) return;
+  const wr = w.closest(".wr"); picks[itemKey(wr)] = w.value; store.set(PICKS_KEY, picks);
+});
+document.addEventListener("change", e => {
+  const w = e.target.closest(".win"); if (!w) return;
+  const wr = w.closest(".wr"), k = slideOf(wr);
+  if (STUDENT && !ansLocked(k)) checkWrite(wr, lateOpen.has(ORIG[k]));
+});
 document.addEventListener("click", e => {
   const t = e.target.closest("button, [data-modal]");
   if (!t) return;
@@ -471,6 +639,16 @@ document.addEventListener("click", e => {
   const sec = t.closest("section.s") || slides[cur];
   if (e.detail > 0 && t.tagName === "BUTTON") t.blur();
   if (t.classList.contains("ans")) { reveal(t); return; }
+  if (d.play != null) { playPlayer(t.closest(".player")); return; }
+  if (d.replay != null) { playPlayer(t.closest(".player"), true); return; }
+  if (d.speed != null) { const pl = t.closest(".player"); const slow = pl.classList.toggle("slow"); t.textContent = slow ? "Normal" : "Slow"; if (curPlayer === pl) AU.playbackRate = slow ? 0.8 : 1; return; }
+  if (d.clip) { playClip(t); return; }
+  if (d.script != null) { toggleScript(t); return; }
+  if (d.po != null) { choose(t); return; }
+  if (d.livegame != null) { openGame(ROOT + "live/?embed=1&set=" + encodeURIComponent(LIVE_SET) + BROKER_QS); return; }
+  if (d.joingame != null) { joinGame(lastGame); return; }
+  if (d.gameclose != null) { hideGame(); return; }
+  if (d.promptclose != null) { const pr = $("#gprompt"); if (pr) pr.remove(); return; }
   if (d.prev != null) { go(cur - 1); return; }
   if (d.next != null) { go(cur + 1); return; }
   if (d.menu != null) { $("#menu").hidden = false; return; }
@@ -480,11 +658,11 @@ document.addEventListener("click", e => {
   if (d.tipclose != null) { store.set("clv-tip-done", true); const tp = $("#tip"); if (tp) tp.remove(); return; }
   if (d.answers != null) { const o = ORIG[cur];
     if (openSet.has(o)) { openSet.delete(o); toast("Answers hidden from the class again"); }
-    else { openSet.add(o); toast("Answers open for the class on this slide"); }
+    else { openSet.add(o); revealAll(slides[cur]); toast("Answers open for the class on this slide"); }
     paintAns(); sendSync(); return; }
   if (d.answersAll != null) {
     if (ORIG.every(o => openSet.has(o))) { openSet = new Set(); toast("All answers hidden from the class"); }
-    else { ORIG.forEach(o => openSet.add(o)); toast("Every slide's answers are open for the class"); }
+    else { ORIG.forEach(o => openSet.add(o)); revealAll(slides[cur]); toast("Every slide's answers are open for the class"); }
     paintAns(); sendSync(); return; }
   if (d.follow != null) { following = !following; store.set("clv-follow", following); paintFollow(); if (following && lastMsg) followTo(lastMsg, true); return; }
   if (d.viewtoggle != null) { viewPref = flow ? "slides" : "scroll"; store.set("clv-view", viewPref); fit(); if (!flow) go(cur, true); return; }
@@ -560,7 +738,7 @@ function paintAns() {
   const a = $("#ansAllBtn");
   if (a) { const all = ORIG.every(o => openSet.has(o)); a.textContent = all ? "\u25CF All open" : "Open all"; a.classList.toggle("on", all); }
 }
-function sendSync(i) { if (sync) sync.send({ i: ORIG[i == null ? cur : i], ts: Date.now(), open: [...openSet] }); }
+function sendSync(i) { if (sync) sync.send({ i: ORIG[i == null ? cur : i], ts: Date.now(), open: [...openSet], game: gameCode }); }
 function paintFollow() { const b = $("#followBtn"); if (b) { b.innerHTML = following ? "● Following<span class=\"long\"> teacher</span>" : "Follow<span class=\"long\"> teacher</span>"; b.classList.toggle("on", following); } }
 function followTo(m, force) {
   if (!m || typeof m.i !== "number") return;
@@ -569,6 +747,11 @@ function followTo(m, force) {
      still sees whatever the teacher released in class. */
   if (Array.isArray(m.open)) setOpen(m.open);
   if (age > 3 * 3600000) return;                                  // only follow slides during class
+  if (STUDENT && "game" in m) {
+    const was = lastGame; lastGame = m.game || null; paintGame();
+    if (lastGame && lastGame !== was) gamePrompt(lastGame);
+    if (!lastGame) { const pr = $("#gprompt"); if (pr) pr.remove(); promptedFor = null; }
+  }
   if (!force && (m.ts || 0) <= lastTs) return;
   lastTs = m.ts || 0; lastMsg = m;
   if (!following) return;
@@ -582,7 +765,59 @@ function startSync() {
   sync = window.LiveNet.syncSlides(id, STUDENT ? m => followTo(m) : null);
   if (TEACHER) sendSync();
 }
-paintFollow(); paintAns(); paintLock();
+/* ================= CLASS GAME INSIDE THE LESSON ================= */
+const ROOT = "../../";
+const LIVE_SET = L.liveSet || L.id || (L.n ? "l" + L.n : "rev");
+const BROKER_QS = (() => { try { const b = new URLSearchParams(location.search).get("broker"); return b ? "&broker=" + encodeURIComponent(b) : ""; } catch (e) { return ""; } })();
+let gameCode = null, lastGame = null, promptedFor = null;
+function openGame(url) {
+  let box = $("#gamebox");
+  if (!box) {
+    box = document.createElement("div"); box.id = "gamebox"; box.className = "gamebox";
+    box.innerHTML = `<div class="gbar"><button class="nbtn y" data-gameclose>← Back to the lesson${STUDENT ? " · Darsga qaytish" : ""}</button><span class="gtitle">${STUDENT ? "Class game · Sinf o‘yini" : "Live game · the game keeps running when you go back"}</span></div><iframe title="Class game" allow="autoplay"></iframe>`;
+    document.body.appendChild(box);
+  }
+  const fr = $("iframe", box);
+  if (url && box.dataset.url !== url) { box.dataset.url = url; fr.src = url; }
+  box.hidden = false; document.body.classList.add("gameopen");
+  stopAudio();
+  const pr = $("#gprompt"); if (pr) pr.remove();
+}
+function hideGame() { const box = $("#gamebox"); if (box) box.hidden = true; document.body.classList.remove("gameopen"); paintGame(); }
+function joinGame(code) {
+  const box = $("#gamebox");
+  if (box && !code && box.dataset.url) return openGame();          /* go back to the game already open */
+  openGame(ROOT + "play/?embed=1" + (code ? "&code=" + encodeURIComponent(code) : "") + BROKER_QS);
+}
+function paintGame() {
+  const b = $("#gameBtn"); if (!b) return;
+  const on = TEACHER ? !!gameCode : !!lastGame;
+  b.classList.toggle("on", on);
+  b.innerHTML = TEACHER ? (gameCode ? `\u{1F3AE} Game on · ${gameCode}` : "\u{1F3AE} Live game") : `\u{1F3AE}<span class="long"> ${on ? "Game on! Join" : "Join game"}</span>`;
+}
+function gamePrompt(code) {
+  if (promptedFor === code) return; promptedFor = code;
+  const box = $("#gamebox"); if (box && !box.hidden) return;
+  let pr = $("#gprompt"); if (pr) pr.remove();
+  pr = document.createElement("div"); pr.id = "gprompt"; pr.className = "gprompt";
+  pr.innerHTML = `<span class="gpi" aria-hidden="true">\u{1F3AE}</span><span class="gpt"><b>The class game is starting!</b><small>O‘yin boshlanmoqda · code ${esc(code)}</small></span>
+    <button class="nbtn y" data-joingame>Join →</button><button class="nbtn" data-promptclose aria-label="Later">×</button>`;
+  document.body.appendChild(pr);
+}
+addEventListener("message", e => {
+  if (e.origin !== location.origin || !e.data || !e.data.clv) return;
+  const m = e.data;
+  if (m.clv === "room" && TEACHER) { gameCode = m.code || null; sendSync(); paintGame(); }
+  if (m.clv === "close") hideGame();
+});
+
+paintFollow(); paintAns(); paintLock(); paintGame();
+/* bring back what a student already answered, and grade it if the answers are open */
+if (STUDENT) slides.forEach((sec, k) => {
+  $$(".pk", sec).forEach(pk => { const v = picks[itemKey(pk)]; if (v != null) { const b = $$(".po", pk)[v]; if (b) b.classList.add("sel"); } });
+  $$(".wr", sec).forEach(wr => { const v = picks[itemKey(wr)]; if (v) $(".win", wr).value = v; });
+  if (!ansLocked(k)) gradeAnswered(sec, false);
+});
 if (window.LiveNet) startSync();
 else if (SELF) { const sc = document.createElement("script"); sc.src = SELF.replace(/engine\.js(\?.*)?$/, "live-net.js"); sc.onload = startSync; document.head.appendChild(sc); }
 

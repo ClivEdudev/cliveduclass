@@ -342,3 +342,107 @@ body.flow .g5{grid-template-columns:1fr 1fr!important;grid-template-rows:none!im
   body.flow.student .short{display:inline}
   body.flow.student a.brand{font-size:15px}
 }
+
+/* ================= Top bar: back, and the class game inside the lesson ================= */
+.back{display:inline-flex;align-items:center;gap:4px;font:800 15px var(--body);padding:7px 14px;border-radius:999px;background:var(--yellow);color:var(--ink);text-decoration:none;white-space:nowrap;flex:none}
+.back:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.gamebtn.on{background:#1C8F50;border-color:#1C8F50;color:#fff}
+.gamebox{position:fixed;inset:0;z-index:80;background:#0B1828;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.gamebox[hidden]{display:none}
+.gbar{display:flex;align-items:center;gap:14px;padding:8px max(12px,env(safe-area-inset-left,0px));background:#12263A;color:#fff}
+.gbar .nbtn{font-size:15px;padding:9px 16px}
+.gtitle{font:700 14px var(--body);color:#BFD8D5;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gamebox iframe{flex:1;width:100%;border:0;background:#EEF3F8}
+body.gameopen{overflow:hidden}
+.gprompt{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:12px;
+  background:#1C8F50;color:#fff;border-radius:22px;padding:12px 14px 12px 18px;box-shadow:0 14px 40px rgba(0,0,0,.35);width:min(560px,calc(100vw - 24px))}
+.gprompt .gpi{font-size:30px}
+.gprompt .gpt{flex:1;min-width:0}
+.gprompt .gpt b{display:block;font:800 18px var(--body)}
+.gprompt .gpt small{font:600 13px var(--body);color:#E3F5EA}
+.gprompt .nbtn{font-size:16px;padding:10px 16px}
+
+/* ================= Listening ================= */
+.lsn{display:flex;flex-direction:column;gap:20px;min-height:0}
+.player{display:flex;align-items:center;gap:24px;background:var(--ink);color:var(--cream);border-radius:30px;padding:22px 28px}
+.pbtn{width:112px;height:112px;border-radius:50%;background:var(--yellow);color:var(--ink);font:800 44px/1 var(--display);flex:none;display:grid;place-items:center}
+.player.on .pbtn{background:#fff}
+.pmid{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+.ptrack{height:24px;border-radius:999px;background:rgba(255,255,255,.18);cursor:pointer;overflow:hidden;touch-action:none}
+.pfill{display:block;height:100%;width:0;background:var(--yellow);border-radius:999px}
+.prow{display:flex;justify-content:space-between;gap:16px;font:700 26px var(--body);color:#BFD8D5;font-variant-numeric:tabular-nums}
+.prow b{color:var(--yellow)}
+.psm{font:800 26px var(--body);padding:16px 24px;border-radius:999px;border:3px solid rgba(255,255,255,.35);color:var(--cream);flex:none}
+.player.slow [data-speed]{background:var(--yellow);color:var(--ink);border-color:var(--yellow)}
+.player.small{padding:12px 18px;border-radius:22px;gap:16px}
+.player.small .pbtn{width:66px;height:66px;font-size:26px}
+.player.small .ptrack{height:14px}
+.player.small .prow{font-size:21px}
+.replaybox{margin-top:-10px}
+.trw{display:flex;flex-direction:column;gap:14px;min-height:0;flex:1}
+.trbtn{align-self:flex-start}
+.s.alock .trbtn::before{content:"🔒 "}
+.tr{background:#fff;border-radius:24px;padding:18px 26px;display:flex;flex-direction:column;gap:4px;overflow:auto;min-height:0;color:var(--ink)}
+.tr[hidden]{display:none}
+.tr p{font:600 29px/1.35 var(--body);padding:4px 12px;border-radius:12px;transition:background .2s}
+.tr p b{color:var(--teal)}
+.tr p.now{background:var(--yellow)}
+.credit{font:600 19px/1.3 var(--body);color:var(--slate)}
+
+/* ================= Pick an answer ================= */
+.pks{display:grid;grid-template-columns:1fr 1fr;gap:18px 26px;align-content:start;min-height:0}
+.pks.one{grid-template-columns:1fr}
+.pk{background:#fff;border-radius:22px;padding:16px 20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 2px 0 rgba(18,38,58,.08);color:var(--ink)}
+.pks.one .pk{flex-direction:row;align-items:center;gap:20px}
+.pkq{display:flex;align-items:center;gap:14px;font:700 30px/1.25 var(--display)}
+.pks.one .pkq{flex:none}
+.pn{width:46px;height:46px;border-radius:50%;background:var(--ink);color:#fff;font:800 22px var(--body);display:grid;place-items:center;flex:none}
+.pclip{width:66px;height:66px;border-radius:50%;background:var(--yellow);color:var(--ink);font:800 26px var(--display);flex:none;display:grid;place-items:center}
+.pclip.on{background:var(--ink);color:#fff}
+.pko{display:flex;flex-wrap:wrap;gap:10px}
+.pks.one .pko{flex:1;flex-wrap:nowrap}
+.po{flex:1 1 0;min-width:0;padding:14px 16px;border-radius:16px;border:3px solid rgba(18,38,58,.18);background:#F6F8FB;font:800 26px/1.2 var(--body);color:var(--ink);text-align:center}
+.po.sel{border-color:var(--ink);background:var(--yellow)}
+.pk.on .po{opacity:.5}
+.pk.on .po.ok{opacity:1;background:var(--mint);border-color:#1C8F50}
+.pk.on .po.ok::after{content:" ✓"}
+.pk.on .po.no{opacity:1;background:var(--rose);border-color:#C23A47;text-decoration:line-through}
+
+/* ================= Listen and write ================= */
+.wrs{display:flex;flex-direction:column;gap:14px;min-height:0}
+.wr{display:flex;align-items:center;gap:16px;background:#fff;border-radius:20px;padding:12px 18px;color:var(--ink)}
+.win{flex:1;min-width:0;font:700 30px var(--body);padding:12px 18px;border-radius:14px;border:3px solid rgba(18,38,58,.18);color:var(--ink);background:#fff}
+.win:focus{outline:none;border-color:var(--ink)}
+.wa{display:none;font:800 28px/1.2 var(--display);color:var(--teal);flex:none;max-width:44%}
+.wr.on .wa{display:block}
+.wr.good{background:var(--mint)}
+.wr.good .wa::before{content:"✓ "}
+.wr.bad{background:var(--rose)}
+
+/* ================= Game slide, sources ================= */
+.golive{display:grid;place-items:center}
+.glcard{display:flex;align-items:center;gap:40px;background:var(--ink);color:var(--cream);border-radius:36px;padding:44px 52px;max-width:1500px}
+.glic{font-size:110px;line-height:1}
+.glcard b{font:800 56px/1.1 var(--display);display:block}
+.glcard p{font:600 30px/1.35 var(--body);color:#BFD8D5;margin-top:10px}
+.glcard .sbtn{flex:none}
+.srcs{display:flex;flex-direction:column;gap:14px}
+.src{background:#fff;border-radius:20px;padding:16px 26px;display:flex;flex-direction:column;gap:4px;color:var(--ink)}
+.src b{font:800 29px var(--display)}
+.src span{font:600 23px/1.35 var(--body);color:var(--slate)}
+
+/* ================= Phones ================= */
+body.flow .pks,body.flow .pks.one{grid-template-columns:1fr}
+body.flow .pks.one .pk{flex-direction:column;align-items:stretch}
+body.flow .pks.one .pko{flex-wrap:wrap}
+body.flow .po{flex:1 1 100%;font-size:30px;padding:18px}
+body.flow .pkq{font-size:32px}
+body.flow .player{flex-wrap:wrap;gap:16px}
+body.flow .pmid{flex:1 1 300px}
+body.flow .player:not(.small) .psm{flex:1}
+body.flow .wr{flex-wrap:wrap}
+body.flow .win{flex:1 1 100%;order:3;font-size:max(30px,calc(18px / var(--z, 1)))}   /* never under 16px: iPhones zoom in on small inputs */
+body.flow .wa{flex:1 1 100%;max-width:none;order:4}
+body.flow .glcard{flex-direction:column;align-items:flex-start;gap:20px}
+body.flow .tr{overflow:visible}
+body.flow.student .back{font-size:14px;padding:6px 12px}

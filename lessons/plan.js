@@ -14,6 +14,8 @@ window.PLAN = {
   ],
   /* One-off lessons that sit outside the weekly plan */
   extras: [
+    { title: "Listening day", focus: "6 stories with sound \u00b7 am/is/are, can, have to, -ing, commands, present simple",
+      date: "2026-11-16", openHour: 13, path: "listen/01/", key: "lis1", group: "Listening", pri: 1 },
     { title: "English Word Power", focus: "60 new words · classroom, family, house, food, town, jobs, weather, transport",
       date: "2026-11-13", path: "vocab/01/", key: "v1", group: "Vocabulary", openNow: true }
   ],
@@ -73,8 +75,8 @@ window.PLAN = {
     l.date = new Date(d); l.key = P.key(d); l.folder = `lessons/${pad(l.n)}/`;
     d.setDate(d.getDate() + 1);
   });
-  P.openAt = date => { const o = new Date(date); o.setHours(P.unlockHour, 0, 0, 0); return o; };
-  P.isOpen = date => Date.now() >= P.openAt(date).getTime();
+  P.openAt = (date, hour) => { const o = new Date(date); o.setHours(hour == null ? P.unlockHour : hour, 0, 0, 0); return o; };
+  P.isOpen = (date, hour) => Date.now() >= P.openAt(date, hour).getTime();
   P.lesson = n => P.all.find(l => l.n === n);
   P.fmt = d => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
   P.isTeacher = () => { try { return localStorage.getItem("clv-teacher") === "1"; } catch (e) { return false; } };
