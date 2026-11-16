@@ -19,7 +19,8 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
-const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let reduceMotion = (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) || document.documentElement.classList.contains("clv-calm");
+const SETS = () => (window.CLV_SETTINGS ? window.CLV_SETTINGS.get() : {});
 const TEACHER = P ? P.isTeacher() : true;
 const STUDENT = !TEACHER;
 const HOME = TEACHER ? "../../teacher/" : "../../";
@@ -168,6 +169,7 @@ document.body.innerHTML = `
 <div class="bar">
   <a class="back" href="${HOME}" aria-label="Back to ${STUDENT ? "my lessons" : "the teacher page"}">\u2190<span class="long"> ${STUDENT ? "My lessons" : "Teacher page"}</span><span class="short"> Back</span></a>
   <span class="lname">${lname}</span>
+  <button class="lnk viewbtn clvgear" data-settings aria-label="Settings">\u2699\uFE0F<span class="long"> Settings</span></button>
   <button class="lnk viewbtn" id="viewBtn" data-viewtoggle></button>
   ${STUDENT ? `<button class="lnk viewbtn gamebtn" id="gameBtn" data-joingame>\u{1F3AE}<span class="long"> Join game</span></button><span class="lnk viewbtn anstag" id="ansTag">\u{1F512}<span class="long"> Answers hidden</span></span><button class="lnk viewbtn followbtn" id="followBtn" data-follow></button>` : `<span class="lnk viewbtn followbtn" id="shareTag" title="Students' phones follow this slide">Phones follow</span><button class="lnk viewbtn ansbtn" id="ansBtn" data-answers></button><button class="lnk viewbtn ansbtn" id="ansAllBtn" data-answers-all></button><button class="lnk viewbtn gamebtn" id="gameBtn" data-livegame>\u{1F3AE} Live game</button>`}
   ${STUDENT ? `<div class="teams"><span class="mine"><span class="long">My points</span><span class="short">\u2B50</span> <b id="mypts">0</b></span></div>` : `<div class="teams" id="teams" aria-label="Team scores"></div>`}
@@ -250,6 +252,7 @@ let parts = [], raf = 0;
 const DPR = Math.min(window.devicePixelRatio || 1, 1.5);   /* cheaper confetti on low-end phones */
 const sizeCv = () => { cv.width = innerWidth * DPR; cv.height = innerHeight * DPR; };
 function confetti(x, y, n = 90) {
+  if (document.documentElement.classList.contains("clv-calm")) return;
   if (reduceMotion) return;
   const cols = ["#1F5FD1","#B42318","#157347","#FFC93C","#0B6E70","#FFF8E7"];
   for (let i = 0; i < n; i++) parts.push({ x, y, vx: (Math.random() - .5) * 14, vy: -Math.random() * 13 - 3, r: 4 + Math.random() * 6, c: pick(cols), a: Math.random() * 6, life: 80 + Math.random() * 40 });
@@ -279,7 +282,7 @@ const ZOOM_OK = !!(window.CSS && CSS.supports && CSS.supports("zoom", "0.5"));
 const FLOW_W = 720;                       /* phone layout width before scaling */
 /* Students on a phone always get the phone layout, upright or sideways.
    Turning the phone used to switch to the tiny board layout. */
-const wantFlow = () => viewPref === "scroll" || (viewPref === "auto" && STUDENT && (isPhone() || (vw() < 900 && vh() > vw())));
+const wantFlow = () => viewPref === "scroll" || (STUDENT && SETS().reading) || (viewPref === "auto" && STUDENT && (isPhone() || (vw() < 900 && vh() > vw())));
 let fitRaf = 0;
 function queueFit() { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(fit); }
 let flowRO = null;
@@ -289,7 +292,10 @@ function fit() {
   if (f !== flow) { flow = f; document.body.classList.toggle("flow", flow); if (flow) { slides.forEach(s => s.classList.add("active")); rerenderGames(); } else { slides.forEach((s, k) => s.classList.toggle("active", k === cur)); } }
   if (flow) {
     /* fill the width, but not so big that a sideways phone shows one word at a time */
-    const z = Math.max(0.3, Math.min((vw() - 20) / FLOW_W, isPhone() && vw() > vh() ? 0.8 : 1.05));
+    /* bigger text = more zoom and a narrower page, so it reflows instead of spilling sideways */
+    const sc = (SETS().size || 100) / 100 * (SETS().reading ? 1.12 : 1);
+    const z = Math.max(0.3, Math.min((vw() - 20) / FLOW_W, isPhone() && vw() > vh() ? 0.8 : 1.05)) * sc;
+    stage.style.width = Math.round(Math.min(940, Math.max(480, (vw() - 20) / z))) + "px";
     document.body.style.setProperty("--z", z.toFixed(4));
     if (ZOOM_OK) { stage.style.transform = "none"; vp.style.height = ""; }
     else {                                /* browsers without CSS zoom: scale and keep the page height right */
@@ -298,7 +304,7 @@ function fit() {
       sync(); if (!flowRO && window.ResizeObserver) { flowRO = new ResizeObserver(sync); flowRO.observe(stage); }
     }
   } else {
-    vp.style.height = "";
+    vp.style.height = ""; stage.style.width = "";
     const s = Math.min(vp.clientWidth / 1920, vp.clientHeight / 1080);
     stage.style.transformOrigin = ""; stage.style.transform = `translate(-50%,-50%) scale(${s})`;
   }
@@ -306,6 +312,7 @@ function fit() {
   sizeCv();
 }
 addEventListener("resize", queueFit);
+addEventListener("clv-settings", () => { reduceMotion = document.documentElement.classList.contains("clv-calm") || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); queueFit(); });
 addEventListener("orientationchange", () => setTimeout(fit, 250));
 if (window.visualViewport) visualViewport.addEventListener("resize", () => { if (!pinched()) queueFit(); });
 $$(".ans").forEach(b => { const a = b.textContent; b.innerHTML = `<span class="q">Tap to reveal</span><span class="a">${esc(a)}</span>`; b.setAttribute("aria-label", "Reveal answer"); });
@@ -605,12 +612,14 @@ function slapTap(btn) {
 let ac = null;
 const actx = () => { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch (e) {} return ac; };
 function beep(f, d, vol, type) {
+  if (document.documentElement.classList.contains("clv-mute")) return;
   const c = actx(); if (!c) return;
   const o = c.createOscillator(), g = c.createGain(); o.type = type || "square"; o.frequency.value = f;
   g.gain.setValueAtTime(vol || 0.08, c.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + d);
   o.connect(g).connect(c.destination); o.start(); o.stop(c.currentTime + d);
 }
 function boom() {
+  if (document.documentElement.classList.contains("clv-mute")) return;
   const c = actx(); if (!c) return;
   const len = c.sampleRate * 1.2, b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
   for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);

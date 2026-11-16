@@ -536,3 +536,53 @@ body.flow .stile{min-height:120px}
 .tbforfeit[hidden]{display:none}
 body.flow .tb{grid-template-columns:1fr}
 body.flow .tbic{font-size:200px}
+
+/* ================= Dark theme (Settings → Dark) =================
+   Slides become dark; coloured cards keep their soft colours with dark text so they stay readable. */
+html[data-theme="dark"]{--dk-s:#162332;--dk-c:#21344A;--dk-c2:#2A4058;--dk-l:#33495F;--dk-t:#E8EEF4;--dk-m:#AFC0D0}
+html[data-theme="dark"] .s{background:var(--dk-s);color:var(--dk-t)}
+html[data-theme="dark"] .s.yel{background:#2B2510}
+html[data-theme="dark"] .s.sky{background:#12283C}
+html[data-theme="dark"] .s.exploded{background:#3A1A1A}
+html[data-theme="dark"] .s .sub,html[data-theme="dark"] .s .muted,html[data-theme="dark"] .credit,html[data-theme="dark"] .sstat,html[data-theme="dark"] .swhead .muted{color:var(--dk-m)}
+html[data-theme="dark"] .s .eb{color:#FFB37A}
+html[data-theme="dark"] .s .uz,html[data-theme="dark"] .s .uz.small{color:#6FD6D8}
+html[data-theme="dark"] .s .peach,html[data-theme="dark"] .s .mint,html[data-theme="dark"] .s .skyb,html[data-theme="dark"] .s .butter,html[data-theme="dark"] .s .rose,html[data-theme="dark"] .s .sky .card{color:var(--ink)}
+html[data-theme="dark"] .s .peach .uz,html[data-theme="dark"] .s .mint .uz,html[data-theme="dark"] .s .skyb .uz,html[data-theme="dark"] .s .butter .uz{color:var(--teal)}
+html[data-theme="dark"] .card.ln,html[data-theme="dark"] .qrow,html[data-theme="dark"] .qrow.ln,html[data-theme="dark"] .chipw,html[data-theme="dark"] .spot.lit,
+html[data-theme="dark"] .sbtn.w,html[data-theme="dark"] .cardx.open,html[data-theme="dark"] .clue,html[data-theme="dark"] .tr,html[data-theme="dark"] .pk,
+html[data-theme="dark"] .wr,html[data-theme="dark"] .src,html[data-theme="dark"] .swcard,html[data-theme="dark"] .stile,html[data-theme="dark"] .tbforfeit,
+html[data-theme="dark"] .mbox,html[data-theme="dark"] .lockbox,html[data-theme="dark"] .mmode{background:var(--dk-c);color:var(--dk-t);border-color:var(--dk-l)}
+html[data-theme="dark"] .tbl td{color:var(--dk-t)}
+html[data-theme="dark"] .tbl tr:nth-child(odd) td{background:var(--dk-c)}
+html[data-theme="dark"] .po,html[data-theme="dark"] .win,html[data-theme="dark"] .swname,html[data-theme="dark"] .swin,html[data-theme="dark"] .swact button{background:var(--dk-c2);color:var(--dk-t);border-color:var(--dk-l)}
+html[data-theme="dark"] .po.sel{background:var(--yellow);color:var(--ink);border-color:var(--yellow)}
+html[data-theme="dark"] .pk.on .po.ok,html[data-theme="dark"] .pk.on .po.no,html[data-theme="dark"] .wr.good,html[data-theme="dark"] .wr.bad,
+html[data-theme="dark"] .stile.ok,html[data-theme="dark"] .stile.no,html[data-theme="dark"] .swcard.ok{color:var(--ink)}
+html[data-theme="dark"] .wr.good .win,html[data-theme="dark"] .wr.bad .win{background:#fff;color:var(--ink)}
+html[data-theme="dark"] .ans{color:var(--dk-m);border-color:var(--dk-l)}
+html[data-theme="dark"] .ans.on{color:var(--ink)}
+html[data-theme="dark"] .mmode.on{background:var(--yellow);color:var(--ink);border-color:var(--yellow)}
+html[data-theme="dark"] .tr p.now{background:var(--yellow);color:var(--ink)}
+html[data-theme="dark"] .tr p.now b{color:var(--teal)}
+html[data-theme="dark"] .tr p b,html[data-theme="dark"] .wa,html[data-theme="dark"] .swn,html[data-theme="dark"] .mout,html[data-theme="dark"] .swstatus{color:#6FD6D8}
+html[data-theme="dark"] .pn{background:#fff;color:var(--ink)}
+html[data-theme="dark"] .pmine{background:#fff;color:var(--ink)}
+html[data-theme="dark"] .tbfuse{background:rgba(255,255,255,.15)}
+html[data-theme="dark"] .player,html[data-theme="dark"] .reel,html[data-theme="dark"] .swprompt,html[data-theme="dark"] .tbtopic,html[data-theme="dark"] .glcard{background:#0B1622}
+/* phone view */
+html[data-theme="dark"] body.flow.student{--pg:#0E1A26;--pgline:#22364A;background:var(--pg);color:var(--dk-t)}
+html[data-theme="dark"] body.flow.student .bar{background:#13202D;color:var(--dk-t);box-shadow:0 0 0 100vmax #13202D,0 1px 0 100vmax #22364A}
+html[data-theme="dark"] body.flow.student .lnk{color:var(--dk-m)}
+html[data-theme="dark"] body.flow.student .viewbtn{background:#13202D;border-color:#2B3E52}
+html[data-theme="dark"] body.flow.student .followbtn.on{background:#123A26;color:#9BE2B8;border-color:#1C8F50}
+html[data-theme="dark"] body.flow.student .tip{background:#13202D;color:var(--dk-t)}
+html[data-theme="dark"] body.flow.student .s{box-shadow:0 1px 0 #22364A}
+
+/* ================= Reading mode: calmer, roomier text ================= */
+html.clv-reading body.flow .s{padding:54px 34px;gap:34px}
+html.clv-reading body.flow .s p,html.clv-reading body.flow .s li{line-height:1.5}
+html.clv-reading .tiles,html.clv-reading #fx{display:none!important}
+/* Large text on phones: long words wrap, and wide parts (tables, the quiz board) scroll inside their own slide */
+body.flow .s{max-width:100%;overflow-x:auto;overflow-y:visible}
+body.flow .h1,body.flow .h2,body.flow .lead{overflow-wrap:break-word}
