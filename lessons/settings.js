@@ -42,6 +42,11 @@ html[data-theme="dark"] .clvsheet{--b:#13202D;--f:#EAF0F5;--s:#A9B8C7;--l:#2B3E5
 @media (min-width:700px){.clvset{align-items:center}.clvsheet{border-radius:22px}}
 .clvsheet h2{margin:0;font-size:22px;font-weight:800;display:flex;align-items:center;gap:10px}
 .clvsheet h2 small{font-size:14px;font-weight:600;color:var(--t)}
+.clvgrab{display:block;width:56px;height:6px;border-radius:99px;background:var(--l);border:0;padding:0;margin:-6px auto -4px;cursor:pointer;flex:none}
+.clvgrab::before{content:"";display:block;margin:-14px -20px;height:34px}
+.clvauto{margin-left:auto;font-size:12px;font-weight:700;color:var(--s);transition:color .2s}
+.clvauto.on{color:#1C8F50}
+.clvsheet:focus{outline:none}
 .clvsheet .x{margin-left:auto;font-weight:800;font-size:15px;font-family:inherit;background:var(--soft);color:var(--f);border:0;border-radius:999px;padding:9px 16px;cursor:pointer}
 .clvgrp{display:flex;flex-direction:column;gap:12px;background:var(--soft);border-radius:16px;padding:14px}
 .clvgrp > b{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--s)}
@@ -83,8 +88,9 @@ html[data-theme="dark"] .clvsheet{--b:#13202D;--f:#EAF0F5;--s:#A9B8C7;--l:#2B3E5
   }
   function html() {
     return `<div class="clvsheet" role="dialog" aria-modal="true" aria-label="Settings">
-      <h2>⚙️ Settings <small>Sozlamalar</small><button class="x" data-close>Done · Tayyor</button></h2>
-      ${account()}
+      <button class="clvgrab" data-close aria-label="Close settings"></button>
+      <h2>⚙️ Settings <small>Sozlamalar</small><span class="clvauto" aria-live="polite">✓ Saved automatically · Avtomatik saqlanadi</span></h2>
+      <div data-accslot>${account()}</div>
       <div class="clvgrp"><b>Look · Ko‘rinish</b>
         <div class="clvrow"><span>${L("Theme", "Mavzu")}</span>${seg("theme", [["auto", "Auto"], ["light", "☀️ Light"], ["dark", "\u{1F319} Dark"]])}</div>
         <div class="clvrow"><span>${L("Brightness", "Yorqinlik")}</span><input class="clvrange" type="range" min="40" max="100" step="5" data-r="bright" value="${S.bright}" aria-label="Brightness"><span class="clvval" data-rv="bright">${S.bright}%</span></div>
@@ -98,39 +104,56 @@ html[data-theme="dark"] .clvsheet{--b:#13202D;--f:#EAF0F5;--s:#A9B8C7;--l:#2B3E5
       </div>
       <div class="clvbtm"><button data-reset>Reset · Asl holiga</button></div></div>`;
   }
+  /* Only the controls that changed are touched: no redraw of the whole sheet on every tap. */
+  function update() {
+    if (!box) return;
+    box.querySelectorAll("[data-k]").forEach(b => b.setAttribute("aria-pressed", String(S[b.dataset.k] === b.dataset.v)));
+    box.querySelectorAll("[data-sw]").forEach(b => b.setAttribute("aria-checked", String(!!S[b.dataset.sw])));
+    box.querySelectorAll("[data-r]").forEach(r => { if (+r.value !== +S[r.dataset.r]) r.value = S[r.dataset.r]; });
+    box.querySelectorAll("[data-rv]").forEach(v => { v.textContent = S[v.dataset.rv] + "%"; });
+  }
+  let saveT = 0, frame = 0, flashT = 0;
+  function save(now) {
+    clearTimeout(saveT);
+    const go = () => { keep(S); const a = box && box.querySelector(".clvauto"); if (a) { a.classList.add("on"); clearTimeout(flashT); flashT = setTimeout(() => a.classList.remove("on"), 900); } };
+    now ? go() : (saveT = setTimeout(go, 250));
+  }
+  function applySoon() { if (frame) return; frame = requestAnimationFrame(() => { frame = 0; apply(); }); }
   let box = null, lastFocus = null;
   function open() {
     mount(); lastFocus = document.activeElement;
     if (!box) {
       box = document.createElement("div"); box.className = "clvset"; document.body.appendChild(box);
+      box.innerHTML = html();
       box.addEventListener("click", e => {
         if (e.target === box) return close();
         const b = e.target.closest("button"); if (!b) return;
         if (b.dataset.close != null) return close();
-        if (b.dataset.k) { S[b.dataset.k] = b.dataset.v; }
+        if (b.dataset.k) { if (S[b.dataset.k] === b.dataset.v) return; S[b.dataset.k] = b.dataset.v; }
         else if (b.dataset.sw) { S[b.dataset.sw] = !S[b.dataset.sw]; }
         else if (b.dataset.reset != null) { S = Object.assign({}, DEF); }
         else if (window.CLV_ACCOUNT && window.CLV_ACCOUNT.onClick && window.CLV_ACCOUNT.onClick(b)) return;
         else return;
-        keep(S); apply(); paint();
+        update(); apply(); save(true);
       });
       box.addEventListener("input", e => {
         const r = e.target.closest("[data-r]"); if (!r) return;
         S[r.dataset.r] = +r.value; const v = box.querySelector(`[data-rv="${r.dataset.r}"]`); if (v) v.textContent = r.value + "%";
-        keep(S); apply();
+        applySoon(); save(false);
       });
+      box.addEventListener("change", e => { if (e.target.closest("[data-r]")) save(true); });
       box.addEventListener("keydown", e => { if (e.key === "Escape") close(); e.stopPropagation(); });
-    }
-    paint(); box.hidden = false;
-    const f = box.querySelector("[data-close]"); if (f) f.focus();
+    } else update();
+    paintAccount(); box.hidden = false;
+    const f = box.querySelector(".clvsheet"); if (f) { f.setAttribute("tabindex", "-1"); f.focus({ preventScroll: true }); }
   }
-  function paint() { if (box) box.innerHTML = html(); }
-  function close() { if (box) box.hidden = true; if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch (e) {} }
+  function paintAccount() { const slot = box && box.querySelector("[data-accslot]"); if (slot) slot.innerHTML = account(); }
+  function close() { if (box) { save(true); box.hidden = true; } if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch (e) {} }
 
   window.CLV_SETTINGS = {
     get: () => Object.assign({}, S),
-    set(patch) { S = Object.assign({}, S, patch || {}); keep(S); apply(); paint(); },
-    open, close, repaint: paint
+    set(patch) { S = Object.assign({}, S, patch || {}); keep(S); apply(); update(); },
+    open, close, repaint: paintAccount
   };
   document.addEventListener("click", e => { const g = e.target.closest("[data-settings]"); if (g) { e.preventDefault(); open(); } });
   apply();
