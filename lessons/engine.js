@@ -685,12 +685,26 @@ function choose(btn) {
   if (!ansLocked(k)) checkPick(pk, lateOpen.has(ORIG[k]));
   else if (!pk.dataset.told) { pk.dataset.told = 1; toast("✓ Saved · Saqlandi"); }
 }
+/* Wrong answers go to "My mistakes" on the profile page, so the student can practise them later. */
+function noteMistake(el, m) {
+  if (!STUDENT) return;
+  const cb = $(".pclip", el);
+  const rec = Object.assign({ id: PKEY + ":" + itemKey(el), l: PKEY, lt: strip(L.title), t: Date.now(),
+    au: cb ? new URL((L.audioBase || "") + cb.dataset.clip + ".mp3", location.href).pathname : "" }, m);
+  const all = store.get("clv-mistakes", []);
+  if (all.some(x => x.id === rec.id)) return;
+  all.push(rec); store.set("clv-mistakes", all.slice(-200));
+}
 function checkPick(pk, noPoints) {
   if (pk.classList.contains("on")) return;
   pk.classList.add("on");
   const a = +pk.dataset.a, opts = $$(".po", pk), sel = opts.findIndex(b => b.classList.contains("sel"));
   opts.forEach((b, j) => b.classList.toggle("ok", j === a));
-  if (sel >= 0 && sel !== a) opts[sel].classList.add("no");
+  if (sel >= 0 && sel !== a) {
+    opts[sel].classList.add("no");
+    const txt = b => strip(b.innerHTML).trim();
+    noteMistake(pk, { q: strip(($(".pt", pk) || {}).innerHTML || "").trim() || "Listen and choose", a: txt(opts[sel]), c: txt(opts[a]), o: opts.map(txt), ci: a });
+  }
   if (sel === a && !noPoints) earn(pk);
 }
 const NUM = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"];
@@ -703,6 +717,7 @@ function checkWrite(wr, noPoints) {
   const v = $(".win", wr).value;
   const good = !!v.trim() && norm(v) === norm(wr.dataset.ans);
   wr.classList.toggle("good", good); wr.classList.toggle("bad", !good && !!v.trim());
+  if (!good && v.trim()) noteMistake(wr, { q: "Listen and write", a: v.trim(), c: strip(wr.dataset.ans), w: 1 });
   if (good && !noPoints) earn(wr);
 }
 function gradeAnswered(sec, late) {

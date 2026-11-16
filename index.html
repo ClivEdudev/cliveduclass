@@ -75,10 +75,11 @@ html[data-theme="dark"] .game .ic,html[data-theme="dark"] .btn{color:#12263A}
 html[data-theme="dark"] .feature .eb{color:#FFB37A}
 html[data-theme="dark"] .card.new{background:#2E2A14}
 .wrap{zoom:var(--clv-scale,1)}
-.gear{font:800 15px inherit;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.gear{font-weight:800;font-size:15px;font-family:inherit;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap}
 .topr{display:flex;gap:8px;align-items:center}
 </style>
 <script src="lessons/settings.js"></script>
+<script src="lessons/account.js" defer></script>
 </head>
 <body>
 <div class="wrap" id="app"></div>
@@ -122,7 +123,7 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
     : `<p class="empty">Your lessons will appear here after class.</p>`;
 
   document.getElementById("app").innerHTML = `
-    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="topr"><button class="gear" data-settings aria-label="Settings">⚙️</button><span class="pts">⭐ My points <b>${total}</b></span></span></div>
+    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="topr"><span id="accBtn"></span><button class="gear" data-settings aria-label="Settings">⚙️</button><span class="pts">⭐ My points <b>${total}</b></span></span></div>
     <div class="hello"><h1>My English <span>lessons</span></h1>
       <p>Every lesson from class is here: rules, Uzbek examples, quizzes and games.</p>
       <p class="uz">Har bir dars shu yerda. Takrorlang va ball yig‘ing!</p></div>
@@ -130,6 +131,14 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
     ${feature}
     <section class="sec"><h2>Revise my lessons</h2><p>${items.length} open · newest first · Darslarni takrorlang</p><div class="grid">${cards}</div></section>
     <p class="foot-link"><a href="teacher/">Teacher</a></p>`;
+  const acc = () => {
+    const el = document.getElementById("accBtn"), A = window.CLV_ACCOUNT; if (!el) return;
+    const u = A && A.user;
+    el.innerHTML = u ? `<a class="gear" href="me/" style="text-decoration:none">\u{1F464} ${esc(String(u.name || "Me").split(" ")[0])}</a>`
+      : `<button class="gear" data-signin>✈️ Sign in · Kirish</button>`;
+    const t = Object.values(P.points()).reduce((a, b) => a + (+b || 0), 0), b = document.querySelector(".pts b"); if (b) b.textContent = t;
+  };
+  addEventListener("clv-account", acc); addEventListener("load", acc); acc();
   if (window.LiveNet) {
     const stop = window.LiveNet.watchRooms(list => {
       const el = document.getElementById("liveBanner"); if (!el) return;

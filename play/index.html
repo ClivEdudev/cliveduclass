@@ -116,9 +116,10 @@ html[data-theme="dark"] .netbar{background:#3A2E10;color:#fff}
 html[data-theme="dark"] .err{background:#3A1A1F;color:#FFC9CF}
 html[data-theme="dark"] .btn,html[data-theme="dark"] .o2{color:#12263A}
 .app{zoom:var(--clv-scale,1)}
-.gear{font:800 14px inherit;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 10px;cursor:pointer}
+.gear{font-weight:800;font-size:14px;font-family:inherit;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 10px;cursor:pointer}
 </style>
 <script src="../lessons/settings.js"></script>
+<script src="../lessons/account.js" defer></script>
 </head>
 <body>
 <main class="app" id="app"></main>
@@ -282,9 +283,32 @@ const rulesHTML = () => `<ul class="rules">
   <li><i>2</i><span>Tap your answer on this phone.<small>Javobni shu telefonda bosing.</small></span></li>
   <li><i>3</i><span>Right and fast = more points.<small>To‘g‘ri va tez = ko‘proq ball.</small></span></li>
   <li><i>4</i><span>The first question is practice. No points.<small>Birinchi savol — mashq, ball yo‘q.</small></span></li></ul>`;
+/* Keep a short history on this phone (and in the account when signed in): wrong answers and final results. */
+let lastSent = null;
+const today = () => new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
+function remember() {
+  try {
+    if (st.phase === "reveal" && !st.practice && st.q && st.q.opts && lastSent && lastSent.qi === st.qi && lastSent.room === me.room && lastSent.data.choice != null) {
+      const g = st.gained ? st.gained[me.id] : undefined;
+      if (g === 0 && st.answerText) {
+        const all = load("clv-mistakes") || [], id = "g:" + me.room + ":" + today() + ":" + st.qi;
+        if (!all.some(x => x.id === id)) {
+          all.push({ id, l: "game", lt: "Live game", t: Date.now(), q: st.q.text || "", a: st.q.opts[lastSent.data.choice] || "", c: st.answerText, o: st.q.opts.slice(), ci: st.q.opts.indexOf(st.answerText) });
+          keep("clv-mistakes", all.slice(-200));
+        }
+      }
+    }
+    if (st.phase === "end" && st.players && st.players.length) {
+      const { pos, of: n, score } = myScore(), id = me.room + ":" + today() + ":" + (st.total || 0);
+      const all = load("clv-games") || [];
+      if (pos > 0 && !all.some(x => x.id === id)) { all.push({ id, t: Date.now(), room: me.room, score, pos, of: n, name: me.name }); keep("clv-games", all.slice(-100)); }
+    }
+  } catch (e) {}
+}
 function render() {
   clearInterval(tick);
   if (!st) return;
+  remember();
   if (confirmLeave) {
     app.innerHTML = `${top()}<div class="card mid"><p class="big">Leave the game?</p><p class="uz">O‘yindan chiqasizmi?</p>
       <button class="btn" data-stay>No, keep playing · Yo‘q</button><button class="btn sec" data-leave>Yes, leave · Ha, chiqish</button></div>`;
@@ -345,6 +369,7 @@ function send(data) {
   sentFor = st.qi;
   const msg = Object.assign({ id: me.id, qi: st.qi }, data);
   pending = { qi: st.qi, data: msg, at: Date.now() };
+  lastSent = { qi: st.qi, room: me.room, data: Object.assign({}, data) };
   client.publish(NET.topic(me.room, "ans"), msg);
   try { navigator.vibrate && navigator.vibrate(25); } catch (e) {}
   update();

@@ -42,14 +42,14 @@ html[data-theme="dark"] .clvsheet{--b:#13202D;--f:#EAF0F5;--s:#A9B8C7;--l:#2B3E5
 @media (min-width:700px){.clvset{align-items:center}.clvsheet{border-radius:22px}}
 .clvsheet h2{margin:0;font-size:22px;font-weight:800;display:flex;align-items:center;gap:10px}
 .clvsheet h2 small{font-size:14px;font-weight:600;color:var(--t)}
-.clvsheet .x{margin-left:auto;font:800 15px inherit;background:var(--soft);color:var(--f);border:0;border-radius:999px;padding:9px 16px;cursor:pointer}
+.clvsheet .x{margin-left:auto;font-weight:800;font-size:15px;font-family:inherit;background:var(--soft);color:var(--f);border:0;border-radius:999px;padding:9px 16px;cursor:pointer}
 .clvgrp{display:flex;flex-direction:column;gap:12px;background:var(--soft);border-radius:16px;padding:14px}
 .clvgrp > b{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--s)}
 .clvrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .clvrow > span{flex:1;min-width:140px;font-weight:700}
 .clvrow > span small{display:block;font-weight:600;font-size:13px;color:var(--t)}
 .clvseg{display:flex;background:var(--b);border:2px solid var(--l);border-radius:12px;padding:3px;gap:3px}
-.clvseg button{font:700 14px inherit;color:var(--f);background:none;border:0;border-radius:9px;padding:8px 12px;cursor:pointer}
+.clvseg button{font-weight:700;font-size:14px;font-family:inherit;color:var(--f);background:none;border:0;border-radius:9px;padding:8px 12px;cursor:pointer}
 .clvseg button[aria-pressed="true"]{background:var(--a);color:#12263A}
 .clvsw{position:relative;width:52px;height:30px;border-radius:999px;background:var(--l);border:0;cursor:pointer;flex:none}
 .clvsw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s}
@@ -58,7 +58,7 @@ html[data-theme="dark"] .clvsheet{--b:#13202D;--f:#EAF0F5;--s:#A9B8C7;--l:#2B3E5
 .clvrange{flex:1 1 180px;accent-color:#E8A90A;height:28px}
 .clvval{min-width:46px;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
 .clvbtm{display:flex;gap:10px;flex-wrap:wrap}
-.clvbtm button{font:800 15px inherit;border:2px solid var(--l);background:var(--b);color:var(--f);border-radius:12px;padding:10px 14px;cursor:pointer}
+.clvbtm button{font-weight:800;font-size:15px;font-family:inherit;border:2px solid var(--l);background:var(--b);color:var(--f);border-radius:12px;padding:10px 14px;cursor:pointer}
 .clvacc{display:flex;align-items:center;gap:12px}
 .clvacc .av{width:44px;height:44px;border-radius:50%;background:var(--a);color:#12263A;display:grid;place-items:center;font-weight:800;font-size:18px;flex:none;overflow:hidden}
 .clvacc .av img{width:100%;height:100%;object-fit:cover}
