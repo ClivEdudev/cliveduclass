@@ -977,8 +977,11 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("keydown", e => {
   if (flow) return;
-  const tag = (document.activeElement && document.activeElement.tagName) || "";
-  if (tag === "INPUT" || tag === "SELECT") return;
+  /* typing in any box (one line or several) never moves the slides */
+  const el = e.target && e.target.nodeType === 1 ? e.target : document.activeElement;
+  const tag = (el && el.tagName) || "";
+  if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || (el && el.isContentEditable)) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.key === "Escape") { if (!$("#menu").hidden) { $("#menu").hidden = true; return; } if (GS.board && GS.board.open && slides[cur].dataset.game === "board") { GS.board.open = null; GR.board(); } return; }
   if (e.key === "ArrowRight" || e.key === "PageDown" || (e.key === " " && tag !== "BUTTON")) { e.preventDefault(); next(); }
   else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(cur - 1); }
