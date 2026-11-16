@@ -145,8 +145,8 @@ function joinForm(err) {
       <input class="f" id="code" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="6" placeholder="ABCDE1" value="${esc(qcode)}" aria-label="Game code"></div>
     <div class="step"><b><span class="n">2</span>How do you play? <span class="uz">· Qanday o‘ynaysiz?</span></b>
       <div class="seg">
-        <label><input type="radio" name="type" value="team" ${last.type !== "solo" ? "checked" : ""}><span>Team<small>one phone for the team · jamoa</small></span></label>
-        <label><input type="radio" name="type" value="solo" ${last.type === "solo" ? "checked" : ""}><span>Just me<small>my own phone · yakka</small></span></label>
+        <label><input type="radio" name="type" value="solo" ${last.type !== "team" ? "checked" : ""}><span>Just me<small>my own phone · yakka</small></span></label>
+        <label><input type="radio" name="type" value="team" ${last.type === "team" ? "checked" : ""}><span>Team<small>one phone for the team · jamoa</small></span></label>
       </div></div>
     <div class="step"><b><span class="n">3</span><span id="nameLbl">Team name</span> <span class="uz" id="nameUz">· Jamoa nomi</span></b>
       <input class="f" id="name" maxlength="18" autocomplete="off" value="${esc(last.name || "")}" aria-label="Name"></div>
@@ -358,7 +358,7 @@ const urlCode = (new URLSearchParams(location.search).get("code") || "").toUpper
 if (sess && Date.now() - sess.at < 3 * 3600000 && (!urlCode || urlCode === sess.code)) enter(sess, true);
 else if (urlCode && EMBED && load("clv-live-last") && load("clv-live-last").name) {   /* from a lesson: join straight away with the last name used */
   const last = load("clv-live-last"), prev = load("clv-live-" + urlCode);
-  enter({ code: urlCode, name: last.name, type: last.type || "team", id: prev && prev.id || Math.random().toString(36).slice(2, 10) });
+  enter({ code: urlCode, name: last.name, type: last.type || "solo", id: prev && prev.id || Math.random().toString(36).slice(2, 10) });
 }
 else joinForm();
 })();
