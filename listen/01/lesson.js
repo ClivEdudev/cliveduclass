@@ -4,6 +4,7 @@ window.LESSON = {
  "title": "Listening day",
  "openDate": "2026-11-16",
  "openHour": 13,
+ "openNow": true,
  "audioBase": "../audio/",
  "slides": [
   {
