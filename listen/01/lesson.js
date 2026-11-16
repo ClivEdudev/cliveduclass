@@ -10,7 +10,7 @@ window.LESSON = {
    "t": "cover",
    "tag": "Listening day",
    "title": "Listen <span class='cy'>and understand</span>",
-   "lead": "Six short stories with the grammar we know · Tinglab tushunamiz",
+   "lead": "Listen, make sentences, write — and play! · Tinglaymiz, gap tuzamiz, yozamiz, o‘ynaymiz",
    "chips": [
     [
      "am / is / are",
@@ -40,22 +40,22 @@ window.LESSON = {
   },
   {
    "t": "goals",
-   "title": "How we listen today",
+   "title": "Today’s plan",
    "items": [
     [
-     "1st time: just listen",
-     "Don’t write. Understand the story.",
-     "Birinchi marta: faqat tinglang."
+     "1 · Listen",
+     "Listen once. Then listen again and answer on your phone.",
+     "Bir marta tinglang, keyin telefonda javob bering."
     ],
     [
-     "2nd time: answer",
-     "Tap your answers on your phone.",
-     "Ikkinchi marta: telefonda javob bering."
+     "2 · Make and write sentences",
+     "Together, then on your phone. The voice checks you.",
+     "Birga gap tuzamiz va yozamiz."
     ],
     [
-     "Check together",
-     "The teacher opens the answers.",
-     "O‘qituvchi javoblarni ochadi."
+     "3 · Play together",
+     "Fly swatter race and the ticking bomb!",
+     "Birga o‘ynaymiz!"
     ]
    ]
   },
@@ -858,34 +858,174 @@ window.LESSON = {
    ]
   },
   {
-   "t": "write",
-   "eb": "Dictation · Diktant",
-   "title": "Listen and write",
-   "sub": "Tap ▶ and write the sentence. · ▶ ni bosing va gapni yozing.",
-   "items": [
+   "t": "machine",
+   "eb": "Make up sentences · together",
+   "title": "Sentence machine",
+   "sub": "Spin. The class makes the sentence. Then check it with the voice. · Aylantiring, gap tuzing, ovoz bilan tekshiring.",
+   "who": [
+    [
+     "I",
+     1
+    ],
+    [
+     "You",
+     "you"
+    ],
+    [
+     "My mum",
+     3
+    ],
+    [
+     "Aziz",
+     3,
+     true
+    ],
+    [
+     "We",
+     "p"
+    ],
+    [
+     "My friends",
+     "p"
+    ],
+    [
+     "The cat",
+     3
+    ]
+   ],
+   "modes": [
     {
-     "clip": "d1",
-     "a": "My name is Aziz."
+     "name": "am / is / are",
+     "kind": "be",
+     "what": [
+      [
+       "a student",
+       "students"
+      ],
+      [
+       "happy",
+       "happy"
+      ],
+      [
+       "at home",
+       "at home"
+      ],
+      [
+       "from Tashkent",
+       "from Tashkent"
+      ],
+      [
+       "tired",
+       "tired"
+      ],
+      [
+       "a teacher",
+       "teachers"
+      ]
+     ]
     },
     {
-     "clip": "d2",
-     "a": "I can play football."
+     "name": "can",
+     "kind": "can",
+     "what": [
+      "swim",
+      "speak English",
+      "cook plov",
+      "drive a car",
+      "play the guitar",
+      "ride a bike"
+     ]
     },
     {
-     "clip": "d3",
-     "a": "She is reading a book."
+     "name": "have to",
+     "kind": "have",
+     "what": [
+      "get up early",
+      "do homework",
+      "wear a uniform",
+      "help at home",
+      "go to school",
+      "wash the dishes"
+     ]
     },
     {
-     "clip": "d4",
-     "a": "Close the door, please."
+     "name": "-ing (now)",
+     "kind": "cont",
+     "what": [
+      "watch TV",
+      "cook dinner",
+      "play football",
+      "read a book",
+      "sit in the park",
+      "swim",
+      "write a letter"
+     ]
     },
     {
-     "clip": "d5",
-     "a": "We have to study English."
+     "name": "commands",
+     "kind": "imp",
+     "what": [
+      "open the window",
+      "close the door",
+      "sit down",
+      "listen",
+      "read the text",
+      "drink cold water"
+     ]
     },
     {
-     "clip": "d6",
-     "a": "He gets up at seven."
+     "name": "present simple",
+     "kind": "simple",
+     "what": [
+      "get up at seven",
+      "drink tea",
+      "go to work by metro",
+      "watch TV in the evening",
+      "play football",
+      "live in Tashkent"
+     ]
+    },
+    {
+     "name": "Mix 🎲",
+     "mix": true
+    }
+   ]
+  },
+  {
+   "t": "swall",
+   "eb": "Make up sentences · on your phone",
+   "title": "Our sentence wall",
+   "sub": "Write your own sentence, hear it, send it. We read them together. · Gap yozing, eshiting, yuboring.",
+   "prompts": [
+    {
+     "g": "am / is / are",
+     "p": "Tell us about you or your family.",
+     "ex": "My sister is a doctor."
+    },
+    {
+     "g": "can / can’t",
+     "p": "Something you can or can’t do.",
+     "ex": "I can’t swim."
+    },
+    {
+     "g": "present continuous",
+     "p": "What is someone doing now?",
+     "ex": "My mum is cooking now."
+    },
+    {
+     "g": "commands",
+     "p": "Give the class a command.",
+     "ex": "Open your books, please!"
+    },
+    {
+     "g": "have to",
+     "p": "Something you have to do this week.",
+     "ex": "I have to do my homework."
+    },
+    {
+     "g": "present simple",
+     "p": "Something you do every day.",
+     "ex": "I get up at seven."
     }
    ]
   },
@@ -923,6 +1063,72 @@ window.LESSON = {
    ]
   },
   {
+   "t": "write",
+   "tts": true,
+   "eb": "Write what you hear · round 1",
+   "title": "Listen, write, check",
+   "sub": "▶ Listen. Write it. Tap 🔊 Mine: does it sound the same? · Yozganingizni eshiting — bir xilmi?",
+   "items": [
+    {
+     "clip": "d1",
+     "a": "My name is Aziz."
+    },
+    {
+     "clip": "d2",
+     "a": "I can play football."
+    },
+    {
+     "clip": "d3",
+     "a": "She is reading a book."
+    },
+    {
+     "clip": "d4",
+     "a": "Close the door, please."
+    },
+    {
+     "clip": "d5",
+     "a": "We have to study English."
+    },
+    {
+     "clip": "d6",
+     "a": "He gets up at seven."
+    }
+   ]
+  },
+  {
+   "t": "write",
+   "tts": true,
+   "eb": "Write what you hear · round 2",
+   "title": "Listen, write, check",
+   "sub": "▶ Listen. Write it. Tap 🔊 Mine: does it sound the same? · Yozganingizni eshiting — bir xilmi?",
+   "items": [
+    {
+     "clip": "e1",
+     "a": "He is drinking tea."
+    },
+    {
+     "clip": "e3",
+     "a": "My sister is a doctor."
+    },
+    {
+     "clip": "e4",
+     "a": "Can you help me?"
+    },
+    {
+     "clip": "e5",
+     "a": "I have to work today."
+    },
+    {
+     "clip": "e8",
+     "a": "It is raining."
+    },
+    {
+     "clip": "e10",
+     "a": "She doesn’t have to cook."
+    }
+   ]
+  },
+  {
    "t": "golive",
    "eb": "Class game",
    "title": "Listening game",
@@ -930,36 +1136,164 @@ window.LESSON = {
    "text": "24 short sentences. Listen and tap the sentence you hear. · Doskani tinglang va eshitgan gapingizni bosing."
   },
   {
+   "t": "slap",
+   "eb": "Group game 1",
+   "title": "Fly swatter race",
+   "sub": "One student from each team comes to the board. Listen — the first to slap the words they hear wins! · Birinchi urgan yutadi!",
+   "tiles": [
+    "is cooking",
+    "cooks",
+    "can swim",
+    "can’t swim",
+    "have to go",
+    "has to go",
+    "Open",
+    "don’t have to wait",
+    "works",
+    "is working",
+    "Are you listening?",
+    "can play",
+    "is reading",
+    "gets up",
+    "Don’t run!",
+    "doesn’t have to cook"
+   ],
+   "rounds": [
+    {
+     "clip": "q1",
+     "tile": 0,
+     "text": "She is cooking."
+    },
+    {
+     "clip": "q2",
+     "tile": 2,
+     "text": "He can swim."
+    },
+    {
+     "clip": "q3",
+     "tile": 4,
+     "text": "They have to go."
+    },
+    {
+     "clip": "q5",
+     "tile": 6,
+     "text": "Open the window."
+    },
+    {
+     "clip": "q6",
+     "tile": 7,
+     "text": "We don’t have to wait."
+    },
+    {
+     "clip": "q7",
+     "tile": 8,
+     "text": "She works in a hospital."
+    },
+    {
+     "clip": "q8",
+     "tile": 10,
+     "text": "Are you listening?"
+    },
+    {
+     "clip": "d2",
+     "tile": 11,
+     "text": "I can play football."
+    },
+    {
+     "clip": "d3",
+     "tile": 12,
+     "text": "She is reading a book."
+    },
+    {
+     "clip": "d6",
+     "tile": 13,
+     "text": "He gets up at seven."
+    },
+    {
+     "clip": "e2",
+     "tile": 14,
+     "text": "Don’t run!"
+    },
+    {
+     "clip": "e10",
+     "tile": 15,
+     "text": "She doesn’t have to cook."
+    }
+   ]
+  },
+  {
+   "t": "tbomb",
+   "eb": "Group game 2",
+   "title": "Ticking time bomb",
+   "sub": "Pass the ball. Say a sentence, then pass it on. Don’t hold it when the bomb explodes! · To‘pni uzating, gap ayting!",
+   "topics": [
+    {
+     "p": "Something you <u>can</u> do",
+     "uz": "can — qila olaman"
+    },
+    {
+     "p": "What your family <u>is doing</u> now",
+     "uz": "hozir nima qilyapti?"
+    },
+    {
+     "p": "Something you <u>have to</u> do",
+     "uz": "have to — kerak"
+    },
+    {
+     "p": "A <u>command</u> for the class",
+     "uz": "buyruq: Open…! Don’t…!"
+    },
+    {
+     "p": "Your day: <u>I get up…</u>",
+     "uz": "har kuni nima qilasiz?"
+    },
+    {
+     "p": "A friend: <u>he is / she is…</u>",
+     "uz": "do‘stingiz haqida"
+    }
+   ],
+   "forfeits": [
+    "Say 3 things you can do — fast!",
+    "Spell your name in English.",
+    "Count from 10 to 1 in English.",
+    "Say what 3 classmates are doing now.",
+    "Give the class a funny command — everyone does it!",
+    "Say 5 words from today’s stories.",
+    "Answer one question from the class.",
+    "Say a sentence with “have to” about tomorrow."
+   ]
+  },
+  {
    "t": "check",
    "items": [
-    "understand a short story about a person",
-    "hear am / is / are and can / can’t",
-    "hear what people are doing now",
-    "follow commands: boil, wash, pour",
-    "hear has to and doesn’t have to",
-    "write a short sentence I hear"
+    "understand short stories about people",
+    "hear am / is / are, can and have to",
+    "hear what people are doing now and every day",
+    "make my own sentences",
+    "write what I hear and check it with the voice",
+    "play together in English!"
    ]
   },
   {
    "t": "sources",
    "eb": "Sources · Manbalar",
-   "title": "Where the audio comes from",
+   "title": "Where everything comes from",
    "items": [
     [
-     "Scripts",
-     "All six stories and the short sentences were written for this class."
+     "Stories and sentences",
+     "Written for this class. Voiced with Piper, free open-source text-to-speech: “LJ Speech” (public domain) and “Joe” (CC0) voices."
     ],
     [
-     "Voices",
-     "Made with Piper, a free open-source text-to-speech program (github.com/OHF-Voice/piper1-gpl)."
+     "🔊 Mine and the sentence machine",
+     "Your own phone or computer reads the text aloud (its built-in voice)."
     ],
     [
-     "Female voice",
-     "“LJ Speech” — public domain (keithito.com/LJ-Speech-Dataset)."
+     "Fly swatter race",
+     "A classic ESL listening game, shared widely by teachers (e.g. eslactivity.org, TESOL “New Ways in Teaching with Games”)."
     ],
     [
-     "Male voice",
-     "“Joe” — CC0, free for any use (huggingface.co/rhasspy/piper-voices)."
+     "Ticking time bomb",
+     "A pass-the-ball sentence game shown at ELTA teacher workshops (“Interactive ESL games”, 2026)."
     ]
    ]
   },
@@ -967,15 +1301,15 @@ window.LESSON = {
    "t": "bye",
    "chips": [
     [
-     "I am…",
+     "I can…",
      "peach"
     ],
     [
-     "I can…",
+     "I’m listening!",
      "mint"
     ],
     [
-     "I’m listening!",
+     "I have to…",
      "skyb"
     ]
    ]

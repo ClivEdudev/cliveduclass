@@ -112,7 +112,33 @@ const R = {
   write: s => `${hd(s)}<div class="wrs flex1">${s.items.map((it, k) => `<div class="wr" data-k="${k}" data-ans="${esc(it.a)}">
       <span class="pn">${k + 1}</span><button class="pclip" data-clip="${it.clip}" aria-label="Play">▶</button>
       <input class="win" type="text" autocomplete="off" autocapitalize="sentences" spellcheck="false" aria-label="Sentence ${k + 1}" placeholder="Write what you hear…">
-      <span class="wa">${it.a}</span></div>`).join("")}</div>`,
+      ${s.tts ? `<button class="pmine" data-mine aria-label="Hear what I wrote">\u{1F50A} Mine</button>` : ""}<span class="wa">${it.a}</span></div>`).join("")}</div>`,
+  /* Sentence machine: spin who + what, the class makes the sentence, the voice checks it */
+  machine: s => `${hd(s)}<div class="mch flex1">
+    <div class="mmodes">${s.modes.map((m, k) => `<button class="mmode${k ? "" : " on"}" data-mmode="${k}">${m.name}</button>`).join("")}</div>
+    <div class="reels"><div class="reel"><small>Who? \u00b7 Kim?</small><b class="rv" data-r="who">?</b></div>
+      <div class="reel form"><small>Make it \u00b7 Shakl</small><b class="rv" data-r="form">?</b></div>
+      <div class="reel wide"><small>What? \u00b7 Nima?</small><b class="rv" data-r="what">?</b></div></div>
+    <div class="mctl"><button class="sbtn y" data-mspin>\u{1F3B2} Spin \u00b7 Aylantirish</button><button class="sbtn" data-mshow disabled>Show the sentence</button><button class="sbtn" data-msay disabled>\u{1F50A} Say it</button></div>
+    <p class="mout" aria-live="polite"></p><div class="maward"></div></div>`,
+  /* Sentence wall: students write on their phones, sentences arrive on the board */
+  swall: s => `${hd(s)}<div class="sw flex1 ${TEACHER ? "board" : "phone"}">
+    <div class="swprompt"><small>Write a sentence \u00b7 Gap yozing</small><b class="swp">${s.prompts[0].p}</b><span class="swg">${s.prompts[0].g}</span><span class="swex">e.g. ${s.prompts[0].ex}</span>
+      ${TEACHER ? `<div class="swchips">${s.prompts.map((pr, k) => `<button class="mmode${k ? "" : " on"}" data-swp="${k}">${pr.g}</button>`).join("")}</div>` : ""}</div>
+    ${TEACHER
+      ? `<div class="swboard"><div class="swhead"><b class="swcount">0 sentences</b><span class="muted">Phones: open today\u2019s lesson \u2192 Sentence wall</span><button class="lnk" data-swclear>Clear</button></div><div class="swlist"></div></div>`
+      : `<div class="swme"><input class="swname" maxlength="18" autocomplete="off" placeholder="Your name \u00b7 Ismingiz" aria-label="Your name">
+          <textarea class="swin" maxlength="120" rows="2" placeholder="Write your sentence\u2026 \u00b7 Gapingizni yozing\u2026" aria-label="Your sentence"></textarea>
+          <div class="swbtns"><button class="sbtn" data-swsay>\u{1F50A} Hear it</button><button class="sbtn y" data-swsend>Send to the board \u2192</button></div>
+          <p class="swstatus"></p><div class="swlist"></div></div>`}</div>`,
+  /* Fly swatter race: the board plays a sentence, the first student to slap the right words wins */
+  slap: s => `${hd(s)}<div class="slap flex1"><div class="sgrid">${s.tiles.map((t, k) => `<button class="stile" data-stile="${k}">${t}</button>`).join("")}</div>
+    <div class="sctl"><button class="sbtn y" data-snext>\u{1F50A} Next sentence</button><button class="sbtn" data-sagain disabled>\u21BA Again</button><button class="sbtn" data-sshow disabled>Show it</button><span class="sstat"></span></div><div class="saward"></div></div>`,
+  /* Ticking time bomb: pass the ball, say a sentence, don't hold it when it explodes */
+  tbomb: s => `${hd(s)}<div class="tb flex1"><div class="tbbomb"><span class="tbic" aria-hidden="true">\u{1F4A3}</span><span class="tbfuse"><i></i></span><b class="tbboom" hidden>BOOM!</b></div>
+    <div class="tbside"><div class="tbtopic"><small>Say a sentence with \u00b7 Gap tuzing</small><b>${s.topics[0].p}</b><span>${s.topics[0].uz || ""}</span></div>
+      <div class="tbctl"><button class="sbtn y" data-tbstart>\u25B6 Start the bomb</button><button class="sbtn" data-tbnext>Next topic \u2192</button></div>
+      <p class="tbforfeit" hidden></p></div></div>`,
   /* A slide that opens the class game right here */
   golive: s => `${hd(s)}<div class="golive flex1"><div class="glcard"><span class="glic" aria-hidden="true">\u{1F3AE}</span>
       <div><b>${s.big || "Class game"}</b><p>${s.text || ""}</p></div>
@@ -285,7 +311,7 @@ if (window.visualViewport) visualViewport.addEventListener("resize", () => { if 
 $$(".ans").forEach(b => { const a = b.textContent; b.innerHTML = `<span class="q">Tap to reveal</span><span class="a">${esc(a)}</span>`; b.setAttribute("aria-label", "Reveal answer"); });
 function go(i, fromHash) {
   i = Math.max(0, Math.min(slides.length - 1, i));
-  if (!flow && i !== cur) stopAudio();
+  if (!flow && i !== cur) { stopAudio(); if (TTS_OK) try { speechSynthesis.cancel(); } catch (e) {} Object.keys(TB).forEach(k => { if (TB[k].run) tbStop(slides[+k], false); }); }
   clearInterval(timerId);
   if (TEACHER) sendSync(i);
   if (flow) { cur = i; paintBars(); const bh = ($(".bar") || {}).offsetHeight || 0; scrollTo({ top: Math.max(0, slides[i].getBoundingClientRect().top + scrollY - bh - 12), behavior: reduceMotion ? "auto" : "smooth" }); return; }
@@ -415,6 +441,220 @@ function toggleScript(btn, show) {
   if (show == null && ansLocked(slideOf(btn))) return lockedTap(btn);
   tr.hidden = show == null ? !tr.hidden : !show;
   btn.textContent = tr.hidden ? "Show the script · Matnni ko‘rsatish" : "Hide the script · Matnni yashirish";
+}
+
+/* ================= VOICE: the device reads text aloud (no files needed) ================= */
+const TTS_OK = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+let ttsVoice = null;
+function pickVoice() {
+  if (!TTS_OK) return;
+  const vs = speechSynthesis.getVoices().filter(v => /^en[-_]/i.test(v.lang));
+  ttsVoice = vs.find(v => /en[-_](US|GB)/i.test(v.lang) && /Google|Microsoft|Samantha|Daniel|Karen|Natural/i.test(v.name)) || vs.find(v => /en[-_](US|GB)/i.test(v.lang)) || vs[0] || null;
+}
+if (TTS_OK) { pickVoice(); speechSynthesis.addEventListener && speechSynthesis.addEventListener("voiceschanged", pickVoice); }
+function speak(text, rate) {
+  text = String(text || "").trim();
+  if (!text) { toast("Write something first \u00b7 Avval yozing"); return; }
+  if (!TTS_OK) { toast("This device can\u2019t read aloud. Read it yourself!"); return; }
+  stopAudio();
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if (ttsVoice) u.voice = ttsVoice; u.lang = ttsVoice ? ttsVoice.lang : "en-US"; u.rate = rate || 0.9;
+    speechSynthesis.speak(u);
+  } catch (e) { toast("This device can\u2019t read aloud."); }
+}
+
+/* ================= SENTENCE MACHINE: correct English from who + what ================= */
+const ING_X = { lie: "lying", die: "dying", see: "seeing", be: "being" }, DBL = /^(swim|run|sit|get|shop|stop|put|cut|plan|begin|win|chat|jog)$/;
+const ing = v => ING_X[v] || (DBL.test(v) ? v + v.slice(-1) + "ing" : /ie$/.test(v) ? v.slice(0, -2) + "ying" : /[^e]e$/.test(v) ? v.slice(0, -1) + "ing" : v + "ing");
+const s3 = v => v === "have" ? "has" : v === "go" ? "goes" : v === "do" ? "does" : /(s|sh|ch|x|o)$/.test(v) ? v + "es" : /[^aeiou]y$/.test(v) ? v.slice(0, -1) + "ies" : v + "s";
+const vph = (phrase, f) => { const [v, ...r] = phrase.split(" "); return [f(v), ...r].join(" "); };
+const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+function makeSentence(kind, who, form, what) {
+  const [S, per, proper] = who, s0 = proper || S === "I" ? S : S.charAt(0).toLowerCase() + S.slice(1);
+  const be = per === 1 ? "am" : per === 3 ? "is" : "are", nbe = per === 1 ? "\u2019m not" : per === 3 ? " isn\u2019t" : " aren\u2019t";
+  const third = per === 3, comp = Array.isArray(what) ? (per === "p" ? what[1] : what[0]) : what;   /* per: 1, "you", 3 or "p" (plural) */
+  const neg = form === "\u2212", q = form === "?";
+  switch (kind) {
+    case "be": return q ? `${cap(be)} ${s0} ${comp}?` : neg ? `${S}${nbe} ${comp}.` : `${S} ${be} ${comp}.`;
+    case "can": return q ? `Can ${s0} ${comp}?` : `${S} ${neg ? "can\u2019t" : "can"} ${comp}.`;
+    case "have": return q ? `${third ? "Does" : "Do"} ${s0} have to ${comp}?` : neg ? `${S} ${third ? "doesn\u2019t" : "don\u2019t"} have to ${comp}.` : `${S} ${third ? "has" : "have"} to ${comp}.`;
+    case "cont": return q ? `${cap(be)} ${s0} ${vph(comp, ing)}?` : neg ? `${S}${nbe} ${vph(comp, ing)}.` : `${S} ${be} ${vph(comp, ing)}.`;
+    case "simple": return q ? `${third ? "Does" : "Do"} ${s0} ${comp}?` : neg ? `${S} ${third ? "doesn\u2019t" : "don\u2019t"} ${comp}.` : `${S} ${third ? vph(comp, s3) : comp}.`;
+    case "imp": return neg ? `Don\u2019t ${comp}!` : `${cap(comp)}, please!`;
+  }
+  return "";
+}
+const pickR = a => a[Math.floor(Math.random() * a.length)];
+const MS = {};   /* per slide: mode and last sentence */
+function mspin(sec) {
+  const k = slides.indexOf(sec), sl = slideList[k], st = MS[k] || (MS[k] = { mode: 0 });
+  let m = sl.modes[st.mode];
+  if (m.mix) m = pickR(sl.modes.filter(x => !x.mix));
+  const kind = m.kind, who = kind === "imp" ? ["(you)", 2] : pickR(sl.who), what = pickR(m.what);
+  const form = kind === "imp" ? pickR(["+", "\u2212"]) : pickR(["+", "+", "\u2212", "?"]);
+  st.sentence = makeSentence(kind, who, form, what);
+  const label = { "+": "\u2714 yes", "\u2212": "\u2716 not", "?": "? question" }[form];
+  const reels = { who: kind === "imp" ? "Command!" : who[0], form: label, what: (Array.isArray(what) ? what[0] : what) + (m.tag ? ` \u00b7 ${m.tag}` : "") };
+  const els = $$(".rv", sec), pool = sl.who.map(w => w[0]).concat(m.what.map(w => Array.isArray(w) ? w[0] : w));
+  $(".mout", sec).textContent = ""; $(".maward", sec).innerHTML = "";
+  $("[data-mshow]", sec).disabled = true; $("[data-msay]", sec).disabled = true;
+  let n = 0;
+  const roll = setInterval(() => {
+    els.forEach(e => { e.textContent = pickR(pool); e.classList.add("rolling"); });
+    if (++n > (reduceMotion ? 1 : 9)) {
+      clearInterval(roll);
+      els.forEach(e => { e.textContent = reels[e.dataset.r]; e.classList.remove("rolling"); });
+      $("[data-mshow]", sec).disabled = false; $("[data-msay]", sec).disabled = false;
+    }
+  }, 70);
+}
+function mshow(sec) {
+  const st = MS[slides.indexOf(sec)]; if (!st || !st.sentence) return;
+  $(".mout", sec).textContent = st.sentence;
+  if (TEACHER) $(".maward", sec).innerHTML = award(100, "Good sentence:");
+}
+
+/* ================= SENTENCE WALL: phones send, the board shows and reads them ================= */
+const SWALL = slideList.some(x => x.t === "swall");
+const swSec = () => slides.find(x => $(".sw", x));
+let wallNet = null, wall = TEACHER ? store.get("clv-wall-" + PKEY, { p: 0, items: [] }) : { p: 0, items: [] };
+const myId = (() => { let v = store.get("clv-uid", ""); if (!v) { v = Math.random().toString(36).slice(2, 10); store.set("clv-uid", v); } return v; })();
+let mySent = [];
+const wallTopic = w => `clivedu/lesson/${L.id || (L.n ? "l" + L.n : "rev")}/wall/${w}`;
+function wallStart() {
+  if (!SWALL || wallNet || !window.LiveNet) return;
+  window.LiveNet.join("wall", (t, payload) => {
+    let m; try { m = JSON.parse(payload); } catch (e) { return; }
+    if (TEACHER && t === wallTopic("in")) wallAdd(m);
+    if (STUDENT && t === wallTopic("state")) { wall = m; paintWall(); }
+  }).then(c => {
+    wallNet = c;
+    c.subscribe(wallTopic(TEACHER ? "in" : "state"));
+    if (TEACHER) wallPublish();
+  }).catch(() => { setTimeout(wallStart, 8000); });
+}
+function wallPublish() { store.set("clv-wall-" + PKEY, wall); if (wallNet) wallNet.publish(wallTopic("state"), { p: wall.p, items: wall.items.slice(-40) }, true); paintWall(); }
+function wallAdd(m) {
+  if (!m || !m.k || !m.text || wall.items.some(x => x.k === m.k)) return;
+  wall.items.push({ k: String(m.k).slice(0, 24), id: String(m.id || "").slice(0, 12), name: String(m.name || "Student").slice(0, 18), text: String(m.text).slice(0, 120), ok: false });
+  wallPublish();
+  const sec = swSec(); if (sec && slides.indexOf(sec) === cur) { const r = $(".swcount", sec).getBoundingClientRect(); confetti(r.left + 40, r.top + 10, 18); }
+}
+function paintWall() {
+  const sec = swSec(); if (!sec) return;
+  const sl = slideList[slides.indexOf(sec)], pr = sl.prompts[wall.p] || sl.prompts[0];
+  $(".swp", sec).innerHTML = pr.p; $(".swg", sec).innerHTML = pr.g; $(".swex", sec).innerHTML = "e.g. " + pr.ex;
+  $$("[data-swp]", sec).forEach(b => b.classList.toggle("on", +b.dataset.swp === wall.p));
+  const items = wall.items.slice().reverse();
+  if (TEACHER) {
+    $(".swcount", sec).textContent = `${wall.items.length} sentence${wall.items.length === 1 ? "" : "s"}`;
+    $(".swlist", sec).innerHTML = items.length ? items.map(x => `<div class="swcard ${x.ok ? "ok" : ""}" data-k="${esc(x.k)}"><span class="swn">${esc(x.name)}</span><p>${esc(x.text)}</p>
+      <div class="swact"><button data-swread aria-label="Read aloud">\u{1F50A}</button><button data-swok aria-label="Good sentence">\u2713</button><button data-swdel aria-label="Remove">\u2715</button></div></div>`).join("")
+      : `<p class="swempty">Sentences from phones appear here. \u00b7 Telefonlardan gaplar shu yerda chiqadi.</p>`;
+  } else {
+    mySent = mySent.filter(k => !wall.items.some(x => x.k === k));
+    const st = $(".swstatus", sec); if (st && !mySent.length && st.dataset.sent) st.textContent = "\u2713 It\u2019s on the board! Write another one. \u00b7 Doskada! Yana yozing.";
+    $(".swlist", sec).innerHTML = items.slice(0, 12).map(x => `<div class="swcard ${x.ok ? "ok" : ""} ${x.id === myId ? "me" : ""}"><span class="swn">${esc(x.name)}${x.ok ? " \u2713" : ""}</span><p>${esc(x.text)}</p></div>`).join("");
+  }
+}
+function wallSend(sec) {
+  const name = $(".swname", sec).value.trim(), text = $(".swin", sec).value.trim().replace(/\s+/g, " ");
+  if (!name) { $(".swname", sec).focus(); toast("Write your name \u00b7 Ismingizni yozing"); return; }
+  if (text.split(" ").length < 3) { toast("Write a full sentence \u00b7 To\u2018liq gap yozing"); return; }
+  store.set("clv-name", name);
+  if (!wallNet) { toast("Connecting\u2026 try again in a moment \u00b7 Ulanmoqda\u2026"); wallStart(); return; }
+  const m = { k: myId + Date.now().toString(36), id: myId, name, text };
+  mySent.push(m.k); wallNet.publish(wallTopic("in"), m);
+  let tries = 0; const again = setInterval(() => { if (!mySent.includes(m.k) || ++tries > 8) return clearInterval(again); wallNet.publish(wallTopic("in"), m); }, 3000);
+  $(".swin", sec).value = "";
+  const st = $(".swstatus", sec); st.dataset.sent = 1; st.textContent = "Sending\u2026 \u00b7 Yuborilmoqda\u2026";
+}
+
+/* ================= FLY SWATTER RACE ================= */
+const SL = {};
+function slapNext(sec) {
+  const k = slides.indexOf(sec), sl = slideList[k];
+  const st = SL[k] || (SL[k] = { order: sl.rounds.map((_, i) => i).sort(() => Math.random() - 0.5), at: -1, done: new Set() });
+  st.at++; st.won = false;
+  $(".saward", sec).innerHTML = ""; $$(".stile", sec).forEach(b => b.classList.remove("ok", "no"));
+  if (st.at >= st.order.length) { $(".sstat", sec).textContent = "All done! Count the team points. \u00b7 Tugadi!"; $("[data-snext]", sec).disabled = true; return; }
+  st.cur = sl.rounds[st.order[st.at]];
+  $(".sstat", sec).textContent = `Sentence ${st.at + 1} of ${st.order.length} \u00b7 Listen and slap!`;
+  $("[data-sagain]", sec).disabled = false; $("[data-sshow]", sec).disabled = false;
+  slapPlay(sec);
+}
+function slapPlay(sec) {
+  const st = SL[slides.indexOf(sec)]; if (!st || !st.cur) return;
+  stopAudio(); curPlayer = null;
+  AU.src = new URL((L.audioBase || "") + st.cur.clip + ".mp3", location.href).href; AU.playbackRate = 1;
+  AU.play().catch(() => speak(st.cur.text, 0.85));
+}
+function slapTap(btn) {
+  const sec = btn.closest("section.s"), st = SL[slides.indexOf(sec)];
+  if (!st || !st.cur || st.won) return;
+  if (+btn.dataset.stile === st.cur.tile) {
+    st.won = true; btn.classList.add("ok"); st.done.add(st.cur.tile); burst(btn, 40);
+    $(".sstat", sec).innerHTML = `\u2713 <b>${esc(st.cur.text)}</b>`;
+    if (TEACHER) $(".saward", sec).innerHTML = award(100, "Who slapped first?");
+  } else { btn.classList.remove("no"); void btn.offsetWidth; btn.classList.add("no"); }
+}
+
+/* ================= TICKING TIME BOMB ================= */
+let ac = null;
+const actx = () => { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); } catch (e) {} return ac; };
+function beep(f, d, vol, type) {
+  const c = actx(); if (!c) return;
+  const o = c.createOscillator(), g = c.createGain(); o.type = type || "square"; o.frequency.value = f;
+  g.gain.setValueAtTime(vol || 0.08, c.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + d);
+  o.connect(g).connect(c.destination); o.start(); o.stop(c.currentTime + d);
+}
+function boom() {
+  const c = actx(); if (!c) return;
+  const len = c.sampleRate * 1.2, b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+  const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+  f.type = "lowpass"; f.frequency.value = 700; g.gain.value = 0.9; src.buffer = b; src.connect(f).connect(g).connect(c.destination); src.start();
+  beep(70, 0.9, 0.5, "sine");
+}
+const TB = {};
+function tbStart(sec) {
+  const k = slides.indexOf(sec), st = TB[k] || (TB[k] = { topic: 0 });
+  if (st.run) { tbStop(sec, false); return; }
+  actx();
+  const total = 18000 + Math.random() * 22000, t0 = performance.now();
+  st.run = true; sec.classList.remove("exploded"); $(".tbboom", sec).hidden = true; $(".tbforfeit", sec).hidden = true;
+  $("[data-tbstart]", sec).textContent = "\u25A0 Stop";
+  const fuse = $(".tbfuse i", sec);
+  const tick = () => {
+    if (!st.run) return;
+    const el = performance.now() - t0, left = 1 - el / total;
+    fuse.style.width = Math.max(0, left * 100) + "%";
+    if (el >= total) { tbStop(sec, true); return; }
+    beep(left < 0.25 ? 1200 : 900, 0.05, 0.07);
+    st.t = setTimeout(tick, left < 0.25 ? 220 : left < 0.5 ? 380 : 560);
+  };
+  tick();
+}
+function tbStop(sec, exploded) {
+  const k = slides.indexOf(sec), st = TB[k]; if (!st) return;
+  st.run = false; clearTimeout(st.t);
+  $("[data-tbstart]", sec).textContent = "\u25B6 Start the bomb";
+  if (exploded) {
+    boom(); sec.classList.add("exploded"); $(".tbboom", sec).hidden = false;
+    const fo = $(".tbforfeit", sec); fo.hidden = false;
+    fo.innerHTML = `<b>The student with the ball:</b> ${pickR(slideList[k].forfeits)}`;
+    const r = $(".tbic", sec).getBoundingClientRect(); confetti(r.left + r.width / 2, r.top + r.height / 2, 70);
+  }
+}
+function tbNext(sec) {
+  const k = slides.indexOf(sec), st = TB[k] || (TB[k] = { topic: 0 }), sl = slideList[k];
+  if (st.run) tbStop(sec, false);
+  st.topic = (st.topic + 1) % sl.topics.length;
+  const tp = sl.topics[st.topic];
+  $(".tbtopic b", sec).innerHTML = tp.p; $(".tbtopic span", sec).innerHTML = tp.uz || "";
+  sec.classList.remove("exploded"); $(".tbboom", sec).hidden = true; $(".tbforfeit", sec).hidden = true; $(".tbfuse i", sec).style.width = "100%";
 }
 
 /* ================= ANSWERS ON PHONES: pick an option, or write what you hear ================= */
@@ -645,6 +885,26 @@ document.addEventListener("click", e => {
   if (d.clip) { playClip(t); return; }
   if (d.script != null) { toggleScript(t); return; }
   if (d.po != null) { choose(t); return; }
+  if (d.mine != null) { speak($(".win", t.closest(".wr")).value, 0.9); return; }
+  if (d.mmode != null) { const k = slides.indexOf(sec); (MS[k] || (MS[k] = {})).mode = +d.mmode; $$("[data-mmode]", sec).forEach(b => b.classList.toggle("on", b === t)); mspin(sec); return; }
+  if (d.mspin != null) { mspin(sec); return; }
+  if (d.mshow != null) { mshow(sec); return; }
+  if (d.msay != null) { const st = MS[slides.indexOf(sec)]; if (st && st.sentence) { mshow(sec); speak(st.sentence, 0.85); } return; }
+  if (d.swp != null) { wall.p = +d.swp; wallPublish(); return; }
+  if (d.swsend != null) { wallSend(sec); return; }
+  if (d.swsay != null) { speak($(".swin", sec).value, 0.9); return; }
+  if (d.swread != null || d.swok != null || d.swdel != null) {
+    const k = t.closest(".swcard").dataset.k, it = wall.items.find(x => x.k === k); if (!it) return;
+    if (d.swread != null) { speak(it.text, 0.85); return; }
+    if (d.swok != null) it.ok = !it.ok; else wall.items = wall.items.filter(x => x !== it);
+    wallPublish(); return; }
+  if (d.swclear != null) { if (t.dataset.sure) { wall.items = []; wallPublish(); delete t.dataset.sure; t.textContent = "Clear"; } else { t.dataset.sure = 1; t.textContent = "Sure? Tap again"; } return; }
+  if (d.snext != null) { slapNext(sec); return; }
+  if (d.sagain != null) { slapPlay(sec); return; }
+  if (d.sshow != null) { const st = SL[slides.indexOf(sec)]; if (st && st.cur) $(".sstat", sec).innerHTML = `<b>${esc(st.cur.text)}</b>`; return; }
+  if (d.stile != null) { slapTap(t); return; }
+  if (d.tbstart != null) { tbStart(sec); return; }
+  if (d.tbnext != null) { tbNext(sec); return; }
   if (d.livegame != null) { openGame(ROOT + "live/?embed=1&set=" + encodeURIComponent(LIVE_SET) + BROKER_QS); return; }
   if (d.joingame != null) { joinGame(lastGame); return; }
   if (d.gameclose != null) { hideGame(); return; }
@@ -763,6 +1023,7 @@ function startSync() {
   if (!window.LiveNet) return;
   const id = L.id || (L.n ? "l" + L.n : "rev");
   sync = window.LiveNet.syncSlides(id, STUDENT ? m => followTo(m) : null);
+  wallStart();
   if (TEACHER) sendSync();
 }
 /* ================= CLASS GAME INSIDE THE LESSON ================= */
@@ -812,6 +1073,11 @@ addEventListener("message", e => {
 });
 
 paintFollow(); paintAns(); paintLock(); paintGame();
+if (SWALL) {
+  const sec = swSec(), nm = $(".swname", sec || document);
+  if (nm) { const last = store.get("clv-live-last", null); nm.value = store.get("clv-name", "") || (last && last.type === "solo" && last.name) || ""; }
+  paintWall();
+}
 /* bring back what a student already answered, and grade it if the answers are open */
 if (STUDENT) slides.forEach((sec, k) => {
   $$(".pk", sec).forEach(pk => { const v = picks[itemKey(pk)]; if (v != null) { const b = $$(".po", pk)[v]; if (b) b.classList.add("sel"); } });
