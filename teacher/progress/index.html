@@ -64,6 +64,14 @@ td.n b{font-weight:800}td.n small{display:block;color:var(--mist)}
 .pill{font:800 13px var(--body);background:var(--yellow);color:var(--ink);border-radius:999px;padding:2px 9px;margin-right:6px}
 textarea{font:600 17px var(--body);padding:12px;border-radius:14px;border:2px solid var(--ink2);background:var(--night);color:var(--cream);width:100%;min-height:120px;resize:vertical}
 .ok{color:#6CCB8A;font-weight:800}.err{color:var(--red);font-weight:800}
+.att{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.att label{display:inline-flex;align-items:center;gap:8px;font:800 15px var(--body);padding:9px 16px;border-radius:999px;border:2px dashed var(--mist);color:var(--cream);cursor:pointer}
+.att label:hover,.att label:focus-within{border-color:var(--yellow);color:var(--yellow)}
+.att input{position:absolute;width:1px;height:1px;opacity:0}
+.chip{display:inline-flex;align-items:center;gap:8px;background:var(--cream);color:var(--ink);border-radius:999px;padding:6px 8px 6px 14px;font:700 14px var(--body);max-width:100%}
+.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+.chip button{border:0;background:var(--ink);color:var(--cream);width:26px;height:26px;border-radius:50%;cursor:pointer;font:800 14px var(--body)}
+.hw .f{display:block;margin-top:4px;color:var(--yellow);font-weight:700}
 .hw{border-left:4px solid var(--yellow);padding:6px 10px;background:var(--night);border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
 .hw small{display:block;color:var(--mist);font-weight:700;white-space:normal}
 .det{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px}
@@ -95,7 +103,8 @@ button:focus-visible,input:focus-visible,a:focus-visible,textarea:focus-visible,
   const LNAME = { rev: "Big Revision", lis1: "Listening 1", v1: "Word Power", s1: "New group 1" };
   const lname = k => LNAME[k] || (/^\d+$/.test(k) ? "Lesson " + k : k === "game" ? "Live game" : k);
   const ago = t => { if (!t) return "never"; const m = Math.round((Date.now() - t) / 60000); if (m < 2) return "now"; if (m < 60) return m + " min ago"; const h = Math.round(m / 60); if (h < 24) return h + " h ago"; const d = Math.round(h / 24); return d === 1 ? "yesterday" : d + " days ago"; };
-  let data = null, sortKey = "points", filter = "all", selected = null, detail = null, sendTo = "all", sendKind = "hw", note = "", busy = false;
+  let data = null, sortKey = "points", filter = "all", selected = null, detail = null, sendTo = "all", sendKind = "hw", note = "", busy = false, attach = null;
+  const kbSize = n => n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
 
   function gate(kind, err) {
     app.innerHTML = kind === "signin" ? `<div class="gate"><h1>Class progress</h1>
@@ -187,10 +196,13 @@ button:focus-visible,input:focus-visible,a:focus-visible,textarea:focus-visible,
         <section class="panel"><h2>Send in Telegram <small>through @clivedubot</small></h2>
           <div class="seg" id="kind"><button data-k="hw" aria-pressed="${sendKind === "hw"}">\u{1F4DD} Homework</button><button data-k="msg" aria-pressed="${sendKind === "msg"}">\u{1F4E2} Message</button></div>
           <textarea id="msg" placeholder="${sendKind === "hw" ? "e.g. Workbook page 12, exercises 1–3. Write 5 sentences with can." : "e.g. No class tomorrow. See you on Wednesday!"}"></textarea>
+          <div class="att">${attach ? `<span class="chip">\u{1F4CE} <span>${esc(attach.name)}</span> ${kbSize(attach.size)}<button data-act="unattach" aria-label="Remove the file">✕</button></span>`
+            : `<label>\u{1F4CE} Attach a file · Fayl biriktirish<input type="file" id="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.mp3,.m4a,.zip"></label>`}
+            <span class="dim" style="font-size:13px">PDF, Word, PowerPoint, pictures, audio · up to 5 MB</span></div>
           <div class="seg" id="to">${[["all", "Everyone"], ["group:a", "Group A"], ["group:b", "Group B"]].map(([v, t]) => `<button data-to="${v}" aria-pressed="${sendTo === v}">${t}</button>`).join("")}</div>
           <button class="btn" data-act="send" ${busy ? "disabled" : ""} style="align-self:flex-start">${busy ? "Sending…" : "Send"}</button>
           <p class="dim" style="font-size:14px">Homework is also saved on each student’s profile page. Students who turned messages off (/stop) are skipped.</p>
-          ${(data.homework || []).length ? `<h2 style="font-size:18px;margin-top:6px">Recent homework</h2>` + data.homework.slice(0, 5).map(h => `<div class="hw"><small>${esc(day(h.t))} · ${h.to === "all" ? "everyone" : "group " + h.to.slice(6).toUpperCase()}</small>${esc(h.text)}</div>`).join("") : ""}
+          ${(data.homework || []).length ? `<h2 style="font-size:18px;margin-top:6px">Recent homework</h2>` + data.homework.slice(0, 5).map(h => `<div class="hw"><small>${esc(day(h.t))} · ${h.to === "all" ? "everyone" : "group " + h.to.slice(6).toUpperCase()}</small>${esc(h.text)}${h.file ? `<span class="f">\u{1F4CE} ${esc(h.file.name)}</span>` : ""}</div>`).join("") : ""}
         </section>
       </div></div>`;
   }
@@ -202,6 +214,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,textarea:focus-visible,
     if (b.dataset.k) { const t = $("#msg").value; sendKind = b.dataset.k; draw(); $("#msg").value = t; return; }
     if (b.dataset.to) { const t = $("#msg").value; sendTo = b.dataset.to; draw(); $("#msg").value = t; return; }
     const act = b.dataset.act;
+    if (act === "unattach") { const t = $("#msg").value; attach = null; draw(); $("#msg").value = t; return; }
     if (act === "refresh") { note = ""; load(); }
     else if (act === "report") {
       b.disabled = true;
@@ -209,14 +222,27 @@ button:focus-visible,input:focus-visible,a:focus-visible,textarea:focus-visible,
       catch (er) { note = "✗ " + er.message; }
       draw();
     } else if (act === "send") {
-      const text = $("#msg").value.trim(); if (!text) { $("#msg").focus(); return; }
+      const text = $("#msg").value.trim(); if (!text && !attach) { $("#msg").focus(); return; }
       busy = true; draw(); $("#msg").value = text;
       try {
-        const j = await A().api("/teacher/send", { body: { text, to: sendTo, homework: sendKind === "hw" } });
-        note = `✓ Sent to ${j.sent} of ${j.of} student${j.of === 1 ? "" : "s"}.` + (j.failed.length ? ` Not delivered: ${j.failed.join(", ")} (they may have blocked the bot).` : "");
-        busy = false; await load(); return;
+        let j;
+        if (attach) {
+          const f = new FormData();
+          f.append("text", text); f.append("to", sendTo); f.append("homework", String(sendKind === "hw")); f.append("file", attach, attach.name);
+          j = await A().api("/teacher/send", { form: f });
+        } else j = await A().api("/teacher/send", { body: { text, to: sendTo, homework: sendKind === "hw" } });
+        note = `✓ Sent to ${j.sent} of ${j.of} student${j.of === 1 ? "" : "s"}${j.file ? " with the file (your copy is in your Telegram)" : ""}.` + (j.failed.length ? ` Not delivered: ${j.failed.join(", ")} (they may have blocked the bot).` : "");
+        attach = null; busy = false; await load(); return;
       } catch (er) { note = "✗ " + er.message; busy = false; draw(); $("#msg").value = text; }
     }
+  });
+  app.addEventListener("change", e => {
+    if (e.target.id !== "file") return;
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const t = $("#msg").value;
+    if (f.size > 5 * 1048576) { note = `✗ “${f.name}” is ${kbSize(f.size)}. The limit is 5 MB.`; attach = null; }
+    else { attach = f; note = ""; }
+    draw(); $("#msg").value = t;
   });
   app.addEventListener("keydown", e => { const tr = e.target.closest && e.target.closest("tr.st"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); tr.click(); } });
   let who = undefined;

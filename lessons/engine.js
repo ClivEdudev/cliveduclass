@@ -169,6 +169,7 @@ document.body.innerHTML = `
 <div class="bar">
   <a class="back" href="${HOME}" aria-label="Back to ${STUDENT ? "my lessons" : "the teacher page"}">\u2190<span class="long"> ${STUDENT ? "My lessons" : "Teacher page"}</span><span class="short"> Back</span></a>
   <span class="lname">${lname}</span>
+  ${STUDENT ? `<button class="lnk viewbtn signbtn" id="signBtn" data-signin hidden>\u2708\uFE0F<span class="long"> Sign in</span><span class="short"> Kirish</span></button>` : ""}
   <button class="lnk viewbtn clvgear" data-settings aria-label="Settings">\u2699\uFE0F<span class="long"> Settings</span></button>
   <button class="lnk viewbtn" id="viewBtn" data-viewtoggle></button>
   ${STUDENT ? `<button class="lnk viewbtn gamebtn" id="gameBtn" data-joingame>\u{1F3AE}<span class="long"> Join game</span></button><span class="lnk viewbtn anstag" id="ansTag">\u{1F512}<span class="long"> Answers hidden</span></span><button class="lnk viewbtn followbtn" id="followBtn" data-follow></button>` : `<span class="lnk viewbtn followbtn" id="shareTag" title="Students' phones follow this slide">Phones follow</span><button class="lnk viewbtn ansbtn" id="ansBtn" data-answers></button><button class="lnk viewbtn ansbtn" id="ansAllBtn" data-answers-all></button><button class="lnk viewbtn gamebtn" id="gameBtn" data-livegame>\u{1F3AE} Live game</button>`}
@@ -1120,4 +1121,9 @@ slides[0].classList.add("active");
 fit();
 if (!flow) go(fromHash(), true);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { fit(); drawWheel(); });
+})();
+/* show "Sign in" in the bar until the student is signed in */
+(function () {
+  const show = () => { const b = document.getElementById("signBtn"), A = window.CLV_ACCOUNT; if (b) b.hidden = !A || !!A.signedIn; };
+  addEventListener("clv-account", show); addEventListener("load", show); setTimeout(show, 50);
 })();

@@ -75,6 +75,15 @@ html[data-theme="dark"] .game .ic,html[data-theme="dark"] .btn{color:#12263A}
 html[data-theme="dark"] .feature .eb{color:#FFB37A}
 html[data-theme="dark"] .card.new{background:#2E2A14}
 .wrap{zoom:var(--clv-scale,1)}
+.gear.tgb{background:#229ED9;border-color:#229ED9;color:#fff;font-size:16px;padding:8px 16px;box-shadow:0 4px 14px rgba(34,158,217,.35)}
+.signcard{display:flex;align-items:center;gap:14px;background:#229ED9;color:#fff;border-radius:22px;padding:16px 18px;border:0;width:100%;font:inherit;text-align:left;cursor:pointer;margin:16px 0 0}
+.signcard .ic{width:48px;height:48px;border-radius:14px;background:#fff;display:grid;place-items:center;font-size:26px;flex:none}
+.signcard .t{flex:1;min-width:0}
+.signcard b{display:block;font-size:19px}
+.signcard small{display:block;color:#E4F4FC;font-size:14px}
+.signcard .go{font-weight:800;white-space:nowrap;background:#fff;color:#1B7DB0;border-radius:999px;padding:8px 14px}
+.signcard:hover .go,.signcard:focus-visible .go{background:var(--yel);color:#12263A}
+@media (max-width:480px){.signcard .go{display:none}}
 .gear{font-weight:800;font-size:15px;font-family:inherit;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap}
 .topr{display:flex;gap:8px;align-items:center}
 </style>
@@ -127,6 +136,7 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
     <div class="hello"><h1>My English <span>lessons</span></h1>
       <p>Every lesson from class is here: rules, Uzbek examples, quizzes and games.</p>
       <p class="uz">Har bir dars shu yerda. Takrorlang va ball yig‘ing!</p></div>
+    <div id="signBox"></div>
     <div id="liveBanner"><a class="game" href="play/"><span class="ic" aria-hidden="true">🎮</span><span class="t"><b>Join the class game</b><small>Get the code from the board · Kodni doskadan oling</small></span><span class="go">Join →</span></a></div>
     ${feature}
     <section class="sec"><h2>Revise my lessons</h2><p>${items.length} open · newest first · Darslarni takrorlang</p><div class="grid">${cards}</div></section>
@@ -135,7 +145,11 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
     const el = document.getElementById("accBtn"), A = window.CLV_ACCOUNT; if (!el) return;
     const u = A && A.user;
     el.innerHTML = u ? `<a class="gear" href="me/" style="text-decoration:none">\u{1F464} ${esc(String(u.name || "Me").split(" ")[0])}</a>`
-      : `<button class="gear" data-signin>✈️ Sign in · Kirish</button>`;
+      : `<button class="gear tgb" data-signin>✈️ Sign in · Kirish</button>`;
+    const box = document.getElementById("signBox");
+    if (box) box.innerHTML = u ? "" : `<button class="signcard" data-signin><span class="ic" aria-hidden="true">✈️</span>
+      <span class="t"><b>Sign in with Telegram</b><small>Save your points on every phone · get homework in Telegram<br>Telegram orqali kiring: ballar saqlanadi, uy vazifasi keladi</small></span>
+      <span class="go">Sign in →</span></button>`;
     const t = Object.values(P.points()).reduce((a, b) => a + (+b || 0), 0), b = document.querySelector(".pts b"); if (b) b.textContent = t;
   };
   addEventListener("clv-account", acc); addEventListener("load", acc); acc();

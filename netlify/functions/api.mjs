@@ -5,7 +5,7 @@
      sessions/<token>  { uid, t }
      logins/<code>     { t } → { t, token, uid } once the student pressed START in the bot
      meta/teacher      { uid }        the first account that claims the teacher role keeps it
-     meta/homework     [ { id, t, text, to } ]
+     meta/homework     [ { id, t, text, to, file? { id, name, size } } ]   file.id = Telegram file_id
      meta/webhook      { url }        which address Telegram is sending updates to
    The bot token lives only in the TELEGRAM_BOT_TOKEN environment variable. */
 import { getStore } from "@netlify/blobs";
@@ -23,6 +23,16 @@ async function defaultTg(method, body) {
   });
   return r.json().catch(() => ({ ok: false }));
 }
+/* multipart upload (sendDocument with a real file) */
+async function tgUpload(method, fields, file, fileField) {
+  if (globalThis.__CLV_TGUP) return globalThis.__CLV_TGUP(method, fields, file);
+  const f = new FormData();
+  for (const [k, v] of Object.entries(fields)) f.append(k, typeof v === "string" ? v : JSON.stringify(v));
+  f.append(fileField, file, file.name || "file");
+  const r = await fetch(`https://api.telegram.org/bot${TOKEN()}/${method}`, { method: "POST", body: f });
+  return r.json().catch(() => ({ ok: false }));
+}
+const MAX_FILE = 5 * 1024 * 1024;          /* Netlify functions take about 6 MB per request */
 
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 const rid = n => randomBytes(n).toString("hex");
@@ -146,6 +156,16 @@ async function myHomework(u) {
   const hw = (await get("meta/homework")) || [];
   return hw.filter(h => h.to === "all" || h.to === "group:" + (u.group || "")).slice(-5);
 }
+/* One homework to one chat: the file (with the text as its caption when it fits), else a message. */
+async function sendHomework(chat, head, h, markup) {
+  const text = h.text ? `${head}\n\n${esc(h.text)}` : head;
+  const extra = markup ? { reply_markup: markup } : {};
+  if (!h.file) return say(chat, text, extra);
+  if (text.length <= 1000) return tg("sendDocument", Object.assign({ chat_id: chat, document: h.file.id, caption: text, parse_mode: "HTML" }, extra));
+  const r = await say(chat, text, extra);
+  if (!r || !r.ok) return r;
+  return tg("sendDocument", { chat_id: chat, document: h.file.id });
+}
 async function onUpdate(up, req, context) {
   const m = up && up.message;
   if (!m || !m.from || !m.chat || m.chat.type !== "private" || m.from.is_bot) return;
@@ -178,7 +198,9 @@ async function onUpdate(up, req, context) {
     const hw = await myHomework(u);
     if (!hw.length) return say(chat, "No homework yet. \u{1F389}\nHozircha uy vazifasi yo‘q.");
     const h = hw[hw.length - 1];
-    return say(chat, `\u{1F4DD} <b>Homework · Uy vazifasi</b> (${day(h.t)})\n\n${esc(h.text)}`);
+    const head = `\u{1F4DD} <b>Homework · Uy vazifasi</b> (${day(h.t)})`;
+    if (h.file) return sendHomework(chat, head, h, null);
+    return say(chat, `${head}\n\n${esc(h.text)}`);
   }
   if (cmd === "/site") return say(chat, "\u{1F4DA} ClivEdu Class", { reply_markup: kb("Open · Ochish", site + "/") });
   if (cmd === "/stop") { u.notify = false; await put("users/" + u.id, u); return say(chat, "\u{1F515} OK, no more messages from me. Send /start to turn them on again.\nXabarlar to‘xtatildi. Qayta yoqish: /start"); }
@@ -283,6 +305,27 @@ export default async (req, context) => {
     }
     if (path === "/logout" && method === "POST") { await del("sessions/" + me.tok); return json({ ok: true }); }
     if (path === "/homework") return json({ items: (await myHomework(me.user)).reverse() });
+    if (path === "/homework/file") {                       /* download the attachment on the website */
+      const id = url.searchParams.get("id") || "";
+      const all = (await get("meta/homework")) || [];
+      const mine = await isTeacher(me.uid) ? all : await myHomework(me.user);
+      const h = mine.find(x => x.id === id);
+      if (!h || !h.file) return json({ error: "File not found." }, 404);
+      const f = await tg("getFile", { file_id: h.file.id });
+      if (!f || !f.ok) return json({ error: "Telegram could not find the file." }, 502);
+      const r = await fetch(`https://api.telegram.org/file/bot${TOKEN()}/${f.result.file_path}`);
+      if (!r.ok) return json({ error: "Download failed." }, 502);
+      const name = h.file.name || "homework";
+      return new Response(r.body, { headers: { "content-type": h.file.type || "application/octet-stream", "cache-control": "no-store",
+        "content-disposition": `attachment; filename="${name.replace(/[^\w.\- ]/g, "_")}"; filename*=UTF-8''${encodeURIComponent(name)}` } });
+    }
+    if (path === "/homework/telegram" && method === "POST") {   /* "Send it to my Telegram" */
+      const b = await body();
+      const h = (await myHomework(me.user)).find(x => x.id === b.id) || ((await isTeacher(me.uid)) && ((await get("meta/homework")) || []).find(x => x.id === b.id));
+      if (!h) return json({ error: "Homework not found." }, 404);
+      const r = await sendHomework(me.uid, `\u{1F4DD} <b>Homework · Uy vazifasi</b> (${day(h.t)})`, h, null);
+      return json({ ok: !!(r && r.ok), why: r && r.description });
+    }
     if (path === "/teacher/claim" && method === "POST") {
       const b = await body(), t = await get("meta/teacher");
       if (t && String(t.uid) !== me.uid) return json({ error: "Another account is already the teacher." }, 403);
@@ -306,23 +349,38 @@ export default async (req, context) => {
         return json({ summary: summary(u, p), days: (p && p.days) || {}, mistakes: (d["clv-mistakes"] || []).slice(-60).reverse(), games: (d["clv-games"] || []).slice(-20).reverse() });
       }
       if (path === "/teacher/send" && method === "POST") {
-        const b = await body(), text = String(b.text || "").trim().slice(0, 3500), to = String(b.to || "all");
-        if (!text) return json({ error: "Write the message first." }, 400);
+        /* JSON { text, to, homework } or multipart with the same fields plus "file" */
+        let b, file = null;
+        if ((req.headers.get("content-type") || "").includes("multipart/form-data")) {
+          const f = await req.formData();
+          b = { text: f.get("text") || "", to: f.get("to") || "all", homework: f.get("homework") !== "false" };
+          const x = f.get("file");
+          if (x && typeof x === "object" && x.size) file = x;
+        } else b = await body();
+        const text = String(b.text || "").trim().slice(0, 3500), to = String(b.to || "all");
+        if (!text && !file) return json({ error: "Write the message or attach a file first." }, 400);
+        if (file && file.size > MAX_FILE) return json({ error: "The file is too big. The limit is 5 MB." }, 413);
         if (!/^(all|group:[ab])$/.test(to)) return json({ error: "Bad target" }, 400);
         const rows = (await allStudents()).filter(r => !r.teacher && r.u.notify !== false && (to === "all" || "group:" + (r.u.group || "") === to));
         const site = siteUrl(req, context);
-        if (b.homework !== false) {
-          const hw = (await get("meta/homework")) || [];
-          hw.push({ id: rid(4), t: Date.now(), text, to }); await put("meta/homework", hw.slice(-50));
+        const isHw = b.homework !== false;
+        const head = isHw ? "\u{1F4DD} <b>Homework · Uy vazifasi</b>" : "\u{1F4E2} <b>From your teacher · O‘qituvchidan</b>";
+        const item = { id: rid(4), t: Date.now(), text, to };
+        if (file) {
+          /* Upload once into the teacher's own chat (that is your copy); then every student gets it by file_id. */
+          const up = await tgUpload("sendDocument", { chat_id: me.uid, caption: `\u{1F4CE} Your copy · ${to === "all" ? "everyone" : "group " + to.slice(6).toUpperCase()}` }, file, "document");
+          const d = up && up.ok && up.result && up.result.document;
+          if (!d) return json({ error: "Telegram did not accept the file: " + ((up && up.description) || "error") + ". Did you press START in @" + BOT_NAME() + "?" }, 502);
+          item.file = { id: d.file_id, name: file.name || d.file_name || "homework", size: file.size, type: file.type || d.mime_type || "" };
         }
-        const head = b.homework !== false ? "\u{1F4DD} <b>Homework · Uy vazifasi</b>\n\n" : "\u{1F4E2} <b>From your teacher · O‘qituvchidan</b>\n\n";
+        if (isHw) { const hw = (await get("meta/homework")) || []; hw.push(item); await put("meta/homework", hw.slice(-50)); }
         let sent = 0, failed = [];
         for (const r of rows) {
-          const res = await say(r.u.id, head + esc(text), { reply_markup: kb("\u{1F4DA} Open ClivEdu", site + "/") });
+          const res = await sendHomework(r.u.id, head, item, kb("\u{1F4DA} Open ClivEdu", site + "/"));
           if (res && res.ok) sent++; else failed.push(r.u.name || r.u.first);
           await new Promise(z => setTimeout(z, 40));
         }
-        return json({ sent, failed, of: rows.length });
+        return json({ sent, failed, of: rows.length, file: !!item.file });
       }
       if (path === "/teacher/report" && method === "POST") {
         const r = await sendReport(me.uid, siteUrl(req, context));

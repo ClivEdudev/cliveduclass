@@ -586,3 +586,8 @@ html.clv-reading .tiles,html.clv-reading #fx{display:none!important}
 /* Large text on phones: long words wrap, and wide parts (tables, the quiz board) scroll inside their own slide */
 body.flow .s{max-width:100%;overflow-x:auto;overflow-y:visible}
 body.flow .h1,body.flow .h2,body.flow .lead{overflow-wrap:break-word}
+
+/* sign-in button in the lesson bar (students, signed out) */
+.lnk.signbtn,body.flow.student .lnk.signbtn{background:#229ED9;color:#fff;border:0;cursor:pointer;font-family:inherit}
+.lnk.signbtn[hidden]{display:none}
+html[data-theme="dark"] body.flow.student .lnk.signbtn{color:#fff}

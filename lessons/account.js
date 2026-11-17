@@ -32,9 +32,10 @@
 
   async function api(path, opts) {
     opts = opts || {};
-    const h = { "content-type": "application/json" };
+    const h = opts.form ? {} : { "content-type": "application/json" };       /* FormData sets its own type */
     if (token) h.authorization = "Bearer " + token;
-    const r = await fetch(API + path, { method: opts.method || (opts.body ? "POST" : "GET"), headers: h, body: opts.body ? JSON.stringify(opts.body) : undefined, keepalive: !!opts.keepalive });
+    const r = await fetch(API + path, { method: opts.method || (opts.body || opts.form ? "POST" : "GET"), headers: h,
+      body: opts.form ? opts.form : opts.body ? JSON.stringify(opts.body) : undefined, keepalive: !!opts.keepalive });
     let j = {}; try { j = await r.json(); } catch (e) {}
     if (r.status === 401 && token) { forget(); throw new Error("Signed out"); }
     if (!r.ok) throw new Error(j.error || "Network error");
@@ -161,6 +162,14 @@
     ready: true, panelHTML, onClick, api, sync: () => sync(true),
     get user() { return user; }, get summary() { return summary; }, get signedIn() { return !!token; },
     signIn() { if (window.CLV_SETTINGS) window.CLV_SETTINGS.open(); if (!token && !login) startLogin(); },
+    /* download a file the API serves (homework attachments) */
+    async download(path, name) {
+      const r = await fetch(API + path, { headers: token ? { authorization: "Bearer " + token } : {} });
+      if (!r.ok) { let j = {}; try { j = await r.json(); } catch (e) {} throw new Error(j.error || "Download failed"); }
+      const url = URL.createObjectURL(await r.blob()), a = document.createElement("a");
+      a.href = url; a.download = name || "homework"; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    },
     signOut, setUser(u) { user = u; keep(USR, u); repaint(); }
   };
   document.addEventListener("click", e => { const b = e.target.closest("[data-signin]"); if (b) { e.preventDefault(); window.CLV_ACCOUNT.signIn(); } });
