@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<title>Daily challenge · ClivEdu</title>
+<style>
+/* Daily challenge: the same word and the same 5 questions for the whole class today.
+   Listen to the word, say it into the microphone, answer 5 questions, share the result. */
+:root{--pg:#EEF3F8;--card:#FFFFFF;--ink:#12263A;--sub:#4B5F73;--line:#D2DCE6;--teal:#0B6E70;--yel:#FFC93C;--yelsoft:#FFF6D6;
+  --good:#1C8F50;--bad:#C23A47;--blue:#1F5FD1;--o0:#D93A4A;--o1:#2A66D6;--o2:#E8A90A;--o3:#1C8F50;color-scheme:light}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--pg);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  padding:max(12px,env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) 40px max(14px,env(safe-area-inset-left,0px));-webkit-tap-highlight-color:transparent}
+h1,h2,p{margin:0}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.app{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px;zoom:var(--clv-scale,1)}
+.top{display:flex;align-items:center;gap:10px}
+.back{font-weight:800;text-decoration:none;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:999px;padding:6px 14px}
+.top .sp{flex:1}
+.gear{font-weight:800;font-size:14px;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 11px}
+.flame{font-weight:800;background:var(--ink);color:#fff;border-radius:999px;padding:6px 14px;white-space:nowrap}
+.head .eb{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#B45309}
+.head h1{font-size:clamp(30px,8vw,42px);line-height:1.1;font-weight:800}
+.head p{color:var(--sub)}.uz{color:var(--teal);font-weight:600;font-size:14px}
+.card{background:var(--card);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 0 var(--line)}
+/* word of the day */
+.wotd{position:relative;overflow:hidden;border:2px solid var(--yel)}
+.wotd .lbl{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--sub)}
+.wotd .w{font-size:clamp(40px,12vw,58px);font-weight:800;line-height:1;letter-spacing:-.02em}
+.wotd .m{font-size:20px;font-weight:700;color:var(--teal)}
+.wotd .ex{font-size:18px;background:var(--pg);border-radius:14px;padding:10px 12px}
+.wotd .ex b{color:#C2410C}
+.wotd .topic{position:absolute;right:16px;top:16px;font-size:12px;font-weight:800;background:var(--yelsoft);border-radius:999px;padding:4px 10px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.mini{display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--yel);border-radius:16px;padding:8px 10px 8px 14px}
+.mini b{font-size:20px}.mini span{flex:1;color:var(--teal);font-weight:700}
+.mini button{font-size:20px;width:40px;height:40px;border-radius:50%;background:var(--pg)}
+.pill{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:16px;padding:12px 16px;border-radius:14px;background:var(--pg);border:2px solid var(--line)}
+.pill.mic{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pill.mic.rec{background:var(--bad);border-color:var(--bad);animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.04)}}
+.said{font-weight:700;border-radius:14px;padding:10px 12px}
+.said.ok{background:#E3F5EA;color:#145C36}.said.no{background:#FDECEE;color:#8E1F2B}
+.said small{display:block;font-weight:600;opacity:.8}
+/* questions */
+.prog{display:flex;gap:6px}
+.prog i{flex:1;height:8px;border-radius:99px;background:var(--line)}
+.prog i.ok{background:var(--good)}.prog i.no{background:var(--bad)}.prog i.now{background:var(--yel)}
+.qn{font-weight:800;color:var(--sub);font-size:14px}
+.qt{font-size:22px;font-weight:800;line-height:1.3}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{min-height:84px;border-radius:16px;padding:12px;color:#fff;font-weight:800;font-size:18px;text-align:left;line-height:1.2;transition:transform .1s,opacity .2s}
+.opt:active{transform:scale(.96)}
+.o0{background:var(--o0)}.o1{background:var(--o1)}.o2{background:var(--o2);color:var(--ink)}.o3{background:var(--o3)}
+.opt.dim{opacity:.3}.opt.right{outline:5px solid var(--good);outline-offset:2px;opacity:1}.opt.wrong{outline:5px solid var(--bad);outline-offset:2px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:16px;font-weight:800;font-size:19px;background:var(--yel);color:var(--ink);text-decoration:none}
+.btn.tg{background:#1A7CB5;color:#fff}
+.btn.sec{background:var(--card);border:2px solid var(--line);font-size:16px;padding:12px}
+/* result */
+.res{text-align:center;align-items:center}
+.grid{font-size:34px;letter-spacing:4px}
+.big{font-size:30px;font-weight:800}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.stats div{background:var(--pg);border-radius:14px;padding:10px 4px;font-weight:800;font-size:22px}
+.stats small{display:block;font-size:12px;color:var(--sub)}
+.week{display:flex;justify-content:space-between;gap:6px;width:100%}
+.week span{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:800;color:var(--sub)}
+.week i{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--pg);font-style:normal;font-size:16px}
+.week i.on{background:var(--yel)}.week i.today{outline:3px solid var(--ink)}
+.muted{color:var(--sub)}
+/* dark */
+html[data-theme="dark"]{--pg:#0E1A26;--card:#16263A;--ink:#EAF0F5;--sub:#A9B8C7;--line:#2B3E52;--teal:#6FD6D8;--yelsoft:#3A3215;color-scheme:dark}
+html[data-theme="dark"] .flame,html[data-theme="dark"] .pill.mic{background:#0A1520;color:#fff;border-color:#0A1520}
+html[data-theme="dark"] .btn,html[data-theme="dark"] .o2{color:#12263A}
+html[data-theme="dark"] .btn.sec{color:var(--ink);background:var(--card)}
+html[data-theme="dark"] .wotd .ex b{color:#FFA06E}
+html[data-theme="dark"] .said.ok{background:#123A26;color:#B9F0D0}html[data-theme="dark"] .said.no{background:#3A1A1F;color:#FFC9CF}
+html[data-theme="dark"] .week i.today{outline-color:#fff}
+html[data-theme="dark"] .week i.on{color:#12263A}
+</style>
+<script src="../lessons/settings.js"></script>
+<script src="../lessons/account.js" defer></script>
+</head>
+<body>
+<main class="app" id="app"><p class="muted">Loading today’s challenge…</p></main>
+<script src="../lessons/live-sets.js"></script>
+<script src="../lessons/qbank.js"></script>
+<script src="../vocab/01/lesson.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s), app = $("#app"), B = window.CLV_QBANK;
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const load = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+const keep = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+
+/* ---- today, in Tashkent, and a random generator that gives everyone the same picks ---- */
+const dayKey = (t = Date.now()) => new Date(t + 5 * 3600e3).toISOString().slice(0, 10);
+const TODAY = dayKey();
+const seedOf = s => { let h = 1779033703; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 3432918353), h = h << 13 | h >>> 19; return h >>> 0; };
+const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const sshuffle = (a, r) => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+
+const words = B.words(window.LESSON);
+/* word of the day: walk through all words in a fixed shuffled order, one per day */
+const order = sshuffle(words.map((_, i) => i), rng(seedOf("clivedu-words")));
+const dayN = Math.floor(Date.parse(TODAY + "T00:00:00Z") / 864e5);
+const W = words[order[dayN % words.length]];
+const R = rng(seedOf("clivedu-daily-" + TODAY));
+/* 5 questions: 3 vocabulary (one about today's word), 2 grammar */
+const vocab = B.vocab(words);
+const mine = vocab.filter(q => q.o[0] === W.en || q.o[0] === W.uz);
+const rest = sshuffle(vocab.filter(q => !mine.includes(q)), R);
+const grammar = sshuffle(window.LIVE_SETS.filter(s => /^(rev|l\d)$/.test(s.id)).flatMap(s => s.qs || []).filter(q => !q.audio), R);
+const rows = [sshuffle(mine, R)[0], rest[0], rest[1], grammar[0], grammar[1]].filter(Boolean);
+const Q = sshuffle(rows, R).map(r0 => {
+  const r = Array.isArray(r0) ? { q: r0[0], o: r0.slice(1) } : r0;
+  const o = sshuffle(r.o.map((t, i) => ({ t: B.strip(t), ok: i === 0 })), R);
+  return { q: B.strip(r.q), o: o.map(x => x.t), c: o.findIndex(x => x.ok) };
+});
+
+/* ---- saved days: { "2026-11-17": { grid: "1101", score, said } } ---- */
+const DAYS = load("clv-daily", {});
+const streak = () => { let n = 0, t = Date.now(); if (!DAYS[dayKey(t)]) t -= 864e5; while (DAYS[dayKey(t)]) { n++; t -= 864e5; } return n; };
+const best = () => { const ks = Object.keys(DAYS).sort(); let b = 0, run = 0, prev = null; ks.forEach(k => { run = prev && Date.parse(k) - Date.parse(prev) === 864e5 ? run + 1 : 1; b = Math.max(b, run); prev = k; }); return b; };
+
+/* ---- sound: hear the word; say it into the microphone ---- */
+function speak(text, slow) {
+  try {
+    const u = new SpeechSynthesisUtterance(text); u.lang = "en-GB"; u.rate = slow ? .65 : .9;
+    const v = speechSynthesis.getVoices().find(x => /^en-(GB|US)/.test(x.lang)); if (v) u.voice = v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch (e) {}
+}
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const norm = s => String(s).toLowerCase().replace(/[^a-z' ]/g, " ").replace(/\s+/g, " ").trim();
+function close(a, b) {                                 /* how alike two strings are, 0..1 */
+  a = norm(a); b = norm(b); if (!a || !b) return 0; if (a === b || a.includes(b)) return 1;
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return 1 - d[a.length][b.length] / Math.max(a.length, b.length);
+}
+let said = null, listening = false, rec = null;
+function listen() {
+  if (!SR) { said = { ok: null, text: "" }; return draw(); }
+  if (listening) { try { rec.stop(); } catch (e) {} return; }
+  rec = new SR(); rec.lang = "en-US"; rec.interimResults = false; rec.maxAlternatives = 5;
+  rec.onresult = e => {
+    const alts = [...e.results[0]].map(a => a.transcript);
+    const bestAlt = alts.reduce((b, t) => close(t, W.en) > close(b, W.en) ? t : b, alts[0] || "");
+    said = { ok: close(bestAlt, W.en) >= .75, text: bestAlt };
+  };
+  rec.onerror = e => { said = { ok: null, text: "", err: e.error }; };
+  rec.onend = () => {
+    listening = false;
+    const r = DAYS[TODAY];                              /* said it after finishing: the bonus still counts */
+    if (r && said && said.ok && !r.said) { r.said = true; r.score += 20; keep("clv-daily", DAYS); const pts = load("clv-points", {}); pts.daily = (pts.daily || 0) + 20; keep("clv-points", pts); }
+    draw();
+  };
+  listening = true; said = null; draw();
+  try { rec.start(); } catch (e) { listening = false; draw(); }
+}
+
+/* ---- the challenge ---- */
+let qi = -1, answers = [], picked = null;
+function top() {
+  return `<div class="top"><a class="back" href="../">← Home</a><span class="sp"></span><button class="gear" data-settings aria-label="Settings">⚙️</button><span class="flame">🔥 ${streak()}</span></div>
+  <div class="head"><p class="eb">Daily challenge · Kunlik sinov</p><h1>${esc(new Date(TODAY + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }))}</h1>
+    <p>The same for the whole class today. <span class="uz">Bugun butun sinf uchun bir xil.</span></p></div>`;
+}
+function wotd() {
+  const ex = W.s ? W.s.replace(/<span class="hl">([\s\S]*?)<\/span>/, "<b>$1</b>").replace(/<(?!\/?b>)[^>]*>/g, "") : "";
+  const mic = !SR ? "" : `<button class="pill mic ${listening ? "rec" : ""}" data-mic>${listening ? "● Listening… · Tinglayapman" : "🎤 Say it · Ayting"}</button>`;
+  let sayBox = "";
+  if (said && said.ok === true) sayBox = `<p class="said ok">✓ Great pronunciation! I heard “${esc(said.text)}”.<small>Zo‘r talaffuz!</small></p>`;
+  else if (said && said.ok === false) sayBox = `<p class="said no">I heard “${esc(said.text)}”. Listen and try again.<small>Tinglab, yana urinib ko‘ring.</small></p>`;
+  else if (said && said.err) sayBox = `<p class="said no">${said.err === "not-allowed" ? "Allow the microphone, then try again." : "I didn’t hear you. Try again."}<small>Mikrofonga ruxsat bering yoki yana urinib ko‘ring.</small></p>`;
+  return `<section class="card wotd"><span class="topic">${esc(W.topic)}</span><p class="lbl">Word of the day · Kun so‘zi</p>
+    <p class="w">${esc(W.en)}</p><p class="m">${esc(W.uz)}</p>${ex ? `<p class="ex">${ex}</p>` : ""}
+    <div class="row"><button class="pill" data-say>🔊 Listen</button><button class="pill" data-slow>🐢 Slowly</button>${mic}</div>${sayBox}</section>`;
+}
+function draw() {
+  if (DAYS[TODAY] && (qi < 0 || qi >= Q.length)) return result(DAYS[TODAY]);
+  let body = "";
+  if (qi < 0) body = `<section class="card"><p class="qt">5 questions · 5 ta savol</p><p class="muted">Vocabulary and grammar from our lessons. One question is about today’s word. No timer: think well!<br><span class="uz">Shoshilmang, yaxshi o‘ylang.</span></p>
+    <button class="btn" data-start>Start · Boshlash →</button></section>`;
+  else if (qi < Q.length) {
+    const q = Q[qi], shown = picked != null;
+    body = `<section class="card"><div class="prog">${Q.map((_, i) => `<i class="${i < answers.length ? (answers[i] ? "ok" : "no") : i === qi ? "now" : ""}"></i>`).join("")}</div>
+      <p class="qn">Question ${qi + 1} of ${Q.length}</p><p class="qt">${esc(q.q)}</p>
+      <div class="opts">${q.o.map((t, i) => `<button class="opt o${i} ${shown ? (i === q.c ? "right" : i === picked ? "wrong" : "dim") : ""}" data-o="${i}" ${shown ? "disabled" : ""}>${esc(t)}</button>`).join("")}</div>
+      ${shown ? `<button class="btn" data-next>${qi + 1 < Q.length ? "Next · Keyingisi →" : "See my result · Natija →"}</button>` : ""}</section>`;
+  }
+  const asking = qi >= 0 && qi < Q.length;
+  /* while answering, the word shrinks to a small strip so the question is on screen */
+  const strip = `<div class="mini"><b>${esc(W.en)}</b><span>${esc(W.uz)}</span><button data-say aria-label="Listen">🔊</button></div>`;
+  app.innerHTML = asking ? top().replace(/<div class="head">[\s\S]*$/, "") + strip + body : top() + wotd() + body;
+  if (asking) window.scrollTo(0, 0);
+}
+function finish() {
+  const score = answers.filter(Boolean).length * 20 + (said && said.ok ? 20 : 0);
+  const rec = { grid: answers.map(a => a ? 1 : 0).join(""), score, said: !!(said && said.ok), t: Date.now() };
+  DAYS[TODAY] = rec; keep("clv-daily", DAYS);
+  /* points go with the lesson points, so the teacher sees them */
+  const pts = load("clv-points", {}); pts.daily = (pts.daily || 0) + score; keep("clv-points", pts);
+  result(rec, true);
+}
+function shareText(r) {
+  const sq = r.grid.split("").map(x => x === "1" ? "🟩" : "🟥").join("");
+  return `ClivEdu daily challenge · ${TODAY}\n${sq}${r.said ? " 🎤" : ""}  ${r.grid.split("").filter(x => x === "1").length}/5\n🔥 ${streak()} day${streak() === 1 ? "" : "s"} · Word: ${W.en}`;
+}
+function result(r, fresh) {
+  const n = r.grid.split("").filter(x => x === "1").length;
+  const wk = Array.from({ length: 7 }, (_, i) => { const t = Date.now() - (6 - i) * 864e5, k = dayKey(t); return `<span><i class="${DAYS[k] ? "on" : ""} ${k === TODAY ? "today" : ""}">${DAYS[k] ? "🔥" : ""}</i>${new Date(k + "T12:00:00").toLocaleDateString("en-GB", { weekday: "narrow" })}</span>`; }).join("");
+  const url = location.origin + "/daily/";
+  window.scrollTo(0, 0);
+  app.innerHTML = top().replace(/<div class="head">[\s\S]*$/, "") + `<section class="card res">
+    <p class="big">${n === 5 ? "Perfect! 🏆" : n >= 4 ? "Excellent! 🌟" : n >= 3 ? "Good job! 👏" : "Keep going! 💪"}</p>
+    <p class="grid" aria-label="${n} of 5 right">${r.grid.split("").map(x => x === "1" ? "🟩" : "🟥").join("")}${r.said ? "🎤" : ""}</p>
+    <div class="stats"><div>${r.score}<small>points · ball</small></div><div>${streak()}<small>day streak</small></div><div>${best()}<small>best streak</small></div></div>
+    <div class="week">${wk}</div>
+    <a class="btn tg" href="https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareText(r))}" target="_blank" rel="noopener">✈️ Share in Telegram · Ulashish</a>
+    <p class="muted">${fresh ? "Come back tomorrow for a new word! · Ertaga yangi so‘z!" : "You did today’s challenge. A new one comes tomorrow. · Ertaga yangisi."}</p>
+    <a class="btn sec" href="../play/?solo=1">🎮 Play more by yourself</a></section>` + wotd();
+  if (fresh && n >= 4) confetti();
+}
+function confetti() {
+  if (document.documentElement.classList.contains("clv-calm")) return;
+  const box = document.createElement("div"); box.style.cssText = "position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50"; document.body.appendChild(box);
+  const cols = ["#E0424F", "#2F6FE0", "#F2B705", "#1E9B57", "#6D4CFF"];
+  for (let i = 0; i < 90; i++) { const s = document.createElement("i"); const x = Math.random() * 100, d = 1.6 + Math.random() * 1.6;
+    s.style.cssText = `position:absolute;left:${x}vw;top:-12px;width:8px;height:12px;background:${cols[i % 5]};border-radius:2px;transform:rotate(${Math.random() * 360}deg);transition:transform ${d}s ease-in,top ${d}s ease-in`;
+    box.appendChild(s); requestAnimationFrame(() => requestAnimationFrame(() => { s.style.top = "105vh"; s.style.transform = `rotate(${720 + Math.random() * 360}deg) translateX(${(Math.random() - .5) * 120}px)`; })); }
+  setTimeout(() => box.remove(), 3600);
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const d = b.dataset;
+  if (d.say != null) return speak(W.en);
+  if (d.slow != null) return speak(W.en, true);
+  if (d.mic != null) return listen();
+  if (d.start != null) { qi = 0; return draw(); }
+  if (d.o != null && picked == null) { picked = +d.o; answers.push(picked === Q[qi].c); try { navigator.vibrate && navigator.vibrate(answers[answers.length - 1] ? 20 : [40, 40, 40]); } catch (er) {} return draw(); }
+  if (d.next != null) { picked = null; qi++; if (qi >= Q.length) return finish(); return draw(); }
+});
+if (window.speechSynthesis) speechSynthesis.getVoices();
+draw();
+})();
+</script>
+</body>
+</html>

@@ -83,3 +83,4 @@ html.clv-modern.clv-calm body::before{animation:none}
 html.clv-modern.clv-calm *{animation:none!important}
 @media (prefers-reduced-motion: reduce){html.clv-modern body::before,html.clv-modern *{animation:none!important}}
 html.clv-modern .game.solo{background:var(--mglass)!important;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid var(--medge);animation:mRise .7s both;box-shadow:var(--mshadow)}
+html.clv-modern .game.daily:not(.done){background:linear-gradient(120deg,#C2410C,#F59E0B,#EC4899,#C2410C)!important;background-size:300% 300%!important;animation:mRise .7s both,mFlow 9s ease-in-out infinite alternate;box-shadow:0 14px 34px rgba(236,72,153,.3)}

@@ -37,6 +37,14 @@ h1,h2,h3,p{margin:0}
 .game b{display:block;font-size:19px}
 .game small{display:block;color:#BFD8D5;font-size:14px}
 .game .go{font-weight:800;color:var(--yel);white-space:nowrap}
+.game.daily{background:linear-gradient(120deg,#B45309,#E8A90A);color:#fff}
+.game.daily .ic{background:#fff}
+.game.daily small{color:#FFF3D6}
+.game.daily .go{color:#fff;background:rgba(0,0,0,.18);border-radius:999px;padding:4px 10px}
+.game.daily.done{background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.game.daily.done small{color:var(--sub)}.game.daily.done .go{color:var(--ink);background:var(--yelsoft)}
+html[data-theme="dark"] .game.daily:not(.done){background:linear-gradient(120deg,#8A3F06,#B98208)!important}
+html[data-theme="dark"] .game.daily.done{background:var(--card)!important}
 .game.solo{background:var(--card);color:var(--ink);border:2px solid var(--line);padding:12px 18px}
 .game.solo .ic{background:var(--yelsoft);width:42px;height:42px;font-size:21px}
 .game.solo small{color:var(--sub)}
@@ -144,10 +152,20 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
       <p class="uz">Har bir dars shu yerda. Takrorlang va ball yig‘ing!</p></div>
     <div id="signBox"></div>
     <div id="liveBanner"><a class="game" href="play/"><span class="ic" aria-hidden="true">🎮</span><span class="t"><b>Join the class game</b><small>Get the code from the board · Kodni doskadan oling</small></span><span class="go">Join →</span></a></div>
+    ${dailyCard()}
     <a class="game solo" href="play/?solo=1"><span class="ic" aria-hidden="true">\u{1F9D1}\u200D\u{1F393}</span><span class="t"><b>Play by yourself</b><small>Quiz, word order, vocabulary · any time · Yakka o‘ynash</small></span><span class="go">Play →</span></a>
     ${feature}
     <section class="sec"><h2>Revise my lessons</h2><p>${items.length} open · newest first · Darslarni takrorlang</p><div class="grid">${cards}</div></section>
     <p class="foot-link"><a href="teacher/">Teacher</a></p>`;
+  function dailyCard() {
+    let D = {}; try { D = JSON.parse(localStorage.getItem("clv-daily") || "{}"); } catch (e) {}
+    const k = t => new Date(t + 5 * 3600e3).toISOString().slice(0, 10);
+    let n = 0, t = Date.now(); if (!D[k(t)]) t -= 864e5; while (D[k(t)]) { n++; t -= 864e5; }
+    const today = D[k(Date.now())];
+    const sq = today ? today.grid.split("").map(x => x === "1" ? "🟩" : "🟥").join("") : "";
+    return `<a class="game daily ${today ? "done" : ""}" href="daily/"><span class="ic" aria-hidden="true">${today ? "✅" : "\u{1F4C5}"}</span><span class="t"><b>${today ? "Daily challenge done!" : "Daily challenge · Kunlik sinov"}</b>
+      <small>${today ? sq + " · come back tomorrow · ertaga yana" : "Word of the day + 5 questions · 2 minutes"}</small></span><span class="go">${n ? "🔥 " + n : "Go →"}</span></a>`;
+  }
   const acc = () => {
     const el = document.getElementById("accBtn"), A = window.CLV_ACCOUNT; if (!el) return;
     const u = A && A.user;

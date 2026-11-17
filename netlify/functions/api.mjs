@@ -51,7 +51,7 @@ const SESSION_DAYS = 180, LOGIN_MIN = 15;
 
 /* ---------- progress merging (same rules on every device) ---------- */
 const PREF = ["clv-picks-", "clv-awarded-"];
-const PLAIN = ["clv-points", "clv-settings", "clv-name", "clv-mistakes", "clv-games"];
+const PLAIN = ["clv-points", "clv-settings", "clv-name", "clv-mistakes", "clv-games", "clv-daily"];
 const tracked = k => PLAIN.includes(k) || PREF.some(p => k.startsWith(p) && k.length < 80);
 const byId = (a, b, cap) => {
   const m = new Map();
@@ -73,6 +73,10 @@ function mergeKey(k, a, b) {
   if (k.startsWith("clv-awarded-")) return [...new Set([...(a || []), ...(Array.isArray(b) ? b : [])])].slice(0, 500);
   if (k === "clv-mistakes") return byId(a, b, 200);
   if (k === "clv-games") return byId(a, b, 100);
+  if (k === "clv-daily") {                                     /* daily challenge: one entry per day, keep the last 120 days */
+    const o = Object.assign({}, a || {}, (b && typeof b === "object") ? b : {});
+    return Object.fromEntries(Object.entries(o).filter(([d]) => /^\d{4}-\d\d-\d\d$/.test(d)).sort().slice(-120));
+  }
   return b;                                                    /* settings, name: newest wins */
 }
 const total = d => Object.values((d && d["clv-points"]) || {}).reduce((s, v) => s + (+v || 0), 0);
@@ -96,7 +100,8 @@ function summary(user, p) {
     lastSeen: user.lastSeen || 0, joined: user.joined || 0, notify: user.notify !== false,
     points: total(d), today: ((p && p.days) || {})[day()] || 0, lessons: Object.keys(pts).filter(l => pts[l] > 0).length,
     perLesson: pts, open: mistakes.length, streak: streak((p && p.days) || {}), games: games.length,
-    bestGame: games.reduce((b, g) => Math.max(b, g.score || 0), 0)
+    bestGame: games.reduce((b, g) => Math.max(b, g.score || 0), 0),
+    daily: Object.keys(d["clv-daily"] || {}).length, dailyToday: !!(d["clv-daily"] || {})[day()], dailyStreak: streak(d["clv-daily"] || {})
   };
 }
 function streak(days) {
@@ -146,8 +151,9 @@ async function ensureWebhook(req, context, force) {
   return { ok: !!(r && r.ok), url, why: r && r.description };
 }
 
-const HOOK_V = 2;
+const HOOK_V = 3;
 const STUDENT_CMDS = [
+  { command: "daily", description: "Daily challenge · Kunlik sinov" },
   { command: "quiz", description: "Quiz yourself · Test ishlash" },
   { command: "me", description: "My points and progress · Ballarim" },
   { command: "homework", description: "Latest homework · Uy vazifasi" },
@@ -159,6 +165,7 @@ const teacherCommands = uid => tg("setMyCommands", { scope: { type: "chat", chat
   { command: "panel", description: "Teacher panel: everything in one place" },
   { command: "report", description: "Today's class report" },
   { command: "students", description: "Students and their progress" },
+  { command: "daily", description: "Today's daily challenge" },
   { command: "quiz", description: "Send a quiz to the class" },
   { command: "cancel", description: "Cancel what I'm doing" }
 ] });
@@ -236,6 +243,7 @@ async function onUpdate(up, req, context) {
     }
   }
   if (cmd === "/quiz") return quizMenu(chat, site);
+  if (cmd === "/daily") return say(chat, "\u{1F4C5} <b>Daily challenge · Kunlik sinov</b>\nWord of the day, say it into the microphone, 5 questions. 2 minutes!\nKun so‘zi, talaffuz va 5 ta savol.", { reply_markup: kb("\u{1F4C5} Start · Boshlash", site + "/daily/") });
   /* a student wrote to the bot: pass it on to the teacher, who can answer with one tap */
   if (!teacher && !cmd.startsWith("/") && (text || fileOf(m) || m.sticker)) {
     const t = await get("meta/teacher");
@@ -298,6 +306,8 @@ async function sendReport(chat, site) {
   let t = `\u{1F4CA} <b>Class report · ${today}</b>\n\n<b>Active today: ${active.length}</b> of ${rows.length}\n`;
   t += active.slice(0, 30).map((x, i) => `${i + 1}. ${esc(x.s.name)} — ⭐${x.s.today} today (${x.s.points} total)${x.s.open ? ` · ${x.s.open} to fix` : ""}`).join("\n") || "Nobody yet.";
   if (quiet) t += `\n\n\u{1F634} Not active today: ${quiet}`;
+  const daily = rows.map(r => summary(r.u, r.p)).filter(x => x.dailyToday);
+  t += `\n\n\u{1F4C5} Daily challenge today: <b>${daily.length}</b>${daily.length ? " — " + daily.slice(0, 15).map(x => esc(x.name.split(" ")[0]) + (x.dailyStreak > 1 ? " \u{1F525}" + x.dailyStreak : "")).join(", ") : ""}`;
   if (cm.length) t += `\n\n<b>Most common mistakes today</b>\n` + cm.map(c => `• ${esc(c.q || c.lt)} → <b>${esc(c.c)}</b> (${c.n} student${c.n > 1 ? "s" : ""}${c.top ? `, said “${esc(c.top)}”` : ""})`).join("\n");
   return say(chat, t.slice(0, 4000), { reply_markup: kb("\u{1F4CA} Open Progress", site + "/teacher/progress/") });
 }
@@ -500,7 +510,7 @@ async function panelStudent(chat, msgId, id) {
   const games = (d["clv-games"] || []).slice(-3).reverse();
   const qz = (u.quizzes || []).slice(-3).reverse();
   let t = `\u{1F464} <b>${esc(s.name)}</b>${s.username ? " · @" + esc(s.username) : ""}\nGroup: <b>${s.group ? s.group.toUpperCase() : "none"}</b> · seen ${ago(s.lastSeen)}${s.notify ? "" : " · \u{1F515} messages off"}\n\n` +
-    `⭐ Points: <b>${s.points}</b> (today ${s.today})\n\u{1F525} Streak: ${s.streak} days · \u{1F4DA} Lessons: ${s.lessons}\n\u{1F3AE} Games: ${s.games} (best ${s.bestGame}) · ❓ Bot quizzes: ${s.quizzes}\n\u{1F3AF} Mistakes to fix: ${s.open}`;
+    `⭐ Points: <b>${s.points}</b> (today ${s.today})\n\u{1F525} Streak: ${s.streak} days · \u{1F4DA} Lessons: ${s.lessons}\n\u{1F3AE} Games: ${s.games} (best ${s.bestGame}) · ❓ Bot quizzes: ${s.quizzes}\n\u{1F4C5} Daily challenge: ${s.daily} days · streak ${s.dailyStreak}${s.dailyToday ? " · done today ✓" : ""}\n\u{1F3AF} Mistakes to fix: ${s.open}`;
   if (mist.length) t += `\n\n<b>Latest mistakes</b>\n` + mist.map(m => `• ${esc(plain(m.q).slice(0, 80))} → <b>${esc(plain(m.c))}</b>${m.a ? ` (said “${esc(plain(m.a))}”)` : ""}`).join("\n");
   if (games.length) t += `\n\n<b>Latest games</b>\n` + games.map(g => `• ${day(g.t)} ${g.solo ? "solo · " + esc(g.set || "") + ` · ${g.right}/${g.of}` : "class game · place " + g.pos + "/" + g.of} · ${g.score} pts`).join("\n");
   if (qz.length) t += `\n\n<b>Latest quizzes</b>\n` + qz.map(q => `• ${day(q.t)} ${esc(q.title)} · ${q.right}/${q.of}`).join("\n");
