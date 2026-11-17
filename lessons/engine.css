@@ -588,6 +588,45 @@ body.flow .s{max-width:100%;overflow-x:auto;overflow-y:visible}
 body.flow .h1,body.flow .h2,body.flow .lead{overflow-wrap:break-word}
 
 /* sign-in button in the lesson bar (students, signed out) */
-.lnk.signbtn,body.flow.student .lnk.signbtn{background:#229ED9;color:#fff;border:0;cursor:pointer;font-family:inherit}
+.lnk.signbtn,body.flow.student .lnk.signbtn{background:#1A7CB5;color:#fff;border:0;cursor:pointer;font-family:inherit}
 .lnk.signbtn[hidden]{display:none}
 html[data-theme="dark"] body.flow.student .lnk.signbtn{color:#fff}
+
+/* tinted cards keep dark text even inside a dark (ink / teal) section */
+.s .card.peach,.s .card.mint,.s .card.skyb,.s .card.butter,.s .card.rose{color:var(--ink)}
+.s .card.peach .uz,.s .card.mint .uz,.s .card.skyb .uz,.s .card.butter .uz,.s .card.rose .uz{color:var(--teal)}
+
+/* ---------- Dark theme: no bright pastel boxes, every text readable ----------
+   Light tints (cream, peach, mint, sky, butter, rose) become deep tints of the same colour,
+   whether they come from a class or from an inline style in the lesson file. */
+html[data-theme="dark"]{--dk-cream:#22364C;--dk-paper:#1B2D41;--dk-peach:#41291F;--dk-mint:#173B2C;--dk-sky:#1A3152;--dk-butter:#3A3215;--dk-rose:#42212A}
+html[data-theme="dark"] .s [style*="background:var(--cream)"],html[data-theme="dark"] .s [style*="background: var(--cream)"]{background:var(--dk-cream)!important}
+html[data-theme="dark"] .s [style*="background:var(--paper)"],html[data-theme="dark"] .s [style*="background: var(--paper)"],html[data-theme="dark"] .s [style*="background:#fff"],html[data-theme="dark"] .s [style*="background:white"]{background:var(--dk-paper)!important}
+html[data-theme="dark"] .s .peach,html[data-theme="dark"] .s [style*="background:var(--peach)"]{background:var(--dk-peach)!important}
+html[data-theme="dark"] .s .mint,html[data-theme="dark"] .s [style*="background:var(--mint)"]{background:var(--dk-mint)!important}
+html[data-theme="dark"] .s .skyb,html[data-theme="dark"] .s [style*="background:var(--sky)"]{background:var(--dk-sky)!important}
+html[data-theme="dark"] .s .butter,html[data-theme="dark"] .s [style*="background:var(--butter)"]{background:var(--dk-butter)!important}
+html[data-theme="dark"] .s .rose,html[data-theme="dark"] .s [style*="background:var(--rose)"]{background:var(--dk-rose)!important}
+html[data-theme="dark"] .s .sky .card{background:var(--dk-sky)}
+html[data-theme="dark"] .s .slots{background:var(--dk-paper);border-color:var(--dk-l)}
+html[data-theme="dark"] .s .src{background:var(--dk-c);color:var(--dk-t)}
+/* text on those boxes */
+html[data-theme="dark"] .s .peach,html[data-theme="dark"] .s .mint,html[data-theme="dark"] .s .skyb,html[data-theme="dark"] .s .butter,html[data-theme="dark"] .s .rose,
+html[data-theme="dark"] .s .sky .card,html[data-theme="dark"] .s .bub,html[data-theme="dark"] .s .fc,
+html[data-theme="dark"] .s [style*="background:var(--cream)"],html[data-theme="dark"] .s [style*="background:var(--paper)"]{color:var(--dk-t)}
+html[data-theme="dark"] .s .peach .uz,html[data-theme="dark"] .s .mint .uz,html[data-theme="dark"] .s .skyb .uz,html[data-theme="dark"] .s .butter .uz,html[data-theme="dark"] .s .rose .uz,
+html[data-theme="dark"] .s .card .uz,html[data-theme="dark"] .s .qt{color:#7FDCDE}
+html[data-theme="dark"] .s .qt.e,html[data-theme="dark"] .s .en,html[data-theme="dark"] .s .enb{color:var(--dk-t)}
+html[data-theme="dark"] .s .cw{color:#8DB4FF}html[data-theme="dark"] .s .ca{color:#FF9D6B}html[data-theme="dark"] .s .cn{color:#FF8080}html[data-theme="dark"] .s .cg{color:#6FD69B}
+html[data-theme="dark"] .s .walltitle{color:#FFB37A}
+html[data-theme="dark"] .s .peach .eb,html[data-theme="dark"] .s .mint .eb,html[data-theme="dark"] .s .skyb .eb,html[data-theme="dark"] .s .butter .eb,html[data-theme="dark"] .s .rose .eb,html[data-theme="dark"] .s .card .eb{color:#FFB37A}
+html[data-theme="dark"] .pmine{background:var(--yellow);color:var(--ink)}
+/* boxes keep a soft edge so they don't melt into the page */
+html[data-theme="dark"] .s .card,html[data-theme="dark"] .s .bub,html[data-theme="dark"] .s .fc{box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+html[data-theme="dark"] .s .huge,html[data-theme="dark"] .s .hl{color:#FFA06E}
+html[data-theme="dark"] .s .who{color:#8DB4FF}
+html[data-theme="dark"] .s .src span{color:var(--dk-m)}
+.chal .eb{color:var(--yellow)}
+html[data-theme="dark"] .ans.on{background:var(--dk-mint);border-color:#2E7D55;color:#B9F0D0}
+html[data-theme="dark"] .ans.bad.on{background:var(--dk-rose);border-color:#9B3A4A;color:#FFC9D0}
+html[data-theme="dark"] .s .wt{background:var(--dk-sky);color:#A9C8FF;box-shadow:0 8px 0 #0E1C30}

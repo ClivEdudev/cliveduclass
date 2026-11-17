@@ -120,9 +120,16 @@ html[data-theme="dark"] .btn,html[data-theme="dark"] .o2{color:#12263A}
 .solo .chips{display:flex;flex-wrap:wrap;gap:8px}
 .solo .chips button{font-weight:800;font-size:15px;padding:9px 13px;border-radius:12px;border:2px solid var(--line);background:#fff;text-align:left}
 .solo .chips button small{display:block;font-weight:600;font-size:12px;color:var(--sub)}
-.solo .chips button[aria-pressed="true"]{border-color:var(--ink);background:#FFF6D6}
+.solo .chips button{transition:background .15s,color .15s,border-color .15s,transform .1s}
+.solo .chips button:active{transform:scale(.96)}
+/* the chosen one is unmistakable: filled dark, white text, a tick */
+html body .solo .chips button[aria-pressed="true"],html body .seg input:checked + span{border-color:#12263A!important;background:#12263A!important;color:#fff!important;box-shadow:0 4px 12px rgba(18,38,58,.25)}
+html body .solo .chips button[aria-pressed="true"] small,html body .seg input:checked + span small{color:#FFC93C!important}
+html body .solo .chips button[aria-pressed="true"]::before,html body .seg input:checked + span b::before{content:"✓ ";color:#FFC93C}
 html[data-theme="dark"] .solo .chips button{background:#1B2C3D}
-html[data-theme="dark"] .solo .chips button[aria-pressed="true"]{background:#3A3215;color:#fff}
+html[data-theme="dark"] body .solo .chips button[aria-pressed="true"],html[data-theme="dark"] .seg input:checked + span{background:#FFC93C!important;border-color:#FFC93C!important;color:#12263A!important}
+html[data-theme="dark"] body .solo .chips button[aria-pressed="true"] small,html[data-theme="dark"] .seg input:checked + span small{color:#12263A!important}
+html[data-theme="dark"] body .solo .chips button[aria-pressed="true"]::before,html[data-theme="dark"] body .seg input:checked + span b::before{color:#12263A}
 .or{display:flex;align-items:center;gap:10px;color:var(--sub);font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase}
 .or::before,.or::after{content:"";flex:1;height:2px;background:var(--line)}
 .opt.ok{outline:5px solid var(--good);outline-offset:-5px}
@@ -181,8 +188,8 @@ function joinForm(err) {
       <input class="f" id="code" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="6" placeholder="ABCDE1" value="${esc(qcode)}" aria-label="Game code"></div>
     <div class="step"><b><span class="n">2</span>How do you play? <span class="uz">· Qanday o‘ynaysiz?</span></b>
       <div class="seg">
-        <label><input type="radio" name="type" value="solo" ${last.type !== "team" ? "checked" : ""}><span>Just me<small>my own phone · yakka</small></span></label>
-        <label><input type="radio" name="type" value="team" ${last.type === "team" ? "checked" : ""}><span>Team<small>one phone for the team · jamoa</small></span></label>
+        <label><input type="radio" name="type" value="solo" ${last.type !== "team" ? "checked" : ""}><span><b>Just me</b><small>my own phone · yakka</small></span></label>
+        <label><input type="radio" name="type" value="team" ${last.type === "team" ? "checked" : ""}><span><b>Team</b><small>one phone for the team · jamoa</small></span></label>
       </div></div>
     <div class="step"><b><span class="n">3</span><span id="nameLbl">Team name</span> <span class="uz" id="nameUz">· Jamoa nomi</span></b>
       <input class="f" id="name" maxlength="18" autocomplete="off" value="${esc(last.name || "")}" aria-label="Name"></div>
