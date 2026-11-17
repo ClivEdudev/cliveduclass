@@ -4,7 +4,7 @@
 (function () {
   "use strict";
   const KEY = "clv-settings";
-  const DEF = { theme: "light", bright: 100, size: 100, reading: false, calm: false, uz: true, sound: true };
+  const DEF = { theme: "light", style: "classic", bright: 100, size: 100, reading: false, calm: false, uz: true, sound: true };
   const root = document.documentElement;
   const load = () => { try { return Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { return Object.assign({}, DEF); } };
   const keep = s => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} };
@@ -20,6 +20,12 @@
     root.classList.toggle("clv-nouz", !S.uz);
     root.classList.toggle("clv-mute", !S.sound);
     root.style.setProperty("--clv-scale", String((S.size || 100) / 100));
+    /* Modern style: its own stylesheet, loaded only when chosen */
+    const modern = S.style === "modern";
+    root.classList.toggle("clv-modern", modern);
+    if (modern && !document.getElementById("clvModern") && document.head) {
+      const l = document.createElement("link"); l.id = "clvModern"; l.rel = "stylesheet"; l.href = "/lessons/modern.css"; document.head.appendChild(l);
+    }
     const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = dark ? "#0E1A26" : "#FFFFFF";
     const dim = document.getElementById("clvDim");
     if (dim) dim.style.opacity = String(Math.max(0, Math.min(0.6, 1 - (S.bright || 100) / 100)));
@@ -70,7 +76,13 @@ html[data-theme="dark"] .clvsheet{--b:#13202D;--f:#EAF0F5;--s:#A9B8C7;--l:#2B3E5
 .clvacc p{margin:0;flex:1;min-width:0}
 .clvacc p small{display:block;color:var(--s)}
 .clvsheet button:focus-visible,.clvsheet input:focus-visible{outline:3px solid #1F5FD1;outline-offset:2px}
-.clvgear{cursor:pointer}`;
+.clvgear{cursor:pointer}
+.clvfaces{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.clvfaces button{padding:0;border:3px solid transparent;border-radius:50%;background:none;cursor:pointer;aspect-ratio:1;overflow:hidden;transition:transform .15s}
+.clvfaces button:hover{transform:scale(1.06)}
+.clvfaces button[aria-pressed="true"]{border-color:#1C8F50;box-shadow:0 0 0 3px rgba(28,143,80,.3)}
+.clvfaces img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
+@media (max-width:380px){.clvfaces{grid-template-columns:repeat(4,1fr)}}`;
 
   function mount() {
     if (!document.getElementById("clvSetCss")) { const st = document.createElement("style"); st.id = "clvSetCss"; st.textContent = CSS; document.head.appendChild(st); }
@@ -86,12 +98,36 @@ html[data-theme="dark"] .clvsheet{--b:#13202D;--f:#EAF0F5;--s:#A9B8C7;--l:#2B3E5
     if (!A || !A.ready) return `<div class="clvgrp"><b>My account · Hisobim</b><div class="clvacc"><span class="av">\u{1F464}</span><p>Sign in with Telegram is coming soon.<small>Then your points and progress are saved on every device.</small></p></div></div>`;
     return A.panelHTML();
   }
+  /* profile pictures: realistic faces, all AI-generated (see /avatars/LICENSE.txt) */
+  const FACES = { g: Array.from({ length: 12 }, (_, i) => "g" + String(i + 1).padStart(2, "0")), b: Array.from({ length: 12 }, (_, i) => "b" + String(i + 1).padStart(2, "0")) };
+  let faceTab = null;
+  const myFace = () => { const A = window.CLV_ACCOUNT, u = A && A.user; const v = (u && u.avatar) || (function () { try { return JSON.parse(localStorage.getItem("clv-avatar") || "null"); } catch (e) { return null; } })() || ""; return /^[gb]\d\d$/.test(v) ? v : ""; };
+  function faces() {
+    const cur = myFace(), tab = faceTab || (cur ? cur[0] : "g");
+    return `<div class="clvgrp" data-faces><b>Profile picture · Rasmingiz</b>
+      <div class="clvrow"><span>${L("Choose your picture", "Rasmingizni tanlang")}</span>${`<div class="clvseg" role="group"><button data-ftab="g" aria-pressed="${tab === "g"}">Girls · Qizlar</button><button data-ftab="b" aria-pressed="${tab === "b"}">Boys · O‘g‘illar</button></div>`}</div>
+      <div class="clvfaces">${FACES[tab].map(id => `<button data-av="${id}" aria-pressed="${cur === id}" aria-label="Picture ${id}"><img src="/avatars/${id}.webp" alt="" loading="lazy" width="64" height="64"></button>`).join("")}</div>
+      ${cur ? `<div class="clvbtm"><button data-av="">No picture · Rasmsiz</button></div>` : ""}</div>`;
+  }
+  async function pickFace(id) {
+    try { id ? localStorage.setItem("clv-avatar", JSON.stringify(id)) : localStorage.removeItem("clv-avatar"); } catch (e) {}
+    const A = window.CLV_ACCOUNT;
+    if (A && A.user) {
+      A.setUser(Object.assign({}, A.user, { avatar: id }));
+      try { const j = await A.api("/profile", { body: { avatar: id } }); if (j && j.user) A.setUser(j.user); } catch (e) {}
+    }
+    const f = box && box.querySelector("[data-faces]"); if (f) f.outerHTML = faces();
+    paintAccount();
+    try { window.dispatchEvent(new CustomEvent("clv-avatar", { detail: id })); } catch (e) {}
+  }
   function html() {
     return `<div class="clvsheet" role="dialog" aria-modal="true" aria-label="Settings">
       <button class="clvgrab" data-close aria-label="Close settings"></button>
       <h2>⚙️ Settings <small>Sozlamalar</small><span class="clvauto" aria-live="polite">✓ Saved automatically · Avtomatik saqlanadi</span></h2>
       <div data-accslot>${account()}</div>
+      ${faces()}
       <div class="clvgrp"><b>Look · Ko‘rinish</b>
+        <div class="clvrow"><span>${L("Style", "Uslub: klassik yoki zamonaviy, harakatli")}</span>${seg("style", [["classic", "Classic"], ["modern", "✨ Modern"]])}</div>
         <div class="clvrow"><span>${L("Theme", "Mavzu")}</span>${seg("theme", [["auto", "Auto"], ["light", "☀️ Light"], ["dark", "\u{1F319} Dark"]])}</div>
         <div class="clvrow"><span>${L("Brightness", "Yorqinlik")}</span><input class="clvrange" type="range" min="40" max="100" step="5" data-r="bright" value="${S.bright}" aria-label="Brightness"><span class="clvval" data-rv="bright">${S.bright}%</span></div>
         <div class="clvrow"><span>${L("Text size", "Matn o‘lchami")}</span><input class="clvrange" type="range" min="85" max="150" step="5" data-r="size" value="${S.size}" aria-label="Text size"><span class="clvval" data-rv="size">${S.size}%</span></div>
@@ -129,6 +165,8 @@ html[data-theme="dark"] .clvsheet{--b:#13202D;--f:#EAF0F5;--s:#A9B8C7;--l:#2B3E5
         if (e.target === box) return close();
         const b = e.target.closest("button"); if (!b) return;
         if (b.dataset.close != null) return close();
+        if (b.dataset.ftab) { faceTab = b.dataset.ftab; const f = box.querySelector("[data-faces]"); if (f) f.outerHTML = faces(); return; }
+        if (b.dataset.av != null) { pickFace(b.dataset.av); return; }
         if (b.dataset.k) { if (S[b.dataset.k] === b.dataset.v) return; S[b.dataset.k] = b.dataset.v; }
         else if (b.dataset.sw) { S[b.dataset.sw] = !S[b.dataset.sw]; }
         else if (b.dataset.reset != null) { S = Object.assign({}, DEF); }

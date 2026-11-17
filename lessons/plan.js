@@ -80,5 +80,18 @@ window.PLAN = {
   P.lesson = n => P.all.find(l => l.n === n);
   P.fmt = d => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
   P.isTeacher = () => { try { return localStorage.getItem("clv-teacher") === "1"; } catch (e) { return false; } };
+  /* Lessons the teacher opened early from the Telegram bot. Cached on the phone so the page
+     draws at once, then checked with the server; if it changed, the page is told ("clv-open"). */
+  let forced = []; try { forced = JSON.parse(localStorage.getItem("clv-open") || "[]"); } catch (e) {}
+  P.isForced = k => k != null && forced.includes(String(k));
+  if (typeof fetch === "function" && typeof location !== "undefined" && /^https?:/.test(location.protocol)) {
+    fetch("/api/open", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => {
+      if (!j || !Array.isArray(j.open)) return;
+      const next = j.open.map(String).sort(), was = forced.slice().sort();
+      if (JSON.stringify(next) === JSON.stringify(was)) return;
+      forced = next; try { localStorage.setItem("clv-open", JSON.stringify(next)); } catch (e) {}
+      try { window.dispatchEvent(new CustomEvent("clv-open", { detail: next })); } catch (e) {}
+    }).catch(() => {});
+  }
   P.points = () => { try { return JSON.parse(localStorage.getItem("clv-points") || "{}"); } catch (e) { return {}; } };
 })(window.PLAN);

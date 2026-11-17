@@ -37,6 +37,11 @@ h1,h2,h3,p{margin:0}
 .game b{display:block;font-size:19px}
 .game small{display:block;color:#BFD8D5;font-size:14px}
 .game .go{font-weight:800;color:var(--yel);white-space:nowrap}
+.game.solo{background:var(--card);color:var(--ink);border:2px solid var(--line);padding:12px 18px}
+.game.solo .ic{background:var(--yelsoft);width:42px;height:42px;font-size:21px}
+.game.solo small{color:var(--sub)}
+.game.solo .go{color:var(--blue)}
+html[data-theme="dark"] .game.solo{background:var(--card)!important;color:var(--ink)}
 .game.live{background:var(--green)}
 .game.live .ic{background:#fff}
 .game.live small{color:#E3F5EA}
@@ -105,12 +110,13 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
   const rev = P.revision, revDate = P.parse(rev.date);
   if (rev.openNow || P.isOpen(revDate)) items.push({ n: 0, title: rev.title, focus: "sentences · to be · questions · commands · may · must · have to", date: revDate, href: rev.path, key: "rev" });
   [[P.starter, "New group"], [P.extras, "Vocabulary"]].forEach(([list, label]) =>
-    (list || []).forEach(s => { const d = P.parse(s.date); if (s.openNow || P.isOpen(d, s.openHour))
+    (list || []).forEach(s => { const d = P.parse(s.date); if (s.openNow || P.isForced(s.key) || P.isOpen(d, s.openHour))
       items.push({ n: 0, group: s.group || label, title: s.title, focus: s.focus, date: d, href: s.path, key: s.key, pri: s.pri || 0 }); }));
-  P.all.filter(l => l.ready && ((P.openNowLessons || []).includes(l.n) || P.isOpen(l.date))).forEach(l => items.push({ n: l.n, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: String(l.n) }));
+  P.all.filter(l => l.ready && ((P.openNowLessons || []).includes(l.n) || P.isForced(l.n) || P.isOpen(l.date))).forEach(l => items.push({ n: l.n, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: String(l.n) }));
   items.sort((a, b) => (b.date - a.date) || ((b.pri || 0) - (a.pri || 0)));
   const newest = items[0];
-  const upcoming = P.all.find(l => !P.isOpen(l.date) && !(P.openNowLessons || []).includes(l.n));
+  const upcoming = P.all.find(l => !P.isOpen(l.date) && !(P.openNowLessons || []).includes(l.n) && !P.isForced(l.n));
+  addEventListener("clv-open", () => location.reload());          /* the teacher opened a lesson from Telegram */
   const isToday = it => it && P.key(it.date) === P.key(new Date());
 
   let feature = "";
@@ -138,13 +144,15 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
       <p class="uz">Har bir dars shu yerda. Takrorlang va ball yig‘ing!</p></div>
     <div id="signBox"></div>
     <div id="liveBanner"><a class="game" href="play/"><span class="ic" aria-hidden="true">🎮</span><span class="t"><b>Join the class game</b><small>Get the code from the board · Kodni doskadan oling</small></span><span class="go">Join →</span></a></div>
+    <a class="game solo" href="play/?solo=1"><span class="ic" aria-hidden="true">\u{1F9D1}\u200D\u{1F393}</span><span class="t"><b>Play by yourself</b><small>Quiz, word order, vocabulary · any time · Yakka o‘ynash</small></span><span class="go">Play →</span></a>
     ${feature}
     <section class="sec"><h2>Revise my lessons</h2><p>${items.length} open · newest first · Darslarni takrorlang</p><div class="grid">${cards}</div></section>
     <p class="foot-link"><a href="teacher/">Teacher</a></p>`;
   const acc = () => {
     const el = document.getElementById("accBtn"), A = window.CLV_ACCOUNT; if (!el) return;
     const u = A && A.user;
-    el.innerHTML = u ? `<a class="gear" href="me/" style="text-decoration:none">\u{1F464} ${esc(String(u.name || "Me").split(" ")[0])}</a>`
+    const face = u && /^[gb]\d\d$/.test(u.avatar || "") ? `<img src="avatars/${u.avatar}.webp" alt="" style="width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:-6px;margin:-4px 2px -4px -6px">` : "\u{1F464}";
+    el.innerHTML = u ? `<a class="gear" href="me/" style="text-decoration:none">${face} ${esc(String(u.name || "Me").split(" ")[0])}</a>`
       : `<button class="gear tgb" data-signin>✈️ Sign in · Kirish</button>`;
     const box = document.getElementById("signBox");
     if (box) box.innerHTML = u ? "" : `<button class="signcard" data-signin><span class="ic" aria-hidden="true">✈️</span>

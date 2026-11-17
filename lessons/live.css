@@ -193,3 +193,7 @@ body.player .opt{min-height:96px}
 .qlisten{display:flex;align-items:center;gap:clamp(16px,2vw,32px)}
 .qplay{width:clamp(80px,9vw,140px);height:clamp(80px,9vw,140px);border-radius:50%;background:var(--yellow);color:var(--ink);font-size:clamp(36px,4.4vw,70px);flex:none;display:grid;place-items:center}
 .qplay.on{background:#fff;box-shadow:0 0 0 10px rgba(255,201,60,.35)}
+/* profile pictures on the board */
+.face{width:1.5em;height:1.5em;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:.4em;flex:none;border:2px solid rgba(255,255,255,.6)}
+.chip .face{width:30px;height:30px;margin:-4px 2px -4px -8px}
+.pod .face{width:64px;height:64px;display:block;margin:0 auto 6px}

@@ -116,6 +116,24 @@ html[data-theme="dark"] .netbar{background:#3A2E10;color:#fff}
 html[data-theme="dark"] .err{background:#3A1A1F;color:#FFC9CF}
 html[data-theme="dark"] .btn,html[data-theme="dark"] .o2{color:#12263A}
 .app{zoom:var(--clv-scale,1)}
+/* solo play */
+.solo .chips{display:flex;flex-wrap:wrap;gap:8px}
+.solo .chips button{font-weight:800;font-size:15px;padding:9px 13px;border-radius:12px;border:2px solid var(--line);background:#fff;text-align:left}
+.solo .chips button small{display:block;font-weight:600;font-size:12px;color:var(--sub)}
+.solo .chips button[aria-pressed="true"]{border-color:var(--ink);background:#FFF6D6}
+html[data-theme="dark"] .solo .chips button{background:#1B2C3D}
+html[data-theme="dark"] .solo .chips button[aria-pressed="true"]{background:#3A3215;color:#fff}
+.or{display:flex;align-items:center;gap:10px;color:var(--sub);font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.or::before,.or::after{content:"";flex:1;height:2px;background:var(--line)}
+.opt.ok{outline:5px solid var(--good);outline-offset:-5px}
+.opt.dim{opacity:.35}
+.soloscore{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.soloscore div{background:var(--pg);border-radius:14px;padding:10px 6px;font-weight:800;font-size:22px}
+.soloscore small{display:block;font-size:12px;color:var(--sub);font-weight:700}
+.qplay{width:64px;height:64px;border-radius:50%;background:var(--o1);color:#fff;font-size:28px;flex:none}
+.qplay.on{animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.myface{width:30px;height:30px;border-radius:50%;object-fit:cover;flex:none}
 .gear{font-weight:800;font-size:14px;font-family:inherit;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 10px;cursor:pointer}
 </style>
 <script src="../lessons/settings.js"></script>
@@ -124,6 +142,9 @@ html[data-theme="dark"] .btn,html[data-theme="dark"] .o2{color:#12263A}
 <body>
 <main class="app" id="app"></main>
 <script src="../lessons/live-net.js"></script>
+<script src="../lessons/live-sets.js"></script>
+<script src="../lessons/qbank.js"></script>
+<script src="../lessons/live-rounds.js"></script>
 <script>
 (() => {
 "use strict";
@@ -141,7 +162,10 @@ const backLink = (cls, label) => EMBED ? `<button class="${cls}" data-backlesson
 const me = { id: null, name: "", type: "team", room: "" };
 let client = null, st = null, gotAt = 0, lastK = 0, lastKey = "", tick = 0, online = true;
 let choice = null, built = [], pending = null, sentFor = -1, confirmLeave = false;
-let stopWatch = null, rooms = [], waitT = 0;
+let stopWatch = null, rooms = [], waitT = 0, gid = "", removed = false;
+/* my profile picture: from the account when signed in, else the one chosen on this phone */
+const myAv = () => { const u = window.CLV_ACCOUNT && window.CLV_ACCOUNT.user; const a = (u && u.avatar) || load("clv-avatar") || ""; return /^[gb]\d\d$/.test(a) ? a : ""; };
+const faceImg = () => myAv() ? `<img class="myface" src="../avatars/${myAv()}.webp" alt="">` : "";
 
 /* ---------------- join ---------------- */
 function joinForm(err) {
@@ -163,7 +187,9 @@ function joinForm(err) {
     <div class="step"><b><span class="n">3</span><span id="nameLbl">Team name</span> <span class="uz" id="nameUz">· Jamoa nomi</span></b>
       <input class="f" id="name" maxlength="18" autocomplete="off" value="${esc(last.name || "")}" aria-label="Name"></div>
     <button class="btn" id="go">Join · Qo‘shilish</button>
-  </div>`;
+  </div>
+  <div class="or">or · yoki</div>
+  ${soloCard()}`;
   const setLbl = () => {
     const team = document.querySelector("input[name=type]:checked").value === "team";
     $("#nameLbl").textContent = team ? "Team name" : "Your name";
@@ -197,7 +223,7 @@ async function enter(sess, quiet) {
   keep("clv-live-" + me.room, { id: me.id });
   saveSession();
   setCodeInUrl(me.room);
-  st = null; lastK = 0; lastKey = ""; sentFor = -1; pending = null;
+  st = null; lastK = 0; lastKey = ""; sentFor = -1; pending = null; gid = ""; removed = false;
   app.innerHTML = `${top()}<div class="card mid"><p class="big">${quiet ? "Coming back to your game…" : "Connecting…"}</p><p class="uz">${quiet ? "O‘yiningizga qaytilmoqda…" : "Ulanmoqda…"}</p></div>`;
   try {
     client = await NET.join(me.room, onMsg, s => { online = s === "online"; drawNet(); if (online) sendJoin(); });
@@ -226,17 +252,21 @@ function leave() {
   setCodeInUrl("");
   joinForm();
 }
-function sendJoin() { if (client && me.room) client.publish(NET.topic(me.room, "join"), { id: me.id, name: me.name, type: me.type }); }
+function sendJoin() { if (client && me.room && !removed) client.publish(NET.topic(me.room, "join"), { id: me.id, name: me.name, type: me.type, av: me.type === "solo" ? myAv() : "" }); }
 
 function onMsg(topic, payload) {
   if (!payload) return;
   let s; try { s = JSON.parse(payload); } catch (e) { return; }
   /* the same message can arrive from more than one server: keep only the newest */
   if (s.k != null) { if (s.k < lastK) return; lastK = s.k; }
+  /* BUG FIX: "Play again" starts the questions from 1 again, so forget answers from the last game */
+  if (s.g && s.g !== gid) { gid = s.g; sentFor = -1; pending = null; lastSent = null; lastKey = ""; }
+  removed = !!(s.out && s.out.includes(me.id));
   st = s; gotAt = Date.now(); clearTimeout(waitT);
   if (st.phase === "closed") { drop(SESSION); }
   else saveSession();
-  if (st.players && st.phase !== "closed" && !st.players.some(p => p[0] === me.id)) sendJoin();
+  if (removed) drop(SESSION);
+  else if (st.players && st.phase !== "closed" && !st.players.some(p => p[0] === me.id)) sendJoin();
   resendIfLost();
   update();
 }
@@ -259,7 +289,7 @@ let lastScore = 0;
 function top() {
   const sc = st && st.players ? myScore().score : lastScore; lastScore = sc;
   return `<div class="top"><span class="dot ${online ? "" : "off"}" title="${online ? "Online" : "Reconnecting"}"></span>
-    <span class="who">${me.type === "team" ? "Team" : "Me"} · <b>${esc(me.name)}</b></span>
+    ${me.type === "solo" ? faceImg() : ""}<span class="who">${me.type === "team" ? "Team" : "Me"} · <b>${esc(me.name)}</b></span>
     <button class="gear" data-settings aria-label="Settings">⚙️</button><span class="score">⭐ ${sc}</span></div>
     <div id="net">${online ? "" : netMsg()}</div>`;
 }
@@ -269,12 +299,12 @@ function answeredNow() { return !!st && ((st.answered || []).includes(me.id) || 
 function screenKey() {
   if (!st) return "";
   const ack = (st.answered || []).includes(me.id);
-  return [st.phase, st.qi, st.q && st.q.clue || "", st.phase === "question" ? (answeredNow() ? (ack ? "ack" : "sent") : "") : "", st.phase === "lobby" ? st.n : "", confirmLeave].join("|");
+  return [gid, removed, st.phase, st.qi, st.phase === "question" ? (answeredNow() ? (ack ? "ack" : "sent") : "") : "", st.phase === "lobby" ? st.n : "", confirmLeave].join("|");
 }
 function update() {
   const k = screenKey();
   if (k === lastKey) return;
-  if (st.phase === "question" && lastKey.split("|")[1] !== String(st.qi)) { choice = null; built = []; }
+  if (st.phase === "question" && lastKey.split("|").slice(0, 4).join("|") !== k.split("|").slice(0, 4).join("|")) { choice = null; built = []; }
   lastKey = k;
   render();
 }
@@ -291,7 +321,7 @@ function remember() {
     if (st.phase === "reveal" && !st.practice && st.q && st.q.opts && lastSent && lastSent.qi === st.qi && lastSent.room === me.room && lastSent.data.choice != null) {
       const g = st.gained ? st.gained[me.id] : undefined;
       if (g === 0 && st.answerText) {
-        const all = load("clv-mistakes") || [], id = "g:" + me.room + ":" + today() + ":" + st.qi;
+        const all = load("clv-mistakes") || [], id = "g:" + me.room + ":" + (gid || today()) + ":" + st.qi;
         if (!all.some(x => x.id === id)) {
           all.push({ id, l: "game", lt: "Live game", t: Date.now(), q: st.q.text || "", a: st.q.opts[lastSent.data.choice] || "", c: st.answerText, o: st.q.opts.slice(), ci: st.q.opts.indexOf(st.answerText) });
           keep("clv-mistakes", all.slice(-200));
@@ -299,7 +329,7 @@ function remember() {
       }
     }
     if (st.phase === "end" && st.players && st.players.length) {
-      const { pos, of: n, score } = myScore(), id = me.room + ":" + today() + ":" + (st.total || 0);
+      const { pos, of: n, score } = myScore(), id = me.room + ":" + (gid || today()) + ":" + (st.total || 0);
       const all = load("clv-games") || [];
       if (pos > 0 && !all.some(x => x.id === id)) { all.push({ id, t: Date.now(), room: me.room, score, pos, of: n, name: me.name }); keep("clv-games", all.slice(-100)); }
     }
@@ -316,7 +346,8 @@ function render() {
   }
   let body = "";
   const q = st.q, num = st.num != null ? st.num : st.qi + 1, of = st.of || st.total;
-  if (st.phase === "closed") body = `<div class="card mid"><p class="big">The game has ended.</p><p class="uz">O‘yin tugadi.</p>${backLink("btn", "Back to my lessons")}<button class="link" data-leave>Join another game</button></div>`;
+  if (removed) body = `<div class="card mid"><p class="big">The teacher removed you from this game.</p><p class="uz">O‘qituvchi sizni o‘yindan chiqardi.</p><button class="btn" data-leave>Join another game · Boshqa o‘yin</button></div>`;
+  else if (st.phase === "closed") body = `<div class="card mid"><p class="big">The game has ended.</p><p class="uz">O‘yin tugadi.</p>${backLink("btn", "Back to my lessons")}<button class="link" data-leave>Join another game</button></div>`;
   else if (st.phase === "lobby") body = `<div class="card mid"><div class="sent"><div class="tick">✓</div></div><p class="big">You’re in!</p><p class="uz">Siz o‘yindasiz!</p>
       <p class="lead">Wait for the teacher to start. <span class="muted">${st.n || 0} joined</span></p>${rulesHTML()}</div>`;
   else if (st.phase === "question") {
@@ -332,7 +363,7 @@ function render() {
       else if (q.type === "tf") body = `${head}${howHTML}<p class="qtext">${esc(q.text)}</p><div class="opts two">
           <button class="opt o3" data-c="0"><span class="mk">✓</span><span>Right<br><small>To‘g‘ri</small></span></button>
           <button class="opt o0" data-c="1"><span class="mk">✗</span><span>Wrong<br><small>Noto‘g‘ri</small></span></button></div>`;
-      else body = `${head}${howHTML}${q.type === "clue" ? `<p class="qtext"><small>Clue · Ishora</small>${esc(q.clue)}</p>` : `<p class="qtext">${esc(q.text)}</p>`}
+      else body = `${head}${howHTML}<p class="qtext">${esc(q.text)}</p>
           <div class="opts">${(q.opts || []).map((t, i) => `<button class="opt o${i}" data-c="${i}">${shape(i)}<span>${esc(t)}</span></button>`).join("")}</div>`;
     }
   } else if (st.phase === "reveal" || st.phase === "board") {
@@ -349,7 +380,7 @@ function render() {
     body = `<div class="card mid ${pos === 1 ? "good" : ""}"><p class="muted" style="font-weight:800">Final result · Natija</p><p class="big">${pos === 1 ? "You won! 🏆" : `Place ${pos} of ${n}`}</p><p class="huge">${score}</p>
       ${backLink("btn", "Back to my lessons")}<button class="link" data-leave>Join another game</button></div>`;
   }
-  const leaveLink = st.phase === "lobby" || st.phase === "question" || st.phase === "board" ? `<button class="link" data-askleave>Leave game · Chiqish</button>` : "";
+  const leaveLink = removed ? "" : st.phase === "lobby" || st.phase === "question" || st.phase === "board" ? `<button class="link" data-askleave>Leave game · Chiqish</button>` : "";
   app.innerHTML = top() + body + leaveLink;
   if (st.phase === "question" && $("#pt")) {
     const paint = () => { const el = $("#pt"); if (!el) return clearInterval(tick); const left = Math.max(0, Math.ceil((st.left || 0) - (Date.now() - gotAt) / 1000)); el.textContent = left; el.classList.toggle("low", left <= 5); };
@@ -381,17 +412,127 @@ document.addEventListener("click", e => {
   if (b.dataset.leave != null) return leave();
   if (b.dataset.askleave != null) { confirmLeave = true; lastKey = ""; return update(); }
   if (b.dataset.stay != null) { confirmLeave = false; lastKey = ""; return update(); }
-  if (!st) return;
+  if (!st || so) return;
   if (b.dataset.c != null) send({ choice: +b.dataset.c });
   else if (b.dataset.in != null) { built.push(+b.dataset.in); drawBuild(); }
   else if (b.dataset.out != null) { built.splice(+b.dataset.out, 1); drawBuild(); }
   else if (b.id === "sendBuild") send({ order: built.slice() });
 });
 
+/* ---------------- solo: play by yourself, no teacher needed ---------------- */
+const R = window.LiveRounds;
+const SOLO_T = 20;
+let so = null;
+const soloPref = () => Object.assign({ set: "all", type: "mix", n: 10 }, load("clv-solo") || {});
+function soloCard() {
+  const P = soloPref(), sets = R.sets();
+  const ch = (k, v, label, sub) => `<button data-solo-k="${k}" data-solo-v="${esc(v)}" aria-pressed="${String(P[k]) === String(v)}">${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ""}</button>`;
+  return `<div class="card solo"><h2 class="t" style="font-size:22px">Play by yourself<br><span class="uz" style="font-size:15px">Yakka o‘ynash · o‘qituvchisiz, istalgan vaqtda</span></h2>
+    <div class="step"><b>Game · O‘yin</b><div class="chips">${R.TYPES.map(t => ch("type", t.id, t.name, t.uz)).join("")}</div></div>
+    <div class="step" ${P.type === "vocab" ? "hidden" : ""}><b>Lessons · Darslar</b><div class="chips">${sets.map(x => ch("set", x.id, x.title)).join("")}</div></div>
+    <div class="step"><b>Questions · Savollar</b><div class="chips">${[10, 20, 30].map(n => ch("n", n, String(n))).join("")}</div></div>
+    <button class="btn" data-solo-go>Start · Boshlash</button></div>`;
+}
+async function soloStart() {
+  const P = soloPref(), set = R.sets().find(x => x.id === P.set) || R.sets()[0];
+  if (stopWatch) { stopWatch(); stopWatch = null; }
+  app.innerHTML = `<div class="card mid"><p class="big">Getting questions…</p><p class="uz">Savollar tayyorlanmoqda…</p></div>`;
+  const rounds = await R.build({ set, type: P.type, rounds: +P.n, base: "../" });
+  if (!rounds.length) { joinForm("No questions for that choice. Choose another game. · Boshqasini tanlang."); return; }
+  so = { rounds, qi: -1, score: 0, right: 0, set: P.type === "vocab" ? "Vocabulary" : set.title, type: P.type, id: "solo:" + Date.now().toString(36), built: [] };
+  soloNext();
+}
+const QAU = new Audio();
+function soloPlay() { const q = so && so.q; if (!q || !q.audio) return; QAU.src = q.audio; QAU.currentTime = 0; const b = $("#qplay"); if (b) b.classList.add("on"); QAU.onended = () => { const x = $("#qplay"); if (x) x.classList.remove("on"); }; QAU.play().catch(() => { if (b) b.classList.remove("on"); }); }
+function soloNext() {
+  clearInterval(tick);
+  so.qi++;
+  if (so.qi >= so.rounds.length) return soloEnd();
+  so.q = so.rounds[so.qi]; so.built = []; so.answered = false; so.at = Date.now();
+  so.limit = so.q.type === "build" ? SOLO_T + 10 : so.q.audio ? SOLO_T + Math.ceil((so.q.dur || 3) * 2) : SOLO_T;
+  soloDraw();
+  if (so.q.audio) { setTimeout(soloPlay, 300); }
+  tick = setInterval(() => {
+    const left = Math.max(0, Math.ceil(so.limit - (Date.now() - so.at) / 1000)), el = $("#pt");
+    if (el) { el.textContent = left; el.classList.toggle("low", left <= 5); }
+    if (left <= 0 && !so.answered) soloAnswer(null);
+  }, 250);
+}
+function soloTop() {
+  return `<div class="top">${faceImg()}<span class="who">Solo · <b>${esc(so.set)}</b></span><button class="gear" data-settings aria-label="Settings">⚙️</button><span class="score">⭐ ${so.score}</span></div>`;
+}
+function soloDraw() {
+  const q = so.q, how = R.how(q);
+  const head = `<div class="qhead"><span class="num">${R.LABEL[q.type] || "Quiz"} · ${so.qi + 1} of ${so.rounds.length}</span><span class="timer" id="pt">${so.limit}</span></div><p class="how">${esc(how[0])}<small>${esc(how[1])}</small></p>`;
+  let body;
+  if (q.type === "build") body = `<div class="slots" id="slots"></div><div class="pool" id="pool"></div><button class="btn" id="sendBuild" disabled>Send · Yuborish</button>`;
+  else if (q.type === "tf") body = `<p class="qtext">${esc(q.text)}</p><div class="opts two"><button class="opt o3" data-sc="0"><span class="mk">✓</span><span>Right<br><small>To‘g‘ri</small></span></button><button class="opt o0" data-sc="1"><span class="mk">✗</span><span>Wrong<br><small>Noto‘g‘ri</small></span></button></div>`;
+  else body = `${q.audio ? `<div class="row" style="display:flex;gap:12px;align-items:center"><button class="qplay" id="qplay" data-solo-play aria-label="Play again">🔊</button><span class="muted">Tap to hear it again · Yana eshitish</span></div>` : ""}<p class="qtext">${esc(q.text)}</p>
+      <div class="opts">${q.opts.map((t, i) => `<button class="opt o${i}" data-sc="${i}">${shape(i)}<span>${esc(t)}</span></button>`).join("")}</div>`;
+  app.innerHTML = soloTop() + head + body + `<button class="link" data-solo-quit>Stop · To‘xtatish</button>`;
+  if (q.type === "build") soloBuild();
+}
+function soloBuild() {
+  const q = so.q;
+  $("#slots").innerHTML = so.built.length ? so.built.map((k, i) => `<button class="w on" data-sout="${i}">${esc(q.words[k])}</button>`).join("") + `<span class="w end">${esc(q.end)}</span>` : `<span class="muted">Tap the words below… · Pastdagi so‘zlarni bosing…</span>`;
+  $("#pool").innerHTML = q.words.map((w, k) => so.built.includes(k) ? "" : `<button class="w" data-sin="${k}">${esc(w)}</button>`).join("");
+  $("#sendBuild").disabled = so.built.length !== q.words.length;
+}
+function soloAnswer(a) {
+  if (!so || so.answered) return;
+  so.answered = true; clearInterval(tick);
+  const q = so.q, t = (Date.now() - so.at) / 1000;
+  const ok = !!a && R.isCorrect(q, a);
+  const pts = ok ? Math.round(1000 * (1 - Math.min(t, so.limit) / so.limit / 2)) : 0;
+  so.score += pts; if (ok) so.right++;
+  if (!ok && q.opts && q.type !== "tf") {                      /* keep the mistake for "Fix my mistakes" on the profile */
+    try {
+      const all = load("clv-mistakes") || [], id = "s:" + so.id + ":" + so.qi;
+      all.push({ id, l: "game", lt: "Solo game", t: Date.now(), q: q.text, a: a && a.choice != null ? q.opts[a.choice] : "", c: R.answerText(q), o: q.opts.slice(), ci: q.correct });
+      keep("clv-mistakes", all.slice(-200));
+    } catch (e) {}
+  }
+  try { navigator.vibrate && navigator.vibrate(ok ? 25 : [40, 40, 40]); } catch (e) {}
+  const last = so.qi + 1 >= so.rounds.length;
+  app.innerHTML = soloTop() + `<div class="card mid ${ok ? "good" : "bad"}"><p class="big">${ok ? "Correct!" : a ? "Not this time" : "Time’s up!"}</p><p class="uz">${ok ? "To‘g‘ri!" : a ? "Bu safar emas" : "Vaqt tugadi!"}</p>
+    ${ok ? `<p class="huge">+${pts}</p>` : `<p class="lead">Answer · Javob: <b>${esc(R.answerText(q))}</b></p>`}
+    <button class="btn" data-solo-next>${last ? "See my result · Natija" : "Next · Keyingisi"} →</button></div>`;
+  const nb = $("[data-solo-next]"); if (nb) nb.focus();
+  if (ok) so.auto = setTimeout(() => { if (so && so.answered) soloNext(); }, 1800);
+}
+function soloEnd() {
+  clearInterval(tick);
+  const n = so.rounds.length, pct = Math.round(so.right / n * 100);
+  try { const all = load("clv-games") || []; all.push({ id: so.id, t: Date.now(), room: "SOLO", solo: true, set: so.set, type: so.type, score: so.score, right: so.right, of: n, pos: 1, name: me.name || "" }); keep("clv-games", all.slice(-100)); } catch (e) {}
+  app.innerHTML = soloTop() + `<div class="card mid ${pct >= 80 ? "good" : ""}"><p class="muted" style="font-weight:800">Your result · Natijangiz</p>
+    <p class="big">${pct >= 90 ? "Excellent! 🏆" : pct >= 70 ? "Well done! 👏" : pct >= 50 ? "Good try! 💪" : "Keep practising! 📚"}</p>
+    <div class="soloscore"><div>${so.score}<small>points · ball</small></div><div>${so.right}/${n}<small>right · to‘g‘ri</small></div><div>${pct}%<small>score</small></div></div>
+    <button class="btn" data-solo-again>Play again · Yana</button><button class="btn sec" data-solo-menu>Choose another game</button>${backLink("link", "Back to my lessons")}</div>`;
+  if (pct >= 70 && window.LiveUI) try { window.LiveUI.confetti(innerWidth / 2, innerHeight / 3, 150); } catch (e) {}
+  so.done = true;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const d = b.dataset;
+  if (d.soloK) { const P = soloPref(); P[d.soloK] = d.soloK === "n" ? +d.soloV : d.soloV; keep("clv-solo", P);
+    const card = b.closest(".solo"); if (card) { const tmp = document.createElement("div"); tmp.innerHTML = soloCard(); card.replaceWith(tmp.firstElementChild); } return; }
+  if (d.soloGo != null) return soloStart();
+  if (!so) return;
+  if (d.soloPlay != null) return soloPlay();
+  if (d.sc != null) return soloAnswer({ choice: +d.sc });
+  if (d.sin != null) { so.built.push(+d.sin); return soloBuild(); }
+  if (d.sout != null) { so.built.splice(+d.sout, 1); return soloBuild(); }
+  if (b.id === "sendBuild" && so.q && so.q.type === "build" && !so.answered) return soloAnswer({ order: so.built.slice() });
+  if (d.soloNext != null) { clearTimeout(so.auto); return soloNext(); }
+  if (d.soloAgain != null) return soloStart();
+  if (d.soloQuit != null || d.soloMenu != null) { clearInterval(tick); clearTimeout(so.auto); QAU.pause(); so = null; return joinForm(); }
+});
+
 /* ---------------- start: go straight back into a game that was interrupted ---------------- */
 const sess = load(SESSION);
 const urlCode = (new URLSearchParams(location.search).get("code") || "").toUpperCase();
-if (sess && Date.now() - sess.at < 3 * 3600000 && (!urlCode || urlCode === sess.code)) enter(sess, true);
+if (new URLSearchParams(location.search).get("solo")) { joinForm(); setTimeout(() => { const c = document.querySelector(".solo"); if (c) c.scrollIntoView({ block: "start" }); }, 50); }
+else if (sess && Date.now() - sess.at < 3 * 3600000 && (!urlCode || urlCode === sess.code)) enter(sess, true);
 else if (urlCode && EMBED && load("clv-live-last") && load("clv-live-last").name) {   /* from a lesson: join straight away with the last name used */
   const last = load("clv-live-last"), prev = load("clv-live-" + urlCode);
   enter({ code: urlCode, name: last.name, type: last.type || "solo", id: prev && prev.id || Math.random().toString(36).slice(2, 10) });

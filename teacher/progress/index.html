@@ -72,6 +72,7 @@ textarea{font:600 17px var(--body);padding:12px;border-radius:14px;border:2px so
 .chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
 .chip button{border:0;background:var(--ink);color:var(--cream);width:26px;height:26px;border-radius:50%;cursor:pointer;font:800 14px var(--body)}
 .hw .f{display:block;margin-top:4px;color:var(--yellow);font-weight:700}
+.face{width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px}
 .hw{border-left:4px solid var(--yellow);padding:6px 10px;background:var(--night);border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
 .hw small{display:block;color:var(--mist);font-weight:700;white-space:normal}
 .det{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px}
@@ -181,7 +182,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,textarea:focus-visible,
       <section class="panel"><h2>Students <small>${r.length} shown</small></h2>
         <div class="seg" id="filter">${[["all", "All"], ["a", "Group A"], ["b", "Group B"], ["none", "No group"]].map(([v, t]) => `<button data-f="${v}" aria-pressed="${filter === v}">${t}</button>`).join("")}</div>
         ${r.length ? `<div class="tbl"><table><thead><tr>${th("name", "Student")}<th>Group</th>${th("points", "⭐ Points")}${th("today", "Today")}${th("lessons", "Lessons")}${th("streak", "\u{1F525} Streak")}${th("open", "To fix")}${th("games", "Games")}${th("lastSeen", "Last seen")}</tr></thead><tbody>
-          ${r.map(s => `<tr class="st ${selected === s.id ? "sel" : ""}" data-id="${esc(s.id)}" tabindex="0"><td class="n"><b>${esc(s.name)}</b>${s.username ? `<small>@${esc(s.username)}</small>` : ""}</td><td>${gtag(s.group)}</td>
+          ${r.map(s => `<tr class="st ${selected === s.id ? "sel" : ""}" data-id="${esc(s.id)}" tabindex="0"><td class="n">${/^[gb]\d\d$/.test(s.avatar || "") ? `<img class="face" src="/avatars/${s.avatar}.webp" alt="">` : ""}<b>${esc(s.name)}</b>${s.username ? `<small>@${esc(s.username)}</small>` : ""}</td><td>${gtag(s.group)}</td>
             <td><b>${s.points}</b></td><td class="${s.today ? "hot" : "dim"}">${s.today ? "+" + s.today : "—"}</td><td>${s.lessons}</td><td>${s.streak || "—"}</td>
             <td class="${s.open >= 5 ? "warn" : ""}">${s.open}</td><td>${s.games}${s.bestGame ? ` <span class="dim">(best ${s.bestGame})</span>` : ""}</td><td class="dim">${ago(s.lastSeen)}</td></tr>`).join("")}
           </tbody></table></div>` : `<p class="empty">No students yet. Ask them to open the website, tap ⚙️ or “Sign in” and choose “Sign in with Telegram”.</p>`}

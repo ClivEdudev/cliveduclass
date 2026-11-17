@@ -1,0 +1,85 @@
+/* "Modern" style (Settings → Style → Modern). Loaded only when chosen; the classic look is the default.
+   Glass cards on a slowly moving colour background, gradient buttons, things rising in as the page opens.
+   "Less animation" in Settings (and the phone's reduce-motion setting) switches the movement off. */
+html.clv-modern{--m1:#6D4CFF;--m2:#16B6C9;--m3:#FFB938;--mglass:rgba(255,255,255,.62);--mglass2:rgba(255,255,255,.82);--medge:rgba(255,255,255,.75);--mshadow:0 12px 34px rgba(30,24,80,.10)}
+html.clv-modern[data-theme="dark"]{--mglass:rgba(20,32,52,.58);--mglass2:rgba(26,40,62,.82);--medge:rgba(255,255,255,.09);--mshadow:0 14px 40px rgba(0,0,0,.35)}
+html.clv-modern body{background:transparent!important;position:relative;isolation:isolate}
+html.clv-modern{background:#EEF0FB}
+html.clv-modern[data-theme="dark"]{background:#0A1020}
+/* the moving colour background */
+html.clv-modern body::before{content:"";position:fixed;inset:-25%;z-index:-1;pointer-events:none;
+  background:radial-gradient(38% 34% at 18% 22%,rgba(109,76,255,.30),transparent 70%),radial-gradient(34% 32% at 82% 18%,rgba(22,182,201,.28),transparent 70%),
+    radial-gradient(40% 36% at 70% 82%,rgba(255,185,56,.26),transparent 70%),radial-gradient(30% 30% at 25% 85%,rgba(255,90,140,.16),transparent 70%);
+  filter:blur(30px);animation:mDrift 26s ease-in-out infinite alternate}
+html.clv-modern[data-theme="dark"] body::before{opacity:.75}
+@keyframes mDrift{0%{transform:translate3d(0,0,0) rotate(0deg) scale(1)}50%{transform:translate3d(4%,-3%,0) rotate(8deg) scale(1.08)}100%{transform:translate3d(-4%,3%,0) rotate(-6deg) scale(1.02)}}
+@keyframes mRise{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes mPop{0%{opacity:0;transform:scale(.86)}70%{transform:scale(1.03)}100%{opacity:1;transform:none}}
+@keyframes mFlow{0%{background-position:0% 50%}100%{background-position:100% 50%}}
+@keyframes mShine{from{transform:translateX(-120%) skewX(-20deg)}to{transform:translateX(220%) skewX(-20deg)}}
+@keyframes mGlow{50%{box-shadow:0 0 0 6px rgba(255,185,56,.18),var(--mshadow)}}
+
+/* ---------- home and profile ---------- */
+html.clv-modern .hello h1{background:linear-gradient(100deg,currentColor 0%,var(--m1) 55%,var(--m2) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.02em}
+html.clv-modern[data-theme="dark"] .hello h1{background-image:linear-gradient(100deg,#fff 0%,#B7A6FF 55%,#7FE6F2 100%)}
+html.clv-modern .wrap > *{animation:mRise .7s cubic-bezier(.2,.8,.2,1) both}
+html.clv-modern .wrap > *:nth-child(2){animation-delay:.06s}html.clv-modern .wrap > *:nth-child(3){animation-delay:.12s}
+html.clv-modern .wrap > *:nth-child(4){animation-delay:.18s}html.clv-modern .wrap > *:nth-child(5){animation-delay:.24s}html.clv-modern .wrap > *:nth-child(n+6){animation-delay:.3s}
+html.clv-modern .card:not(.s *),html.clv-modern .feature,html.clv-modern .empty,html.clv-modern .panel:not(.s *),html.clv-modern .box:not(.s *){
+  background:var(--mglass)!important;-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);
+  border:1px solid var(--medge)!important;box-shadow:var(--mshadow)!important;border-radius:24px;
+  transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,border-color .35s}
+html.clv-modern a.card:hover,html.clv-modern a.card:focus-visible{transform:translateY(-5px);box-shadow:0 20px 44px rgba(60,40,140,.18)!important}
+html.clv-modern .card.new{border:1px solid transparent!important;background:linear-gradient(var(--mglass2),var(--mglass2)) padding-box,linear-gradient(120deg,var(--m3),var(--m1),var(--m2)) border-box!important}
+html.clv-modern .grid > *{animation:mPop .55s cubic-bezier(.2,.8,.2,1) both}
+html.clv-modern .grid > *:nth-child(2){animation-delay:.05s}html.clv-modern .grid > *:nth-child(3){animation-delay:.1s}html.clv-modern .grid > *:nth-child(4){animation-delay:.15s}
+html.clv-modern .grid > *:nth-child(5){animation-delay:.2s}html.clv-modern .grid > *:nth-child(n+6){animation-delay:.25s}
+html.clv-modern .feature{border:1px solid transparent!important;background:linear-gradient(var(--mglass2),var(--mglass2)) padding-box,linear-gradient(120deg,var(--m3),var(--m1),var(--m2),var(--m3)) border-box!important;background-size:100% 100%,300% 300%!important;animation:mRise .7s both,mFlow 8s linear infinite alternate}
+html.clv-modern .game:not(.live){background:linear-gradient(120deg,#1B1F4B,#4B2FB8,#0B6E70,#1B1F4B);background-size:300% 300%;animation:mRise .7s both,mFlow 10s ease-in-out infinite alternate;box-shadow:0 14px 34px rgba(75,47,184,.35)}
+html.clv-modern .game.live{background:linear-gradient(120deg,#0F8A4F,#16B6C9,#0F8A4F);background-size:300% 300%;animation:mFlow 6s ease-in-out infinite alternate}
+html.clv-modern .signcard{background:linear-gradient(120deg,#1C8FD0,#5B5CF0,#16B6C9);background-size:300% 300%;animation:mRise .7s both,mFlow 9s ease-in-out infinite alternate;box-shadow:0 14px 34px rgba(34,120,220,.35)}
+html.clv-modern .pts,html.clv-modern .score{background:linear-gradient(120deg,#1B1F4B,var(--m1))!important;box-shadow:0 6px 18px rgba(109,76,255,.35)}
+/* buttons: gradient with a light sweeping across */
+html.clv-modern .btn:not(.s *),html.clv-modern .clvtg{position:relative;overflow:hidden;background-image:linear-gradient(120deg,#FFD15C,#FFB938,#FF8F4A);background-size:200% 200%;
+  box-shadow:0 10px 24px rgba(255,143,74,.35);transition:transform .2s,box-shadow .2s,background-position .6s}
+html.clv-modern .clvtg{background-image:linear-gradient(120deg,#229ED9,#5B5CF0)}
+html.clv-modern .btn:not(.s *)::after,html.clv-modern .clvtg::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-120%) skewX(-20deg);pointer-events:none}
+html.clv-modern .btn:hover::after,html.clv-modern .clvtg:hover::after,html.clv-modern .btn:focus-visible::after{animation:mShine .8s ease}
+html.clv-modern .btn:hover,html.clv-modern .clvtg:hover{transform:translateY(-2px);background-position:100% 50%}
+html.clv-modern .btn:active,html.clv-modern .clvtg:active{transform:scale(.97)}
+html.clv-modern .btn.sec{background-image:none;box-shadow:none}
+
+/* ---------- game on the phone ---------- */
+html.clv-modern .app > *{animation:mRise .5s cubic-bezier(.2,.8,.2,1) both}
+html.clv-modern .qtext,html.clv-modern .slots,html.clv-modern input.f,html.clv-modern .seg span,html.clv-modern .room,html.clv-modern .solo .chips button{
+  background:var(--mglass)!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-color:var(--medge)!important;box-shadow:var(--mshadow)}
+html.clv-modern .opt:not(.s *){border-radius:22px;box-shadow:0 10px 22px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.35);animation:mPop .45s cubic-bezier(.2,.8,.2,1) both;transition:transform .15s}
+html.clv-modern .opt:nth-child(2){animation-delay:.06s}html.clv-modern .opt:nth-child(3){animation-delay:.12s}html.clv-modern .opt:nth-child(4){animation-delay:.18s}
+html.clv-modern .opt:active{transform:scale(.95)}
+html.clv-modern .o0{background:linear-gradient(140deg,#FF5A6E,#D93A4A)}html.clv-modern .o1{background:linear-gradient(140deg,#4D8BFF,#2A55C9)}
+html.clv-modern .o2{background:linear-gradient(140deg,#FFD15C,#F2A900)}html.clv-modern .o3{background:linear-gradient(140deg,#2FCB7C,#17864B)}
+html.clv-modern .timer{background:conic-gradient(var(--m1),var(--m2),var(--m1));box-shadow:0 0 0 4px rgba(109,76,255,.18)}
+html.clv-modern .timer.low{background:#E0424F;animation:mGlow 1s infinite}
+html.clv-modern .card.good{background:linear-gradient(140deg,#2FCB7C,#138A4E)!important;animation:mPop .5s both}
+html.clv-modern .card.bad{background:linear-gradient(140deg,#FF6B6B,#C23A47)!important;animation:mPop .5s both}
+html.clv-modern .huge{background:linear-gradient(180deg,#fff,#FFE9A8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+html.clv-modern .w{border-radius:14px;transition:transform .15s}
+html.clv-modern .w:active{transform:scale(.94)}
+
+/* ---------- lesson pages ---------- */
+html.clv-modern body.flow .bar{background:rgba(11,24,40,.72)!important;-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4)}
+html.clv-modern body.flow .s{box-shadow:0 18px 50px rgba(0,0,0,.28);border-radius:34px}
+@supports (animation-timeline: view()){
+  html.clv-modern body.flow .s{animation:mRise linear both;animation-timeline:view();animation-range:entry 0% cover 22%}
+}
+
+/* ---------- settings sheet ---------- */
+html.clv-modern .clvsheet{background:var(--mglass2);-webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);animation:mRise .35s cubic-bezier(.2,.8,.2,1)}
+html.clv-modern .clvgrp{background:rgba(255,255,255,.45)}
+html.clv-modern[data-theme="dark"] .clvgrp{background:rgba(255,255,255,.05)}
+
+/* no movement when "Less animation" is on */
+html.clv-modern.clv-calm body::before{animation:none}
+html.clv-modern.clv-calm *{animation:none!important}
+@media (prefers-reduced-motion: reduce){html.clv-modern body::before,html.clv-modern *{animation:none!important}}
+html.clv-modern .game.solo{background:var(--mglass)!important;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid var(--medge);animation:mRise .7s both;box-shadow:var(--mshadow)}

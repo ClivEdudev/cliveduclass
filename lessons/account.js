@@ -98,6 +98,9 @@
   function stopLogin() { clearInterval(pollId); pollId = 0; login = null; }
   function signedIn(t, u) {
     token = t; user = u; keep(TOK, t); keep(USR, u); msg = "";
+    const localAv = load("clv-avatar", "");
+    if (u.avatar) keep("clv-avatar", u.avatar);
+    else if (/^[gb]\d\d$/.test(localAv || "")) setTimeout(() => api("/profile", { body: { avatar: localAv } }).then(j => { if (j && j.user) { user = j.user; keep(USR, user); repaint(); } }).catch(() => {}), 800);
     repaint(); tell(true);
     sync(true);
     toast(`✅ Hello, ${u.name}! Your progress is saved now.`);
@@ -121,11 +124,12 @@
   function css() { if (!document.getElementById("clvAccCss")) { const st = document.createElement("style"); st.id = "clvAccCss"; st.textContent = CSS; (document.head || document.documentElement).appendChild(st); } }
   function toast(t) { css(); const d = document.createElement("div"); d.className = "clvtoast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3500); }
   const initial = n => esc(String(n || "?").trim().charAt(0).toUpperCase() || "?");
+  const avatarHTML = u => /^[gb]\d\d$/.test((u && u.avatar) || "") ? `<img src="/avatars/${u.avatar}.webp" alt="">` : initial(u && u.name);
   function panelHTML() {
     css();
     if (user) {
       const s = summary;
-      return `<div class="clvgrp"><b>My account · Hisobim</b><div class="clvacc"><span class="av">${initial(user.name)}</span>
+      return `<div class="clvgrp"><b>My account · Hisobim</b><div class="clvacc"><span class="av">${avatarHTML(user)}</span>
         <p>${esc(user.name)}${user.teacher ? " · Teacher" : ""}<small>${user.username ? "@" + esc(user.username) + " · " : ""}Telegram ✓${s ? ` · ⭐ ${s.points} points` : ""}</small></p></div>
         <div class="clvlogin"><a class="clvtg" href="/me/">\u{1F464} My profile · Profilim</a>${user.teacher ? `<a class="clvtg" href="/teacher/progress/" style="background:#157347">\u{1F4CA} Class progress</a>` : ""}<button class="clvtg" style="background:transparent;color:inherit;border:2px solid currentColor" data-acc="out">Sign out · Chiqish</button></div></div>`;
     }

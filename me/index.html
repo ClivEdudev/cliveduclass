@@ -26,6 +26,9 @@ h1,h2,h3,p{margin:0}
 .box h2{font-size:21px;font-weight:800;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .box h2 small{font-size:14px;color:var(--teal);font-weight:600}
 .me{display:flex;gap:14px;align-items:center}
+.av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.av.pick{cursor:pointer;border:0;padding:0;position:relative;overflow:visible}
+.av.pick::after{content:"✏️";position:absolute;right:-4px;bottom:-4px;width:26px;height:26px;border-radius:50%;background:var(--card,#fff);display:grid;place-items:center;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
 .av{width:64px;height:64px;border-radius:50%;background:var(--yel);display:grid;place-items:center;font-weight:800;font-size:28px;flex:none;color:#12263A}
 .me h1{font-size:clamp(24px,6vw,34px);line-height:1.1;font-weight:800;overflow-wrap:anywhere}
 .me p{color:var(--sub);font-size:15px}
@@ -166,7 +169,7 @@ html[data-theme="dark"]{--pg:#0E1A26;--card:#16263A;--ink:#EAF0F5;--sub:#A9B8C7;
     $("#app").innerHTML = `
       <div class="top"><a class="back" href="../">← My lessons</a><button class="gear" data-settings aria-label="Settings">⚙️ Settings</button></div>
       <section class="box">
-        <div class="me"><span class="av">${u ? esc(String(u.name || "?").charAt(0).toUpperCase()) : "\u{1F464}"}</span>
+        <div class="me"><button class="av pick" data-settings aria-label="Change my picture · Rasmni o‘zgartirish">${u && /^[gb]\d\d$/.test(u.avatar || "") ? `<img src="/avatars/${u.avatar}.webp" alt="">` : u ? esc(String(u.name || "?").charAt(0).toUpperCase()) : "\u{1F464}"}</button>
           <div><h1>${u ? esc(u.name) : "My profile"}</h1><p>${u ? (u.username ? "@" + esc(u.username) + " · " : "") + "Telegram ✓" + (u.group ? ` · Group ${u.group.toUpperCase()}` : "") : "Profilim · not signed in"}</p></div></div>
         <div class="stats">
           <div class="stat"><b>${s.points}</b><span>⭐ points · ball</span></div>

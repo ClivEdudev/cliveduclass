@@ -37,7 +37,8 @@ if (P) {
   else { const pl = P.lesson(L.n); if (pl) openDate = pl.date; }
 }
 document.title = `${L.n ? "Lesson " + L.n + " · " : ""}${strip(L.title)}`;
-if (STUDENT && openDate && !L.openNow && !P.isOpen(openDate, L.openHour)) {
+if (STUDENT && openDate && !L.openNow && !(P.isForced && P.isForced(L.n || L.id)) && !P.isOpen(openDate, L.openHour)) {
+  addEventListener("clv-open", e => { if ((e.detail || []).includes(String(L.n || L.id))) location.reload(); });
   const at = P.openAt(openDate, L.openHour);
   document.body.classList.add("locked-page");
   document.body.innerHTML = `<div class="lockbox">
@@ -148,7 +149,8 @@ const R = {
   sources: s => `${hd(s)}<div class="srcs flex1">${s.items.map(([a, b]) => `<div class="src"><b>${a}</b><span>${b}</span></div>`).join("")}</div>`,
   game: s => `<div id="g-${s.g}" style="display:contents"></div>`
 };
-const slideList = L.slides.filter(s => !(STUDENT && s.t === "game" && CLASS_ONLY.includes(s.g)) && !(STUDENT && s.classOnly));
+const slideList = L.slides.filter(s => !(s.t === "game" && s.g === "mystery")      /* the clue game was removed from the course */
+  && !(STUDENT && s.t === "game" && CLASS_ONLY.includes(s.g)) && !(STUDENT && s.classOnly));
 function sectionHTML(s, i) {
   const cls = ["s"];
   if (s.t === "cover") cls.push("ink", "center");
