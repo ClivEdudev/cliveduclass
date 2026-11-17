@@ -630,3 +630,24 @@ html[data-theme="dark"] .s .src span{color:var(--dk-m)}
 html[data-theme="dark"] .ans.on{background:var(--dk-mint);border-color:#2E7D55;color:#B9F0D0}
 html[data-theme="dark"] .ans.bad.on{background:var(--dk-rose);border-color:#9B3A4A;color:#FFC9D0}
 html[data-theme="dark"] .s .wt{background:var(--dk-sky);color:#A9C8FF;box-shadow:0 8px 0 #0E1C30}
+
+/* Dark theme, distinct colours: every tint has its own clear hue and a bright edge in that hue */
+html[data-theme="dark"]{--dk-cream:#2B323D;--dk-paper:#252C36;--dk-peach:#5A2811;--dk-mint:#0B4A33;--dk-sky:#173A78;--dk-butter:#4D3B05;--dk-rose:#5B1838;
+  --ac-peach:#FF8A4C;--ac-mint:#34D399;--ac-sky:#6AA8FF;--ac-butter:#FBBF24;--ac-rose:#F472B6;--ac-cream:#56606F}
+html[data-theme="dark"] .s .peach,html[data-theme="dark"] .s [style*="background:var(--peach)"]{box-shadow:inset 0 0 0 2px var(--ac-peach)!important}
+html[data-theme="dark"] .s .mint,html[data-theme="dark"] .s [style*="background:var(--mint)"]{box-shadow:inset 0 0 0 2px var(--ac-mint)!important}
+html[data-theme="dark"] .s .skyb,html[data-theme="dark"] .s .sky .card,html[data-theme="dark"] .s [style*="background:var(--sky)"]{box-shadow:inset 0 0 0 2px var(--ac-sky)!important}
+html[data-theme="dark"] .s .butter,html[data-theme="dark"] .s [style*="background:var(--butter)"]{box-shadow:inset 0 0 0 2px var(--ac-butter)!important}
+html[data-theme="dark"] .s .rose,html[data-theme="dark"] .s [style*="background:var(--rose)"]{box-shadow:inset 0 0 0 2px var(--ac-rose)!important}
+html[data-theme="dark"] .s [style*="background:var(--cream)"],html[data-theme="dark"] .s [style*="background:var(--paper)"]{box-shadow:inset 0 0 0 2px var(--ac-cream)!important}
+/* the Uzbek line takes a light version of the card's own colour */
+html[data-theme="dark"] .s .peach .uz{color:#FFC6A3}html[data-theme="dark"] .s .mint .uz{color:#8EF0C4}
+html[data-theme="dark"] .s .skyb .uz,html[data-theme="dark"] .s .sky .card .uz{color:#A9CBFF}html[data-theme="dark"] .s .butter .uz{color:#FDE08A}html[data-theme="dark"] .s .rose .uz{color:#FBB6D9}
+/* coloured big words stay readable on every tint */
+html[data-theme="dark"] .s .peach .huge,html[data-theme="dark"] .s .peach .hl{color:#FFD0B5}
+html[data-theme="dark"] .s .butter .huge,html[data-theme="dark"] .s .butter .hl{color:#FFE7A3}
+html[data-theme="dark"] .s .rose .huge,html[data-theme="dark"] .s .rose .hl{color:#FFC2DF}
+html[data-theme="dark"] .s.yel{background:#262012;box-shadow:inset 0 5px 0 var(--yellow)}
+html[data-theme="dark"] .ans.on{background:var(--dk-mint);border-color:var(--ac-mint);color:#D2FBE6}
+html[data-theme="dark"] .ans.bad.on{background:var(--dk-rose);border-color:var(--ac-rose);color:#FFD6EA}
+html[data-theme="dark"] .s .wt{background:var(--dk-sky);color:#D6E6FF;box-shadow:inset 0 0 0 2px var(--ac-sky),0 6px 0 #0B1B38}
