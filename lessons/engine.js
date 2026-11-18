@@ -44,8 +44,8 @@ if (STUDENT && openDate && !L.openNow && !(P.isForced && P.isForced(L.n || L.id)
   document.body.innerHTML = `<div class="lockbox">
     <p class="eb">${L.n ? "Lesson " + L.n : "Lesson"}</p>
     <h1>${esc(strip(L.title))}</h1>
-    <p>This lesson opens after class on <b>${esc(P.fmt(at))}</b> at ${String(at.getHours()).padStart(2, "0")}:00.</p>
-    <p class="uz">Bu dars ${esc(P.fmt(at))} kuni darsdan keyin ochiladi.</p>
+    <p>This lesson opens when class starts on <b>${esc(P.fmt(at))}</b> at ${String(at.getHours()).padStart(2, "0")}:00.</p>
+    <p class="uz">Bu dars ${esc(P.fmt(at))} kuni dars boshlanganda ochiladi.</p>
     <a class="lockbtn" href="${HOME}">← Back to my lessons</a></div>`;
   return;
 }

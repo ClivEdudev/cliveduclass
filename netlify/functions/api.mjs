@@ -530,7 +530,8 @@ async function panelLessons(chat, msgId, site) {
   const ready = L.filter(l => !l.notReady), next = L.filter(l => l.notReady).slice(-1)[0];
   const locked = ready.filter(l => !l.open), forced = ready.filter(l => l.forced), open = ready.filter(l => l.open).slice(0, 6);
   let t = `\u{1F4C5} <b>Lessons</b>\n\n<b>Open for students</b>\n` + (open.map(l => `✅ ${esc(l.title)}${l.forced ? " (opened early)" : ""}`).join("\n") || "none");
-  if (locked.length) t += `\n\n<b>Ready but locked</b>\n` + locked.map(l => `\u{1F512} ${esc(l.title)} · opens ${l.date} at 16:00`).join("\n");
+  const hh = String(((await siteData()).plan || {}).unlockHour || 14).padStart(2, "0");
+  if (locked.length) t += `\n\n<b>Ready but locked</b>\n` + locked.map(l => `\u{1F512} ${esc(l.title)} · opens ${l.date} at ${hh}:00`).join("\n");
   if (next) t += `\n\nNext lesson to write: ${esc(next.title)} (${next.date})`;
   const rows = [];
   locked.slice(0, 4).forEach(l => rows.push([btn("\u{1F513} Open now: " + l.title.slice(0, 28), "p:lo:" + l.key)]));

@@ -140,15 +140,15 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
   } else if (upcoming) {
     const at = P.openAt(upcoming.date);
     feature = `<section class="feature locked"><p class="eb">Next lesson · ${esc(P.fmt(upcoming.date))}</p>
-      <h2>${esc(upcoming.title)}</h2><p class="focus">It opens here after class, at ${hh}:00 on ${esc(P.fmt(at))}. · Darsdan keyin ochiladi.</p>
-      <span class="lock">🔒 Opens after class</span></section>`;
+      <h2>${esc(upcoming.title)}</h2><p class="focus">It opens here when class starts, at ${hh}:00 on ${esc(P.fmt(at))}. · Dars boshlanganda ochiladi.</p>
+      <span class="lock">🔒 Opens when class starts</span></section>`;
   }
 
   const cards = items.length ? items.map(it => `<a class="card ${isToday(it) ? "new" : ""}" href="${it.href}">
       <span class="n">${it.n ? "Lesson " + it.n : (it.group || "Revision")} · ${esc(P.fmt(it.date))}</span>
       <h3>${esc(it.title)}</h3><span class="f">${esc(it.focus)}</span>
       <span class="foot"><span class="my">My points: ${pts[it.key] || 0}</span><span class="go">Revise →</span></span></a>`).join("")
-    : `<p class="empty">Your lessons will appear here after class.</p>`;
+    : `<p class="empty">Your lessons will appear here when class starts.</p>`;
 
   document.getElementById("app").innerHTML = `
     <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="topr"><span id="accBtn"></span><button class="gear" data-settings aria-label="Settings">⚙️</button><span class="pts">⭐ My points <b>${total}</b></span></span></div>

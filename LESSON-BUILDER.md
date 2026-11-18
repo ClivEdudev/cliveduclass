@@ -31,6 +31,10 @@ Change nothing else. Never edit other lessons.
 
 ## 3. lesson.js
 
+Do **not** set `lockAnswers` (lesson 5 has `lockAnswers: false` only because it was taught early):
+by default students follow the lesson on their phones and each answer stays hidden until the
+teacher opens that slide in class.
+
 Model it on **`lessons/05/lesson.js`** (the newest full lesson): read it completely first, and
 also one older lesson, so the style matches. Start with a short comment block like lesson 5.
 
@@ -38,7 +42,6 @@ also one older lesson, so the style matches. Start with a short comment block li
 window.LESSON = {
   n: 7,
   title: "Present simple or continuous?",
-  lockAnswers: false,
   slides: [ … ],
   games: { mime: […], board: […], wheel: […], build: […], auction: […] }
 };
@@ -128,7 +131,8 @@ git commit -m "Lesson N: Title (built automatically for <date>)"
 git push origin main
 ```
 Netlify publishes in about a minute. Check `https://clivedu.me/lessons/NN/` answers 200.
-Students can open it after class (plan.js `unlockHour`, 16:00); the teacher sees it at once.
+Students can open it when class starts (plan.js `unlockHour`, 14:00) and follow along on their phones;
+the teacher sees it at once.
 
 ## 7. Tell the teacher
 

@@ -1,6 +1,7 @@
 /* The course plan. Lessons follow PLAN.schedule: each part says from which lesson and date
    it applies and on which weekdays class is held (0 = Sunday … 6 = Saturday).
-   Class starts at classHour; students can open a lesson from unlockHour (local time) on the day it is taught.
+   Class starts at classHour; students can open a lesson from unlockHour (local time) on the day it is taught:
+   when class starts, so they follow the lesson on their phones.
    teacherCode opens the teacher planner at /teacher/ on a device. */
 window.PLAN = {
   start: "2026-11-10",
@@ -10,7 +11,7 @@ window.PLAN = {
   ],
   teachDays: [1, 4, 5],     /* today's class days (Mon, Thu, Fri) */
   classHour: 14,            /* class at 14:00 */
-  unlockHour: 16,           /* students can open the lesson after class */
+  unlockHour: 14,           /* students open the lesson when class starts and follow along */
   openNowLessons: [5],      /* taught out of order; open to students straight away */
   teacherCode: "clivedu",
   revision: { title: "Big Revision", date: "2026-11-09", path: "revision/", openNow: true },
