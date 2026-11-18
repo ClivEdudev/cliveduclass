@@ -12,6 +12,7 @@
   const mq = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
   const rm = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : null;
 
+  try { if (/^\/(index\.html)?$|^\/(me|play|daily)\//.test(location.pathname)) document.documentElement.classList.add("clvpaper"); } catch (e) {}
   function apply() {
     const dark = S.theme === "dark" || (S.theme === "auto" && mq && mq.matches);
     root.dataset.theme = dark ? "dark" : "light";
@@ -98,6 +99,20 @@ html .brand i{background:#0A1020 url(/brand/mark.webp) center/cover no-repeat!im
 *::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#3B8BFF,#A855F7);border-radius:99px}
 *::-webkit-scrollbar-button{display:none;width:0;height:0}
 @supports (-moz-appearance:none){*{scrollbar-color:#7B5CFA transparent;scrollbar-width:thin}}
+/* Classic style background: warm notebook paper with faint English-class doodles (dark: indigo night).
+   Home, profile, game, daily challenge and lessons on a phone. Modern style has its own background. */
+html.clvpaper:not(.clv-modern) body,html:not(.clv-modern) body.flow.student{--pg:#FAF3E6;
+  background-color:#FAF3E6!important;
+  background-image:url(/brand/doodles-light.svg),radial-gradient(circle at 1px 1px,rgba(140,100,40,.16) 1.2px,transparent 1.6px),
+    radial-gradient(55% 45% at 0% 0%,rgba(255,201,60,.22),transparent 70%),radial-gradient(50% 45% at 100% 100%,rgba(11,143,140,.13),transparent 70%),
+    radial-gradient(40% 35% at 100% 0%,rgba(226,85,110,.10),transparent 70%)!important;
+  background-size:560px 560px,24px 24px,100% 100vh,100% 100vh,100% 100vh!important;
+  background-attachment:scroll,scroll,fixed,fixed,fixed!important;background-position:300px 330px,0 0,0 0,0 0,0 0!important}
+html.clvpaper[data-theme="dark"]:not(.clv-modern) body,html[data-theme="dark"]:not(.clv-modern) body.flow.student{--pg:#14152C;
+  background-color:#14152C!important;
+  background-image:url(/brand/doodles-dark.svg),radial-gradient(circle at 1px 1px,rgba(255,255,255,.07) 1.2px,transparent 1.6px),
+    radial-gradient(55% 45% at 0% 0%,rgba(109,76,255,.22),transparent 70%),radial-gradient(50% 45% at 100% 100%,rgba(22,182,201,.14),transparent 70%),
+    radial-gradient(40% 35% at 100% 0%,rgba(255,122,146,.10),transparent 70%)!important}
 `;
 
   function mount() {
