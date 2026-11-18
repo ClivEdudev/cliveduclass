@@ -82,7 +82,18 @@ html[data-theme="dark"] .clvsheet{--b:#13202D;--f:#EAF0F5;--s:#A9B8C7;--l:#2B3E5
 .clvfaces button:hover{transform:scale(1.06)}
 .clvfaces button[aria-pressed="true"]{border-color:#1C8F50;box-shadow:0 0 0 3px rgba(28,143,80,.3)}
 .clvfaces img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%}
-@media (max-width:380px){.clvfaces{grid-template-columns:repeat(4,1fr)}}`;
+@media (max-width:380px){.clvfaces{grid-template-columns:repeat(4,1fr)}}
+/* ClivEdu logo next to the name */
+html .brand i{background:#0A1020 url(/brand/mark.webp) center/cover no-repeat!important;box-shadow:0 0 0 1px rgba(120,120,255,.35),0 2px 8px rgba(70,90,255,.35)!important;border-radius:28%!important;flex:none}
+/* scrollbar in the logo's blue → violet */
+html{scrollbar-color:#6E6CF6 transparent;scrollbar-width:thin}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#3B8BFF,#7B5CFA 60%,#A855F7);border-radius:99px;border:3px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#5AA0FF,#8F72FF 60%,#B978FA);background-clip:padding-box;border:2px solid transparent}
+::-webkit-scrollbar-corner{background:transparent}
+::-webkit-scrollbar-button{display:none;width:0;height:0}
+`;
 
   function mount() {
     if (!document.getElementById("clvSetCss")) { const st = document.createElement("style"); st.id = "clvSetCss"; st.textContent = CSS; document.head.appendChild(st); }
