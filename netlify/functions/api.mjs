@@ -466,10 +466,9 @@ async function lessonList(site) {
     open: !!always || forced.includes(String(key)) || Date.now() >= tashOpen(date, hour == null ? P.unlockHour : hour), forced: forced.includes(String(key)) });
   if (P.revision) add("rev", P.revision.title, P.revision.date, null, P.revision.path, P.revision.openNow);
   (P.starter || []).concat(P.extras || []).forEach(x => add(x.key, x.title, x.date, x.openHour, x.path, x.openNow));
-  let d = new Date(Date.UTC(...P.start.split("-").map((v, i) => i === 1 ? v - 1 : +v)));
+  /* plan.js has already dated every lesson (l.key) by its schedule */
   (P.weeks || []).flatMap(w => w.lessons).forEach(l => {
-    while (!P.teachDays.includes(d.getUTCDay())) d.setUTCDate(d.getUTCDate() + 1);
-    const ds = d.toISOString().slice(0, 10); d.setUTCDate(d.getUTCDate() + 1);
+    const ds = l.key;
     if (l.ready) add(l.n, "Lesson " + l.n + " · " + l.title, ds, null, `lessons/${pad(l.n)}/`, (P.openNowLessons || []).includes(l.n));
     else out.push({ key: String(l.n), title: plain("Lesson " + l.n + " · " + l.title), date: ds, notReady: true });
   });

@@ -1,10 +1,16 @@
-/* The course plan. Lessons are taught Monday to Saturday, starting on PLAN.start.
-   Students can open a lesson from unlockHour (local time) on the day it is taught.
+/* The course plan. Lessons follow PLAN.schedule: each part says from which lesson and date
+   it applies and on which weekdays class is held (0 = Sunday … 6 = Saturday).
+   Class starts at classHour; students can open a lesson from unlockHour (local time) on the day it is taught.
    teacherCode opens the teacher planner at /teacher/ on a device. */
 window.PLAN = {
   start: "2026-11-10",
-  teachDays: [1, 2, 3, 4, 5, 6],
-  unlockHour: 16,
+  schedule: [
+    { fromLesson: 1, from: "2026-11-10", days: [1, 2, 3, 4, 5, 6] },   /* week 1: Monday to Saturday */
+    { fromLesson: 7, from: "2026-11-19", days: [1, 4, 5] }            /* from 19 Nov: Monday, Thursday, Friday */
+  ],
+  teachDays: [1, 4, 5],     /* today's class days (Mon, Thu, Fri) */
+  classHour: 14,            /* class at 14:00 */
+  unlockHour: 16,           /* students can open the lesson after class */
   openNowLessons: [5],      /* taught out of order; open to students straight away */
   teacherCode: "clivedu",
   revision: { title: "Big Revision", date: "2026-11-09", path: "revision/", openNow: true },
@@ -70,8 +76,11 @@ window.PLAN = {
   P.parse = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
   P.all = P.weeks.flatMap(w => w.lessons);
   let d = P.parse(P.start);
+  const segs = (P.schedule || [{ fromLesson: 1, from: P.start, days: P.teachDays }]).slice().sort((a, b) => a.fromLesson - b.fromLesson);
   P.all.forEach(l => {
-    while (!P.teachDays.includes(d.getDay())) d.setDate(d.getDate() + 1);
+    const seg = segs.filter(x => x.fromLesson <= l.n).pop() || segs[0];
+    if (seg.from) { const f = P.parse(seg.from); if (f > d) d = f; }
+    while (!seg.days.includes(d.getDay())) d.setDate(d.getDate() + 1);
     l.date = new Date(d); l.key = P.key(d); l.folder = `lessons/${pad(l.n)}/`;
     d.setDate(d.getDate() + 1);
   });
