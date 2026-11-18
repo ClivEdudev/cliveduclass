@@ -108,11 +108,25 @@ html.clvpaper:not(.clv-modern) body,html:not(.clv-modern) body.flow.student{--pg
     radial-gradient(40% 35% at 100% 0%,rgba(226,85,110,.10),transparent 70%)!important;
   background-size:560px 560px,24px 24px,100% 100vh,100% 100vh,100% 100vh!important;
   background-attachment:scroll,scroll,fixed,fixed,fixed!important;background-position:300px 330px,0 0,0 0,0 0,0 0!important}
-html.clvpaper[data-theme="dark"]:not(.clv-modern) body,html[data-theme="dark"]:not(.clv-modern) body.flow.student{--pg:#14152C;
-  background-color:#14152C!important;
-  background-image:url(/brand/doodles-dark.svg),radial-gradient(circle at 1px 1px,rgba(255,255,255,.07) 1.2px,transparent 1.6px),
-    radial-gradient(55% 45% at 0% 0%,rgba(109,76,255,.22),transparent 70%),radial-gradient(50% 45% at 100% 100%,rgba(22,182,201,.14),transparent 70%),
-    radial-gradient(40% 35% at 100% 0%,rgba(255,122,146,.10),transparent 70%)!important}
+html.clvpaper[data-theme="dark"]:not(.clv-modern) body,html[data-theme="dark"]:not(.clv-modern) body.flow.student{--pg:#111433;
+  background-color:#0B0E26!important;
+  background-image:radial-gradient(38% 30% at 86% 6%,rgba(255,236,170,.20),transparent 70%),radial-gradient(9% 7% at 86% 6%,rgba(255,240,200,.35),transparent 70%),
+    radial-gradient(70% 50% at 50% 115%,rgba(124,77,255,.35),transparent 70%),radial-gradient(60% 40% at 0% 100%,rgba(22,182,201,.16),transparent 70%),
+    linear-gradient(180deg,#070A1E 0%,#0E1236 45%,#1E1650 85%,#2A1B5C 100%)!important;
+  background-size:100% 100vh!important;background-attachment:fixed!important;background-position:0 0!important;position:relative;isolation:isolate}
+/* starry night: two fixed star layers that twinkle, and a shooting star now and then */
+html.clvpaper[data-theme="dark"]:not(.clv-modern) body::before,html[data-theme="dark"]:not(.clv-modern) body.flow.student::before,
+html.clvpaper[data-theme="dark"]:not(.clv-modern) body::after,html[data-theme="dark"]:not(.clv-modern) body.flow.student::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none}
+html.clvpaper[data-theme="dark"]:not(.clv-modern) body::before,html[data-theme="dark"]:not(.clv-modern) body.flow.student::before{
+  background:url(/brand/stars-far.svg) 0 0/600px 600px,url(/brand/stars-near.svg) 120px 80px/700px 700px;animation:clvTwinkle 6s ease-in-out infinite alternate}
+html.clvpaper[data-theme="dark"]:not(.clv-modern) body::after,html[data-theme="dark"]:not(.clv-modern) body.flow.student::after{
+  inset:auto;top:12vh;left:-20vw;width:180px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9));
+  transform:rotate(-24deg);opacity:0;animation:clvShoot 11s ease-in 3s infinite}
+@keyframes clvTwinkle{0%{opacity:.75}50%{opacity:1}100%{opacity:.6}}
+@keyframes clvShoot{0%{opacity:0;transform:translate(0,0) rotate(-24deg)}2%{opacity:1}9%{opacity:0;transform:translate(70vw,-30vh) rotate(-24deg)}100%{opacity:0;transform:translate(70vw,-30vh) rotate(-24deg)}}
+html.clv-calm body::before,html.clv-calm body::after{animation:none!important}
+html.clv-calm body.flow.student::after,html.clv-calm.clvpaper body::after{display:none}
+@media (prefers-reduced-motion:reduce){html:not(.clv-modern) body::before{animation:none!important}html:not(.clv-modern) body::after{display:none}}
 `;
 
   function mount() {
