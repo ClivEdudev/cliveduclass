@@ -85,14 +85,19 @@ html[data-theme="dark"] .clvsheet{--b:#13202D;--f:#EAF0F5;--s:#A9B8C7;--l:#2B3E5
 @media (max-width:380px){.clvfaces{grid-template-columns:repeat(4,1fr)}}
 /* ClivEdu logo next to the name */
 html .brand i{background:#0A1020 url(/brand/mark.webp) center/cover no-repeat!important;box-shadow:0 0 0 1px rgba(120,120,255,.35),0 2px 8px rgba(70,90,255,.35)!important;border-radius:28%!important;flex:none}
-/* scrollbar in the logo's blue → violet */
-html{scrollbar-color:#6E6CF6 transparent;scrollbar-width:thin}
-::-webkit-scrollbar{width:12px;height:12px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#3B8BFF,#7B5CFA 60%,#A855F7);border-radius:99px;border:3px solid transparent;background-clip:padding-box}
-::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#5AA0FF,#8F72FF 60%,#B978FA);background-clip:padding-box;border:2px solid transparent}
-::-webkit-scrollbar-corner{background:transparent}
-::-webkit-scrollbar-button{display:none;width:0;height:0}
+/* Scrollbar: on computers the page's own scrollbar is hidden and a floating bar is drawn instead
+   (only the bar, no background). Phones keep their own thin, see-through scrollbars. */
+@media (pointer:fine){html{scrollbar-width:none}html::-webkit-scrollbar{display:none;width:0;height:0}}
+.clvbar{position:fixed;right:3px;top:0;width:8px;border-radius:99px;z-index:2147483000;background:linear-gradient(180deg,#3B8BFF,#7B5CFA 60%,#A855F7);
+  box-shadow:0 2px 10px rgba(91,92,240,.45);opacity:0;transition:opacity .35s,width .15s,right .15s;cursor:grab;touch-action:none}
+.clvbar.on{opacity:.9}.clvbar:hover,.clvbar.drag{opacity:1;width:11px;right:2px}.clvbar.drag{cursor:grabbing}
+.clvbarzone{position:fixed;right:0;top:0;bottom:0;width:16px;z-index:2147482999}
+/* scrollable boxes inside pages: bar only */
+*::-webkit-scrollbar{width:8px;height:8px;background:transparent}
+*::-webkit-scrollbar-track,*::-webkit-scrollbar-corner{background:transparent}
+*::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#3B8BFF,#A855F7);border-radius:99px}
+*::-webkit-scrollbar-button{display:none;width:0;height:0}
+@supports (-moz-appearance:none){*{scrollbar-color:#7B5CFA transparent;scrollbar-width:thin}}
 `;
 
   function mount() {
@@ -206,5 +211,42 @@ html{scrollbar-color:#6E6CF6 transparent;scrollbar-width:thin}
   };
   document.addEventListener("click", e => { const g = e.target.closest("[data-settings]"); if (g) { e.preventDefault(); open(); } });
   apply();
-  if (document.body) mount(); else document.addEventListener("DOMContentLoaded", mount);
+  /* the floating scrollbar (computers only) */
+  function floatingBar() {
+    if (!matchMedia("(pointer:fine)").matches || document.getElementById("clvBar")) return;
+    const zone = document.createElement("div"), bar = document.createElement("div");
+    zone.className = "clvbarzone"; bar.className = "clvbar"; bar.id = "clvBar"; bar.setAttribute("aria-hidden", "true");
+    document.body.appendChild(zone); document.body.appendChild(bar);
+    const se = () => document.scrollingElement || document.documentElement;
+    let hideT = 0, drag = null;
+    const place = () => {
+      const el = se(), vh = innerHeight, full = el.scrollHeight;
+      if (full <= vh + 2) { bar.style.display = "none"; zone.style.display = "none"; return; }
+      bar.style.display = ""; zone.style.display = "";
+      const h = Math.max(36, vh * vh / full), max = full - vh;
+      bar.style.height = h + "px";
+      bar.style.transform = `translateY(${(el.scrollTop / max) * (vh - h)}px)`;
+    };
+    const show = () => { place(); bar.classList.add("on"); clearTimeout(hideT); hideT = setTimeout(() => { if (!drag && !bar.matches(":hover")) bar.classList.remove("on"); }, 1200); };
+    addEventListener("scroll", show, { passive: true });
+    addEventListener("resize", place);
+    zone.addEventListener("mouseenter", show); bar.addEventListener("mouseleave", show);
+    if (window.ResizeObserver) new ResizeObserver(place).observe(document.body);
+    bar.addEventListener("pointerdown", e => {
+      e.preventDefault(); bar.setPointerCapture(e.pointerId); bar.classList.add("drag", "on");
+      drag = { y: e.clientY, top: se().scrollTop };
+    });
+    bar.addEventListener("pointermove", e => {
+      if (!drag) return;
+      const el = se(), vh = innerHeight, h = bar.offsetHeight, max = el.scrollHeight - vh;
+      el.scrollTop = drag.top + (e.clientY - drag.y) * max / Math.max(1, vh - h);
+    });
+    const end = () => { drag = null; bar.classList.remove("drag"); show(); };
+    bar.addEventListener("pointerup", end); bar.addEventListener("pointercancel", end);
+    /* click on the empty strip: jump a page up or down */
+    zone.addEventListener("pointerdown", e => { const r = bar.getBoundingClientRect(); se().scrollBy({ top: (e.clientY < r.top ? -1 : 1) * innerHeight * .9, behavior: "smooth" }); });
+    place();
+  }
+  const start = () => { mount(); floatingBar(); };
+  if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
 })();

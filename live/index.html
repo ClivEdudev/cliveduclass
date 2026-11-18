@@ -257,12 +257,36 @@ function closeRoom() {
 }
 const ranked = () => Object.values(S.players).sort((a, b) => b.score - a.score);
 
+/* ---------- change the game while everyone stays joined ---------- */
+function changeBox() {
+  const c = S.chg, live = S.phase !== "lobby";
+  let box = $("#chgBox"); if (!box) { box = document.createElement("div"); box.id = "chgBox"; box.className = "chgwrap"; document.body.appendChild(box); }
+  box.innerHTML = `<section class="chg" role="dialog" aria-label="Change game"><h2>Change the game <small class="muted">Players stay joined · nobody types the code again</small></h2>
+    <p class="muted strong">Lesson</p><div class="setgrid">${sets.map(s => `<button class="setcard ${s.id === c.set ? "sel" : ""}" data-cset="${s.id}"><span class="eb">${esc(s.topic)}</span><b>${esc(s.title)}</b></button>`).join("")}</div>
+    <p class="muted strong">Game</p><div class="setgrid">${TYPES.map(t => `<button class="setcard ${t.id === c.type ? "sel" : ""}" data-ctype="${t.id}"><b>${esc(t.name)}</b><span class="muted">${esc(t.desc)}</span></button>`).join("")}</div>
+    <div class="row gap"><span class="muted strong">Time per question:</span>${[10, 15, 20].map(t => `<button class="pill ${t === c.limit ? "sel" : ""}" data-ctime="${t}">${t} s</button>`).join("")}</div>
+    ${live ? `<p class="warn">The game now in progress stops and scores start again from 0. Players stay in the room.</p>` : ""}
+    <div class="row gap"><button class="btn y xl" data-capply>${live ? "Start the new game →" : "Apply"}</button><button class="btn" data-ccancel>Cancel</button><span class="muted" id="chgMsg"></span></div></section>`;
+}
+async function applyChange(btn) {
+  const c = S.chg, prev = { set: S.set, type: S.type, limit: S.limit };
+  btn.disabled = true; $("#chgMsg").textContent = "Getting questions…";
+  S.set = sets.find(x => x.id === c.set) || S.set; S.type = c.type; S.limit = c.limit;
+  const rounds = await buildRounds();
+  if (!rounds.length) { Object.assign(S, prev); btn.disabled = false; $("#chgMsg").textContent = "No questions for that choice. Choose another game."; return; }
+  clearTimeout(S.timer); clearInterval(S.tick); S.autoAt = 0;
+  Object.values(S.players).forEach(p => p.score = 0);
+  S.rounds = withPractice(rounds); S.qi = -1; S.q = null; S.answers = {}; S.lastGain = {}; S.gid = newGid();
+  S.chg = null; const box = $("#chgBox"); if (box) box.remove();
+  lobby(); announce(true); saveSnap();
+}
+
 /* ---------- screens ---------- */
 function topBar() {
   return `<header class="hbar"><span class="brand"><i></i>ClivEdu Live</span><span class="muted">${esc(S.set.title)} · ${esc(TYPES.find(t => t.id === S.type).name)}</span>
     <span class="code-sm">Code <b>${S.room}</b></span><span id="net" class="net ${S.status}">${S.status === "online" ? "Online" : "Reconnecting…"}</span>
     ${S.phase !== "lobby" && S.phase !== "end" ? `<button class="pill ${S.auto ? "" : "sel"}" data-pause>${S.auto ? "Pause" : "Resume auto"}</button>` : ""}
-    <button class="pill" data-close>End game</button></header>`;
+    <button class="pill" data-chg>⚙ Change game</button><button class="pill" data-close>End game</button></header>`;
 }
 function renderLobbyList() {
   const el = $("#roster"); if (!el) return render();
@@ -331,6 +355,12 @@ document.addEventListener("click", async e => {
   const t = e.target.closest("button"); if (!t) return;
   const d = t.dataset;
   if (d.qplay != null) { S.playedTwice = S.qi; playQ(); return; }
+  if (d.chg != null) { S.chg = { set: S.set.id, type: S.type, limit: S.limit }; return changeBox(); }
+  if (d.cset) { S.chg.set = d.cset; return changeBox(); }
+  if (d.ctype) { S.chg.type = d.ctype; return changeBox(); }
+  if (d.ctime) { S.chg.limit = +d.ctime; return changeBox(); }
+  if (d.ccancel != null) { S.chg = null; const b = $("#chgBox"); if (b) b.remove(); return; }
+  if (d.capply != null) return applyChange(t);
   if (d.set) { S.set = sets.find(s => s.id === d.set); setup(); }
   else if (d.type) { S.type = d.type; setup(); }
   else if (d.time) { S.limit = +d.time; setup(); }

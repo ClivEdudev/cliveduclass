@@ -200,11 +200,12 @@ body.player .opt{min-height:96px}
 
 /* ClivEdu logo next to the name */
 html .brand i{background:#0A1020 url(/brand/mark.webp) center/cover no-repeat!important;box-shadow:0 0 0 1px rgba(120,120,255,.35),0 2px 8px rgba(70,90,255,.35)!important;border-radius:28%!important;flex:none}
-/* scrollbar in the logo's blue → violet */
-html{scrollbar-color:#6E6CF6 transparent;scrollbar-width:thin}
-::-webkit-scrollbar{width:12px;height:12px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#3B8BFF,#7B5CFA 60%,#A855F7);border-radius:99px;border:3px solid transparent;background-clip:padding-box}
-::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#5AA0FF,#8F72FF 60%,#B978FA);background-clip:padding-box;border:2px solid transparent}
-::-webkit-scrollbar-corner{background:transparent}
-::-webkit-scrollbar-button{display:none;width:0;height:0}
+/* board: no visible page scrollbar, bars inside boxes only */
+html{scrollbar-width:none}html::-webkit-scrollbar{display:none}
+*::-webkit-scrollbar{width:8px;background:transparent}*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#3B8BFF,#A855F7);border-radius:99px}*::-webkit-scrollbar-button{display:none}
+/* "Change game" window on the board */
+.chgwrap{position:fixed;inset:0;z-index:60;background:rgba(5,12,24,.72);display:grid;place-items:center;padding:24px;overflow:auto}
+.chg{background:var(--night,#0B1828);color:var(--cream,#FFFDF6);border-radius:28px;padding:28px;max-width:1100px;width:100%;max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:14px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.chg h2{margin:0;font:800 32px var(--display)}.chg h2 small{display:block;font:600 16px var(--body)}
+.chg .warn{background:#3A2A10;color:#FFD98A;border-radius:14px;padding:10px 14px;margin:0;font-weight:700}

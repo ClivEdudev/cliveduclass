@@ -121,6 +121,19 @@ html[data-theme="dark"] .netbar{background:#3A2E10;color:#fff}
 html[data-theme="dark"] .err{background:#3A1A1F;color:#FFC9CF}
 html[data-theme="dark"] .btn,html[data-theme="dark"] .o2{color:#12263A}
 .app{zoom:var(--clv-scale,1)}
+/* join: two big choices */
+.jpick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.jopt{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:16px 10px;border-radius:18px;border:2px solid var(--line);background:#fff;transition:transform .1s,border-color .15s}
+.jopt:active{transform:scale(.97)}
+.jopt b{display:block;font-size:18px}.jopt small{display:block;font-size:13px;color:var(--sub);font-weight:600}
+.jopt.on{border-color:#12263A;background:#12263A;color:#fff}.jopt.on small{color:#FFC93C}
+.jface{width:64px;height:64px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px #fff,0 4px 14px rgba(0,0,0,.18)}
+.jface.ph{display:grid;place-items:center;font-size:32px;background:var(--pg)}
+html[data-theme="dark"] .jopt{background:#1B2C3D}
+html[data-theme="dark"] .jopt.on{background:#FFC93C;border-color:#FFC93C;color:#12263A}html[data-theme="dark"] .jopt.on small{color:#12263A}
+.who.sw{border:0;background:none;padding:4px 6px;border-radius:10px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.who.sw:hover{background:rgba(0,0,0,.06)}.swi{font-size:13px;opacity:.7}
+.myface{width:34px;height:34px;box-shadow:0 0 0 2px #fff,0 2px 8px rgba(0,0,0,.2)}
 /* solo play */
 .solo .chips{display:flex;flex-wrap:wrap;gap:8px}
 .solo .chips button{font-weight:800;font-size:15px;padding:9px 13px;border-radius:12px;border:2px solid var(--line);background:#fff;text-align:left}
@@ -180,10 +193,19 @@ const myAv = () => { const u = window.CLV_ACCOUNT && window.CLV_ACCOUNT.user; co
 const faceImg = () => myAv() ? `<img class="myface" src="../avatars/${myAv()}.webp" alt="">` : "";
 
 /* ---------------- join ---------------- */
+const acct = () => window.CLV_ACCOUNT && window.CLV_ACCOUNT.signedIn && window.CLV_ACCOUNT.user || null;
+const first = n => String(n || "").trim().split(/\s+/)[0] || "";
+let jPick = null;                                       /* "solo" or "team": what the student tapped */
 function joinForm(err) {
   clearInterval(tick); lastKey = "";
-  const last = load("clv-live-last") || {};
-  const qcode = (new URLSearchParams(location.search).get("code") || "").toUpperCase();
+  const last = load("clv-live-last") || {}, u = acct();
+  const qcode = (($("#code") && $("#code").value) || new URLSearchParams(location.search).get("code") || "").toUpperCase();
+  const pick = jPick;
+  const face = myAv() ? `<img class="jface" src="../avatars/${myAv()}.webp" alt="">` : `<span class="jface ph">🙋</span>`;
+  const soloLbl = u ? `Play as ${esc(first(u.name))}` : "Just me";
+  /* the name box only when it is needed: a team name, or "just me" without signing in */
+  const needName = pick === "team" || (pick === "solo" && !u);
+  const nameVal = pick === "team" ? (last.team || (u ? "Team " + first(u.name) : "")) : (last.name || "");
   app.innerHTML = `<div class="top">${EMBED ? `<span class="brand"><i></i>ClivEdu Live</span>` : `<a class="brand" href="../"><i></i>ClivEdu Live</a>`}</div>
   <div class="card">
     <h1 class="t">Join the class game<br><span class="uz" style="font-size:16px">O‘yinga qo‘shiling</span></h1>
@@ -192,33 +214,31 @@ function joinForm(err) {
       <div class="rooms" id="rooms"><p class="muted">Looking for games…</p></div>
       <input class="f" id="code" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="6" placeholder="ABCDE1" value="${esc(qcode)}" aria-label="Game code"></div>
     <div class="step"><b><span class="n">2</span>How do you play? <span class="uz">· Qanday o‘ynaysiz?</span></b>
-      <div class="seg">
-        <label><input type="radio" name="type" value="solo" ${last.type !== "team" ? "checked" : ""}><span><b>Just me</b><small>my own phone · yakka</small></span></label>
-        <label><input type="radio" name="type" value="team" ${last.type === "team" ? "checked" : ""}><span><b>Team</b><small>one phone for the team · jamoa</small></span></label>
-      </div></div>
-    <div class="step"><b><span class="n">3</span><span id="nameLbl">Team name</span> <span class="uz" id="nameUz">· Jamoa nomi</span></b>
-      <input class="f" id="name" maxlength="18" autocomplete="off" value="${esc(last.name || "")}" aria-label="Name"></div>
-    <button class="btn" id="go">Join · Qo‘shilish</button>
+      <div class="jpick">
+        <button class="jopt ${pick === "solo" ? "on" : ""}" data-jpick="solo">${face}<span><b>${soloLbl}</b><small>${u ? "one tap · bir bosish" : "my own phone · yakka"}</small></span></button>
+        <button class="jopt ${pick === "team" ? "on" : ""}" data-jpick="team"><span class="jface ph">👥</span><span><b>Team</b><small>one phone for the team · jamoa</small></span></button>
+      </div>
+      ${u ? "" : `<p class="muted" style="font-size:14px;margin:6px 0 0">Signed in? You don’t need to type your name. · <button class="link" data-signin style="display:inline;padding:0">Sign in</button></p>`}</div>
+    ${needName ? `<div class="step"><b><span class="n">3</span>${pick === "team" ? "Team name" : "Your name"} <span class="uz">· ${pick === "team" ? "Jamoa nomi" : "Ismingiz"}</span></b>
+      <input class="f" id="name" maxlength="18" autocomplete="off" value="${esc(nameVal)}" placeholder="${pick === "team" ? "Samarkand" : "Aziz"}" aria-label="Name"></div>
+      <button class="btn" id="go">Join · Qo‘shilish</button>` : ""}
   </div>
   <div class="or">or · yoki</div>
   ${soloCard()}`;
-  const setLbl = () => {
-    const team = document.querySelector("input[name=type]:checked").value === "team";
-    $("#nameLbl").textContent = team ? "Team name" : "Your name";
-    $("#nameUz").textContent = team ? "· Jamoa nomi" : "· Ismingiz";
-    $("#name").placeholder = team ? "Samarkand" : "Aziz";
-  };
-  document.querySelectorAll("input[name=type]").forEach(r => r.addEventListener("change", setLbl)); setLbl();
-  $("#go").addEventListener("click", () => {
+  const go = () => {
     const code = $("#code").value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    const name = $("#name").value.trim();
-    const type = document.querySelector("input[name=type]:checked").value;
-    if (!/^[A-Z]{5}[1-9]$/.test(code)) return joinForm("The code has 5 letters and 1 number, like ABCDE1. · Kod 5 ta harf va 1 ta raqamdan iborat.");
-    if (!name) return joinForm(type === "team" ? "Write your team name. · Jamoa nomini yozing." : "Write your name. · Ismingizni yozing.");
-    keep("clv-live-last", { name, type });
+    if (!/^[A-Z]{5}[1-9]$/.test(code)) { jPick = pick; return joinForm("The code has 5 letters and 1 number, like ABCDE1. · Kod 5 ta harf va 1 ta raqamdan iborat."); }
+    let name = $("#name") ? $("#name").value.trim() : (u ? first(u.name) : "");
+    if (!name) return joinForm(pick === "team" ? "Write your team name. · Jamoa nomini yozing." : "Write your name. · Ismingizni yozing.");
+    const L = load("clv-live-last") || {};
+    keep("clv-live-last", Object.assign(L, pick === "team" ? { team: name } : { name }, { type: pick }));
     const prev = load("clv-live-" + code);
-    enter({ code, name, type, id: prev && prev.id || Math.random().toString(36).slice(2, 10) });
-  });
+    jPick = null;
+    enter({ code, name, type: pick, id: prev && prev.id || Math.random().toString(36).slice(2, 10) });
+  };
+  if ($("#go")) { $("#go").addEventListener("click", go); $("#name").addEventListener("keydown", e => { if (e.key === "Enter") go(); }); }
+  /* signed in + "Play as …": join at once */
+  if (pick === "solo" && u && !err) setTimeout(go, 0);
   if (!stopWatch) stopWatch = NET.watchRooms(list => { rooms = list; drawRooms(); });
   drawRooms();
 }
@@ -248,6 +268,25 @@ async function enter(sess, quiet) {
     joinForm("Could not connect. Check the internet and try again. · Ulanib bo‘lmadi.");
   }
 }
+/* change between "just me" and a team in the middle of a game: same player, same points, no new join */
+let switching = false;
+function switchBox() {
+  switching = true;
+  const u = acct(), last = load("clv-live-last") || {};
+  const team = me.type === "team";
+  app.innerHTML = `${top()}<div class="card"><h2 class="t" style="font-size:22px">How do you play now?<br><span class="uz" style="font-size:15px">Endi qanday o‘ynaysiz? Ballaringiz saqlanadi.</span></h2>
+    <div class="step"><b>Just me · Yakka</b><input class="f" id="swSolo" maxlength="18" value="${esc(team ? (u ? first(u.name) : last.name || "") : me.name)}" aria-label="Your name"><button class="btn" data-sw="solo">${team ? "Play as me" : "Save my name"}</button></div>
+    <div class="step"><b>Team · Jamoa</b><input class="f" id="swTeam" maxlength="18" value="${esc(team ? me.name : (last.team || (u ? "Team " + first(u.name) : "")))}" placeholder="Samarkand" aria-label="Team name"><button class="btn" data-sw="team">${team ? "Save team name" : "Play as a team"}</button></div>
+    <button class="link" data-sw-cancel>Cancel · Bekor qilish</button></div>`;
+  lastKey = "switch";
+}
+function doSwitch(type) {
+  const name = ($(type === "team" ? "#swTeam" : "#swSolo").value || "").trim();
+  if (!name) { const i = $(type === "team" ? "#swTeam" : "#swSolo"); i.focus(); return; }
+  me.type = type; me.name = name.slice(0, 18);
+  const L = load("clv-live-last") || {}; keep("clv-live-last", Object.assign(L, type === "team" ? { team: me.name } : { name: me.name }, { type }));
+  switching = false; saveSession(); sendJoin(); lastKey = ""; update();
+}
 function notFound() {
   app.innerHTML = `${top()}<div class="card mid"><p class="big">Looking for the game…</p><p class="lead">Check the code: <b>${esc(me.room)}</b></p><p class="uz">Kodni tekshiring.</p>
     <button class="btn sec" data-leave>Change code · Kodni o‘zgartirish</button></div>`;
@@ -258,13 +297,13 @@ function setCodeInUrl(code) {
 }
 function saveSession() { keep(SESSION, { code: me.room, id: me.id, name: me.name, type: me.type, at: Date.now() }); }
 function leave() {
-  drop(SESSION); confirmLeave = false;
+  drop(SESSION); confirmLeave = false; switching = false;
   if (client) { client.close(); client = null; }
   st = null; clearTimeout(waitT);
   setCodeInUrl("");
   joinForm();
 }
-function sendJoin() { if (client && me.room && !removed) client.publish(NET.topic(me.room, "join"), { id: me.id, name: me.name, type: me.type, av: me.type === "solo" ? myAv() : "" }); }
+function sendJoin() { if (client && me.room && !removed) client.publish(NET.topic(me.room, "join"), { id: me.id, name: me.name, type: me.type, av: myAv() }); }
 
 function onMsg(topic, payload) {
   if (!payload) return;
@@ -301,7 +340,7 @@ let lastScore = 0;
 function top() {
   const sc = st && st.players ? myScore().score : lastScore; lastScore = sc;
   return `<div class="top"><span class="dot ${online ? "" : "off"}" title="${online ? "Online" : "Reconnecting"}"></span>
-    ${me.type === "solo" ? faceImg() : ""}<span class="who">${me.type === "team" ? "Team" : "Me"} · <b>${esc(me.name)}</b></span>
+    ${faceImg()}<button class="who sw" data-switch aria-label="Change: just me or team">${me.type === "team" ? "Team" : "Me"} · <b>${esc(me.name)}</b> <span class="swi">⇄</span></button>
     <button class="gear" data-settings aria-label="Settings">⚙️</button><span class="score">⭐ ${sc}</span></div>
     <div id="net">${online ? "" : netMsg()}</div>`;
 }
@@ -314,6 +353,7 @@ function screenKey() {
   return [gid, removed, st.phase, st.qi, st.phase === "question" ? (answeredNow() ? (ack ? "ack" : "sent") : "") : "", st.phase === "lobby" ? st.n : "", confirmLeave].join("|");
 }
 function update() {
+  if (switching) return;                                 /* the "just me / team" panel is open: don't redraw under it */
   const k = screenKey();
   if (k === lastKey) return;
   if (st.phase === "question" && lastKey.split("|").slice(0, 4).join("|") !== k.split("|").slice(0, 4).join("|")) { choice = null; built = []; }
@@ -526,6 +566,10 @@ function soloEnd() {
 document.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   const d = b.dataset;
+  if (d.jpick) { jPick = d.jpick; joinForm(); const n = $("#name"); if (n) { n.focus(); n.select(); } return; }
+  if (d.switch != null) return switchBox();
+  if (d.sw) return doSwitch(d.sw);
+  if (d.swCancel != null) { switching = false; lastKey = ""; return update(); }
   if (d.soloK) { const P = soloPref(); P[d.soloK] = d.soloK === "n" ? +d.soloV : d.soloV; keep("clv-solo", P);
     const card = b.closest(".solo"); if (card) { const tmp = document.createElement("div"); tmp.innerHTML = soloCard(); card.replaceWith(tmp.firstElementChild); } return; }
   if (d.soloGo != null) return soloStart();
@@ -539,6 +583,8 @@ document.addEventListener("click", e => {
   if (d.soloAgain != null) return soloStart();
   if (d.soloQuit != null || d.soloMenu != null) { clearInterval(tick); clearTimeout(so.auto); QAU.pause(); so = null; return joinForm(); }
 });
+
+addEventListener("clv-account", () => { if ($("#code") && !client && !so) joinForm(); });
 
 /* ---------------- start: go straight back into a game that was interrupted ---------------- */
 const sess = load(SESSION);
