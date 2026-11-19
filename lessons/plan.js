@@ -21,6 +21,8 @@ window.PLAN = {
   ],
   /* One-off lessons that sit outside the weekly plan */
   extras: [
+    { title: "Plurals", focus: "one → many · -s, -es, -ies, -ves · men, women, children, people · these / those",
+      date: "2026-11-19", path: "plurals/01/", key: "pl1", group: "Grammar", pri: 1, openNow: true },
     { title: "Listening day", focus: "6 stories with sound \u00b7 am/is/are, can, have to, -ing, commands, present simple",
       date: "2026-11-16", openHour: 13, openNow: true, path: "listen/01/", key: "lis1", group: "Listening", pri: 1 },
     { title: "English Word Power", focus: "60 new words · classroom, family, house, food, town, jobs, weather, transport",
