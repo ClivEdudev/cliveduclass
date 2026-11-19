@@ -41,7 +41,24 @@ h1,h2,h3,p{margin:0}
 .btn.sm{font-size:15px;padding:9px 16px}
 .tiles{position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:30px;transform:rotate(18deg);opacity:.16;
   background:conic-gradient(from 45deg,var(--blue) 0 25%,var(--teal) 0 50%,var(--blue) 0 75%,var(--teal) 0) 0 0/45px 45px}
-.quick{display:flex;gap:12px;flex-wrap:wrap}
+.tools{display:flex;flex-direction:column;gap:12px}
+.th{font:800 14px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mist);margin:6px 0 0}
+.tgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.tool{position:relative;display:flex;flex-direction:column;gap:4px;padding:18px;border-radius:22px;background:var(--ink);text-decoration:none;color:var(--cream);border:1px solid var(--ink2);transition:transform .15s,border-color .15s,box-shadow .15s;overflow:hidden;min-height:150px}
+.tool:hover,.tool:focus-visible{transform:translateY(-3px);border-color:var(--tc);box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.tool .ti{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:var(--tc);margin-bottom:8px}
+.tool b{font:800 20px/1.15 var(--display)}
+.tool small{color:var(--mist);font-size:14px;font-weight:600;line-height:1.3}
+.tool .go{margin-top:auto;padding-top:10px;font-weight:800;font-size:14px;color:var(--tc)}
+.tool::after{content:"";position:absolute;right:-30px;top:-30px;width:100px;height:100px;border-radius:50%;background:var(--tc);opacity:.10}
+.t1{--tc:#FFC93C}.t2{--tc:#2FCB7C}.t3{--tc:#4DA3FF}.t4{--tc:#FF8A4C}
+.xgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.xl{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:var(--ink);border:1px solid var(--ink2);text-decoration:none;color:var(--cream);transition:border-color .15s,background .15s}
+.xl:hover,.xl:focus-visible{border-color:var(--yellow);background:var(--ink2)}
+.xl .xi{width:40px;height:40px;border-radius:12px;background:var(--ink2);display:grid;place-items:center;font-size:20px;flex:none}
+.xl small{display:block;font:800 11px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--mist)}
+.xl b{display:block;font:800 16px/1.2 var(--display)}
+@media (max-width:860px){.tgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.tool{min-height:0;padding:14px}.tool b{font-size:17px}.tool .ti{width:40px;height:40px;font-size:20px}}
 .info{background:var(--ink);border-radius:20px;padding:16px 20px;color:var(--mist);font-size:16px}
 .info b{color:var(--cream)}
 .sec h2{font:800 30px var(--display);margin-bottom:6px}
@@ -118,17 +135,26 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(-
     const hh = String(P.unlockHour).padStart(2, "0");
     app.innerHTML = `<div class="wrap">
       <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class <small>Teacher</small></div>
-        <button class="btn ghost sm" id="logout">Leave teacher mode on this device</button></div>
+        <button class="btn ghost sm" id="logout" title="Leave teacher mode on this device">\u21AA Leave teacher mode</button></div>
       <section class="today"><span class="tiles" aria-hidden="true"></span>
         <div><p class="eb">${esc(eb)}</p><h1>${esc(lesson.title)}</h1><p class="focus">${esc(lesson.focus)}</p>
         ${lesson.ready ? "" : `<p class="focus">This lesson isn’t built yet.</p>`}</div>
         <div>${lesson.ready ? `<a class="btn" href="../${lesson.folder}">Start the lesson →</a>` : `<span class="btn dk" aria-disabled="true">Coming soon</span>`}</div>
       </section>
-      <div class="quick"><a class="btn" href="../live/">Start a live game</a><a class="btn" href="progress/">\u{1F4CA} Class progress</a>${(P.starter || []).map(s => `<a class="btn" href="../${s.path}">New group: ${esc(s.title)}</a>`).join("")}${(P.extras || []).map(s => `<a class="btn" href="../${s.path}">${esc(s.group || "Extra")}: ${esc(s.title)}</a>`).join("")}<a class="btn ghost" href="../${P.revision.path}">Open the Big Revision</a><a class="btn ghost" href="../">See the student page</a></div>
-      <p class="info"><b>What students see:</b> the student page at <b>cliveduclass.netlify.app</b> shows only lessons you have already taught. Each lesson opens for students at <b>${hh}:00</b> on the day you teach it. On this device you can open every lesson.</p>
+      <section class="tools"><h2 class="th">Teach</h2>
+        <div class="tgrid">
+          <a class="tool t1" href="../live/"><span class="ti">\u{1F3AE}</span><b>Live game</b><small>Class game on the board · phones join</small><span class="go">Start →</span></a>
+          <a class="tool t2" href="progress/"><span class="ti">\u{1F4CA}</span><b>Class progress</b><small>Points, mistakes, homework</small><span class="go">Open →</span></a>
+          <a class="tool t3" href="https://t.me/clivedubot" target="_blank" rel="noopener"><span class="ti">\u2708\uFE0F</span><b>Telegram panel</b><small>Send /panel to the bot</small><span class="go">Open →</span></a>
+          <a class="tool t4" href="../daily/"><span class="ti">\u{1F4C5}</span><b>Daily challenge</b><small>Today’s word and 5 questions</small><span class="go">See →</span></a>
+        </div>
+        <h2 class="th">Extra lessons</h2>
+        <div class="xgrid">${(P.starter || []).map(x => `<a class="xl" href="../${x.path}"><span class="xi">\u{1F44B}</span><span><small>New group</small><b>${esc(x.title)}</b></span></a>`).join("")}${(P.extras || []).map(x => `<a class="xl" href="../${x.path}"><span class="xi">${/listen/i.test(x.group || x.title) ? "\u{1F3A7}" : /vocab/i.test(x.group || x.title) ? "\u{1F4DA}" : "\u2B50"}</span><span><small>${esc(x.group || "Extra")}</small><b>${esc(x.title)}</b></span></a>`).join("")}<a class="xl" href="../${P.revision.path}"><span class="xi">\u{1F501}</span><span><small>Revision</small><b>${esc(P.revision.title)}</b></span></a></div>
+      </section>
+      <p class="info"><b>What students see:</b> the student page at <b>clivedu.me</b> shows only lessons you have already taught. Each lesson opens for students at <b>${hh}:00</b> on the day you teach it. On this device you can open every lesson.</p>
       <section class="sec" id="plan">
         <h2>Course plan</h2>
-        <p>30 beginner lessons, Monday to Saturday.</p>
+        <p>30 beginner lessons · Monday, Thursday and Friday at ${String(P.classHour || 14).padStart(2, "0")}:00.</p>
         <div class="done"><span style="background:none;padding-left:0;color:var(--cream)">Already taught:</span>
           ${P.done.map(x => `<span>${esc(x.title)}</span>`).join("")}<a href="../${P.revision.path}">${esc(P.revision.title)}</a></div>
         ${P.weeks.map(w => `<div class="week"><h3>${esc(w.name)}</h3>${w.lessons.map(l => {

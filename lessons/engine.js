@@ -172,9 +172,12 @@ document.body.innerHTML = `
   <a class="back" href="${HOME}" aria-label="Back to ${STUDENT ? "my lessons" : "the teacher page"}">\u2190<span class="long"> ${STUDENT ? "My lessons" : "Teacher page"}</span><span class="short"> Back</span></a>
   <span class="lname">${lname}</span>
   ${STUDENT ? `<button class="lnk viewbtn signbtn" id="signBtn" data-signin hidden>\u2708\uFE0F<span class="long"> Sign in</span><span class="short"> Kirish</span></button>` : ""}
-  <button class="lnk viewbtn clvgear" data-settings aria-label="Settings">\u2699\uFE0F<span class="long"> Settings</span></button>
-  <button class="lnk viewbtn" id="viewBtn" data-viewtoggle></button>
-  ${STUDENT ? `<button class="lnk viewbtn gamebtn" id="gameBtn" data-joingame>\u{1F3AE}<span class="long"> Join game</span></button><span class="lnk viewbtn anstag" id="ansTag">\u{1F512}<span class="long"> Answers hidden</span></span><button class="lnk viewbtn followbtn" id="followBtn" data-follow></button>` : `<span class="lnk viewbtn followbtn" id="shareTag" title="Students' phones follow this slide">Phones follow</span><button class="lnk viewbtn ansbtn" id="ansBtn" data-answers></button><button class="lnk viewbtn ansbtn" id="ansAllBtn" data-answers-all></button><button class="lnk viewbtn gamebtn" id="gameBtn" data-livegame>\u{1F3AE} Live game</button>`}
+  ${STUDENT ? "" : `<div class="ttools">`}
+  ${STUDENT ? `<button class="lnk viewbtn clvgear" data-settings aria-label="Settings">\u2699\uFE0F<span class="long"> Settings</span></button>
+  <button class="lnk viewbtn" id="viewBtn" data-viewtoggle></button>` : `<div class="tgrp" role="group" aria-label="View"><button class="tb clvgear" data-settings aria-label="Settings" title="Settings">\u2699\uFE0F</button><button class="tb" id="viewBtn" data-viewtoggle></button></div>`}
+  ${STUDENT ? `<button class="lnk viewbtn gamebtn" id="gameBtn" data-joingame>\u{1F3AE}<span class="long"> Join game</span></button><span class="lnk viewbtn anstag" id="ansTag">\u{1F512}<span class="long"> Answers hidden</span></span><button class="lnk viewbtn followbtn" id="followBtn" data-follow></button>` : `<div class="tgrp" role="group" aria-label="Answers"><button class="tb ansbtn" id="ansBtn" data-answers></button><button class="tb ansbtn" id="ansAllBtn" data-answers-all></button></div>
+    <span class="tstat" id="shareTag" title="Students' phones follow this slide"><i></i><span class="long">Phones follow</span></span>
+    <button class="tb tprimary gamebtn" id="gameBtn" data-livegame>\u{1F3AE}<span class="long"> Live game</span></button></div>`}
   ${STUDENT ? `<div class="teams"><span class="mine"><span class="long">My points</span><span class="short">\u2B50</span> <b id="mypts">0</b></span></div>` : `<div class="teams" id="teams" aria-label="Team scores"></div>`}
 </div>
 ${STUDENT && !store.get("clv-tip-done", false) ? `<div class="tip" id="tip"><b class="t">How to use this page \u00b7 Sahifadan foydalanish</b>
@@ -311,7 +314,7 @@ function fit() {
     const s = Math.min(vp.clientWidth / 1920, vp.clientHeight / 1080);
     stage.style.transformOrigin = ""; stage.style.transform = `translate(-50%,-50%) scale(${s})`;
   }
-  const vb = $("#viewBtn"); if (vb) vb.textContent = flow ? "Slide view" : "Scroll view";
+  const vb = $("#viewBtn"); if (vb) { if (STUDENT) vb.textContent = flow ? "Slide view" : "Scroll view"; else { vb.innerHTML = (flow ? "\u{1F5BC}\uFE0F" : "\u2195\uFE0F") + `<span class="long"> ${flow ? "Slides" : "Scroll"}</span>`; vb.title = flow ? "Slide view" : "Scroll view"; } }
   sizeCv();
 }
 addEventListener("resize", queueFit);
@@ -1024,9 +1027,9 @@ const ORIG = slideList.map(s => L.slides.indexOf(s));
 let sync = null, following = store.get("clv-follow", true), lastMsg = null, lastTs = 0;
 function paintAns() {
   const b = $("#ansBtn");
-  if (b) { const on = openSet.has(ORIG[cur]); b.textContent = on ? "\u25CF Answers shown" : "Show answers"; b.classList.toggle("on", on); }
+  if (b) { const on = openSet.has(ORIG[cur]); b.innerHTML = on ? "\u{1F441}\uFE0F<span class=\"long\"> Shown</span>" : "\u{1F441}\uFE0F<span class=\"long\"> Show answers</span>"; b.title = on ? "Answers shown on this slide" : "Show the answers of this slide"; b.classList.toggle("on", on); }
   const a = $("#ansAllBtn");
-  if (a) { const all = ORIG.every(o => openSet.has(o)); a.textContent = all ? "\u25CF All open" : "Open all"; a.classList.toggle("on", all); }
+  if (a) { const all = ORIG.every(o => openSet.has(o)); a.innerHTML = all ? "\u2705<span class=\"long\"> All open</span>" : "\u{1F513}<span class=\"long\"> Open all</span>"; a.title = all ? "All answers are open" : "Open every answer"; a.classList.toggle("on", all); }
 }
 function sendSync(i) { if (sync) sync.send({ i: ORIG[i == null ? cur : i], ts: Date.now(), open: [...openSet], game: gameCode }); }
 function paintFollow() { const b = $("#followBtn"); if (b) { b.innerHTML = following ? "● Following<span class=\"long\"> teacher</span>" : "Follow<span class=\"long\"> teacher</span>"; b.classList.toggle("on", following); } }
@@ -1084,7 +1087,7 @@ function paintGame() {
   const b = $("#gameBtn"); if (!b) return;
   const on = TEACHER ? !!gameCode : !!lastGame;
   b.classList.toggle("on", on);
-  b.innerHTML = TEACHER ? (gameCode ? `\u{1F3AE} Game on · ${gameCode}` : "\u{1F3AE} Live game") : `\u{1F3AE}<span class="long"> ${on ? "Game on! Join" : "Join game"}</span>`;
+  b.innerHTML = TEACHER ? (gameCode ? `\u{1F3AE}<span class="long"> Game on ·</span> ${gameCode}` : "\u{1F3AE}<span class=\"long\"> Live game</span>") : `\u{1F3AE}<span class="long"> ${on ? "Game on! Join" : "Join game"}</span>`;
 }
 function gamePrompt(code) {
   if (promptedFor === code) return; promptedFor = code;
