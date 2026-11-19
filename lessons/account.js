@@ -26,7 +26,7 @@
     const orig = Storage.prototype.setItem;
     Storage.prototype.setItem = function (k, v) {
       orig.call(this, k, v);
-      try { if (!quiet && token && this === LS && tracked(String(k))) { dirty.add(String(k)); schedule(2500); } } catch (e) {}
+      try { if (!quiet && token && this === LS && tracked(String(k))) { dirty.add(String(k)); schedule(700); } } catch (e) {}
     };
   } catch (e) {}
 
@@ -59,7 +59,7 @@
   function schedule(ms) { clearTimeout(syncTimer); syncTimer = setTimeout(() => sync(false), ms); }
   async function sync(all) {
     if (!token) return;
-    if (syncing) return schedule(1500);
+    if (syncing) return schedule(600);
     const data = collect(all); const sentKeys = Object.keys(data);
     if (!all && !sentKeys.length) return;
     sentKeys.forEach(k => dirty.delete(k));
@@ -67,7 +67,7 @@
     try {
       const j = await api("/sync", { body: { data } });
       summary = j.summary; if (j.user) { user = j.user; keep(USR, user); } applyServer(j.data); tell();
-    } catch (e) { sentKeys.forEach(k => dirty.add(k)); if (token) schedule(15000); }
+    } catch (e) { sentKeys.forEach(k => dirty.add(k)); if (token) schedule(5000); }
     finally { syncing = false; }
   }
   addEventListener("pagehide", () => {

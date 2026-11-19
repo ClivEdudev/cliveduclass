@@ -181,7 +181,12 @@ function onMessage(topic, payload) {
     if (S.phase === "lobby") renderLobbyList(); else if (isNew) render();
     publish();
   } else if (topic.endsWith("/ans") && m.id && S.phase === "question" && m.qi === S.qi && S.players[m.id] && !S.answers[m.id]) {
-    S.answers[m.id] = { choice: m.choice != null ? +m.choice : null, order: Array.isArray(m.order) ? m.order : null, t: (Date.now() - S.qStart) / 1000 };
+    /* time = when the student tapped on their phone (sent as "left"), not when it arrived here;
+       at most 3 s of network delay is credited, and never earlier than that */
+    const arrived = (Date.now() - S.qStart) / 1000;
+    const tapped = typeof m.left === "number" && isFinite(m.left) ? S.qLimit - m.left : arrived;
+    const t = Math.max(0, Math.min(arrived, Math.max(tapped, arrived - 3)));
+    S.answers[m.id] = { choice: m.choice != null ? +m.choice : null, order: Array.isArray(m.order) ? m.order : null, t };
     const c = $("#ansCount"); if (c) c.textContent = `Answers: ${Object.keys(S.answers).length} / ${Object.keys(S.players).length}`;
     publish();
     if (Object.keys(S.answers).length >= Object.keys(S.players).length) reveal();
@@ -204,7 +209,7 @@ function nextQuestion() {
     const el = (Date.now() - S.qStart) / 1000, left = S.qLimit - el;
     const t = $("#tleft"); if (t) t.textContent = Math.max(0, Math.ceil(left));
     const ring = $("#ring"); if (ring) ring.style.setProperty("--p", Math.max(0, left / S.qLimit).toFixed(3));
-    if (left <= 0) reveal();
+    if (left <= -0.8) reveal();          /* a short grace so answers tapped at the last second still arrive */
     if (Date.now() - (S.lastPub || 0) > 4000) publish();
   }, 250);
 }

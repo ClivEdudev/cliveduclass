@@ -326,9 +326,9 @@ function resendIfLost() {
   if (!pending || !st || !client) return;
   const open = st.phase === "question" && st.qi === pending.qi;
   if (!open || (st.answered || []).includes(me.id)) { pending = null; return; }
-  if (Date.now() - pending.at > 1500) { pending.at = Date.now(); client.publish(NET.topic(me.room, "ans"), pending.data); }
+  if (Date.now() - pending.at > 700) { pending.at = Date.now(); client.publish(NET.topic(me.room, "ans"), pending.data); }
 }
-setInterval(resendIfLost, 1500);
+setInterval(resendIfLost, 350);
 
 /* ---------------- screens ---------------- */
 function myScore() {
@@ -436,7 +436,7 @@ function render() {
   app.innerHTML = top() + body + leaveLink;
   if (st.phase === "question" && $("#pt")) {
     const paint = () => { const el = $("#pt"); if (!el) return clearInterval(tick); const left = Math.max(0, Math.ceil((st.left || 0) - (Date.now() - gotAt) / 1000)); el.textContent = left; el.classList.toggle("low", left <= 5); };
-    paint(); tick = setInterval(paint, 500);
+    paint(); tick = setInterval(paint, 200);
     if (q.type === "build" && !answeredNow()) drawBuild();
   }
 }
@@ -450,7 +450,10 @@ function drawBuild() {
 function send(data) {
   if (!st || st.phase !== "question" || sentFor === st.qi) return;
   sentFor = st.qi;
-  const msg = Object.assign({ id: me.id, qi: st.qi }, data);
+  /* the seconds left on this phone when the student tapped: the board scores by this, so a slow
+     connection does not cost points */
+  const left = Math.max(0, (st.left || 0) - (Date.now() - gotAt) / 1000);
+  const msg = Object.assign({ id: me.id, qi: st.qi, left: Math.round(left * 100) / 100 }, data);
   pending = { qi: st.qi, data: msg, at: Date.now() };
   lastSent = { qi: st.qi, room: me.room, data: Object.assign({}, data) };
   client.publish(NET.topic(me.room, "ans"), msg);

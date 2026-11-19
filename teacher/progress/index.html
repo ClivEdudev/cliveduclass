@@ -79,6 +79,10 @@ textarea{font:600 17px var(--body);padding:12px;border-radius:14px;border:2px so
 .chip button{border:0;background:var(--ink);color:var(--cream);width:26px;height:26px;border-radius:50%;cursor:pointer;font:800 14px var(--body)}
 .hw .f{display:block;margin-top:4px;color:var(--yellow);font-weight:700}
 .face{width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px}
+.live{display:inline-flex;align-items:center;gap:7px;font:800 13px var(--body);color:var(--mist);padding:0 6px}
+.live i{width:9px;height:9px;border-radius:50%;background:#2FCB7C;box-shadow:0 0 0 4px rgba(47,203,124,.18)}
+.live.blink i{animation:lblink .8s}
+@keyframes lblink{0%{box-shadow:0 0 0 0 rgba(47,203,124,.7)}100%{box-shadow:0 0 0 12px rgba(47,203,124,0)}}
 .hw{border-left:4px solid var(--yellow);padding:6px 10px;background:var(--night);border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
 .hw small{display:block;color:var(--mist);font-weight:700;white-space:normal}
 .det{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px}
@@ -135,11 +139,31 @@ button:focus-visible,input:focus-visible,a:focus-visible,textarea:focus-visible,
     const acc = A();
     if (!acc || !acc.signedIn) return gate("signin");
     if (!acc.user || !acc.user.teacher) return gate("claim");
-    try { data = await acc.api("/teacher/students"); }
+    try { data = await acc.api("/teacher/students"); lastJson = JSON.stringify(data); }
     catch (e) { if (/Teacher only/.test(e.message)) return gate("claim", "This Telegram account is not the teacher."); app.innerHTML = `<div class="gate"><h1>Could not load</h1><p class="err">${esc(e.message)}</p><button class="btn" onclick="location.reload()">Try again</button></div>`; return; }
     draw();
     if (selected) openDetail(selected);
   }
+  /* live view: fetch again every 5 seconds while the page is open; redraw only if something changed,
+     and never while the teacher is typing a message or choosing a file */
+  let lastJson = "";
+  async function quietRefresh() {
+    const acc = A(); if (!acc || !acc.signedIn || !data || busy || attach) return;
+    if (document.visibilityState !== "visible") return;
+    const ae = document.activeElement; if (ae && /^(TEXTAREA|INPUT|SELECT)$/.test(ae.tagName)) return;
+    if ($("#msg") && $("#msg").value.trim()) return;
+    try {
+      const fresh = await acc.api("/teacher/students"), j = JSON.stringify(fresh);
+      let det = null;
+      if (selected) { try { det = await acc.api("/teacher/student?id=" + encodeURIComponent(selected)); } catch (e) {} }
+      if (j === lastJson && (!det || JSON.stringify(det) === JSON.stringify(detail))) return;
+      lastJson = j; data = fresh; if (det) detail = det;
+      const y = scrollY; draw(); scrollTo(0, y);
+      const st = $("#liveTag"); if (st) { st.classList.remove("blink"); void st.offsetWidth; st.classList.add("blink"); }
+    } catch (e) {}
+  }
+  setInterval(quietRefresh, 5000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") quietRefresh(); });
   async function openDetail(id) {
     selected = id; detail = null; draw();
     try { detail = await A().api("/teacher/student?id=" + encodeURIComponent(id)); } catch (e) { detail = { error: e.message }; }
@@ -176,7 +200,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,textarea:focus-visible,
     const gtag = g => g ? `<span class="g ${g}">${g.toUpperCase()}</span>` : `<span class="g none">—</span>`;
     app.innerHTML = `<div class="wrap">
       <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class <small>Teacher</small></div>
-        <div class="acts"><a class="btn ghost" href="../">← Planner</a><button class="btn ghost" data-act="refresh">↻ Refresh</button><button class="btn tg" data-act="report">\u{1F4E8} Send today’s report to my Telegram</button><button class="btn ghost" data-settings>⚙️</button></div></div>
+        <div class="acts"><a class="btn ghost" href="../">← Planner</a><span class="live" id="liveTag" title="Updates by itself every 5 seconds"><i></i>Live</span><button class="btn ghost" data-act="refresh">↻ Refresh</button><button class="btn tg" data-act="report">\u{1F4E8} Send today’s report to my Telegram</button><button class="btn ghost" data-settings>⚙️</button></div></div>
       <div><h1 class="t">Class progress</h1><p class="sub">Students appear here after they sign in with Telegram. Tap a student for details.</p></div>
       ${note ? `<p class="${note.startsWith("✗") ? "err" : "ok"}">${esc(note)}</p>` : ""}
       <div class="tilesrow">
