@@ -4,6 +4,7 @@
 (function () {
   "use strict";
   const KEY = "clv-settings";
+  window.CLV_V = "dev";      /* replaced by the deploy's version (tools/stamp.cjs) */
   const DEF = { theme: "light", style: "classic", bright: 100, size: 100, reading: false, calm: false, uz: true, sound: true };
   const root = document.documentElement;
   const load = () => { try { return Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { return Object.assign({}, DEF); } };
@@ -25,7 +26,7 @@
     const modern = S.style === "modern";
     root.classList.toggle("clv-modern", modern);
     if (modern && !document.getElementById("clvModern") && document.head) {
-      const l = document.createElement("link"); l.id = "clvModern"; l.rel = "stylesheet"; l.href = "/lessons/modern.css"; document.head.appendChild(l);
+      const l = document.createElement("link"); l.id = "clvModern"; l.rel = "stylesheet"; l.href = "/lessons/modern.css?v=" + window.CLV_V; document.head.appendChild(l);
     }
     const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = dark ? "#0E1A26" : "#FFFFFF";
     const dim = document.getElementById("clvDim");

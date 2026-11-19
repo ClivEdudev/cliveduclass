@@ -31,7 +31,7 @@
     chain = chain.then(() => cache[path] !== undefined ? cache[path] : new Promise(res => {
       window.LESSON = undefined;
       const sc = document.createElement("script");
-      sc.src = (base == null ? "../" : base) + path;
+      sc.src = (base == null ? "../" : base) + path + (window.CLV_V ? "?v=" + window.CLV_V : "");
       sc.onload = () => { cache[path] = window.LESSON || null; res(cache[path]); };
       sc.onerror = () => { cache[path] = null; res(null); };
       document.head.appendChild(sc);

@@ -38,7 +38,7 @@ if (P) {
 }
 document.title = `${L.n ? "Lesson " + L.n + " · " : ""}${strip(L.title)}`;
 if (STUDENT && openDate && !L.openNow && !(P.isForced && P.isForced(L.n || L.id)) && !P.isOpen(openDate, L.openHour)) {
-  addEventListener("clv-open", e => { if ((e.detail || []).includes(String(L.n || L.id))) location.reload(); });
+  addEventListener("clv-open", e => { if ((e.detail || []).includes(String(L.n || L.id))) P.reloadForOpen(e.detail); });
   const at = P.openAt(openDate, L.openHour);
   document.body.classList.add("locked-page");
   document.body.innerHTML = `<div class="lockbox">

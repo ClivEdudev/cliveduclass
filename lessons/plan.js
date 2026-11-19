@@ -93,13 +93,24 @@ window.PLAN = {
   /* Lessons the teacher opened early from the Telegram bot. Cached on the phone so the page
      draws at once, then checked with the server; if it changed, the page is told ("clv-open"). */
   let forced = []; try { forced = JSON.parse(localStorage.getItem("clv-open") || "[]"); } catch (e) {}
+  /* a phone that cannot save (private browsing, full storage) gets the list in the address instead */
+  try { const q = new URLSearchParams(location.search).get("clvopen"); if (q != null) forced = [...new Set(forced.concat(q.split(",").filter(Boolean)))]; } catch (e) {}
   P.isForced = k => k != null && forced.includes(String(k));
+  /* reload the page once to show a lesson the teacher just opened; never loop */
+  P.reloadForOpen = list => {
+    let saved = false;
+    try { localStorage.setItem("clv-open", JSON.stringify(list)); saved = JSON.parse(localStorage.getItem("clv-open") || "null").join() === list.join(); } catch (e) {}
+    if (saved) return location.reload();
+    const u = new URL(location.href), want = list.join(",");
+    if (u.searchParams.get("clvopen") === want) return;          /* already showing this list */
+    u.searchParams.set("clvopen", want); location.replace(u.toString());
+  };
   if (typeof fetch === "function" && typeof location !== "undefined" && /^https?:/.test(location.protocol)) {
     fetch("/api/open", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => {
       if (!j || !Array.isArray(j.open)) return;
       const next = j.open.map(String).sort(), was = forced.slice().sort();
       if (JSON.stringify(next) === JSON.stringify(was)) return;
-      forced = next; try { localStorage.setItem("clv-open", JSON.stringify(next)); } catch (e) {}
+      forced = next;
       try { window.dispatchEvent(new CustomEvent("clv-open", { detail: next })); } catch (e) {}
     }).catch(() => {});
   }

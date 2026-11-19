@@ -1,6 +1,22 @@
 [build]
   publish = "."
+  # adds ?v=<commit> to script and style links so a deploy never mixes old and new files
+  command = "node tools/stamp.cjs"
 
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+# Pictures, sounds, icons: they rarely change, keep them on the phone
+[[headers]]
+  for = "/avatars/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000, stale-while-revalidate=2592000"
+[[headers]]
+  for = "/brand/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
+[[headers]]
+  for = "/listen/audio/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000, stale-while-revalidate=2592000"

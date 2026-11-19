@@ -103,7 +103,8 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
 .signcard:hover .go,.signcard:focus-visible .go{background:var(--yel);color:#12263A}
 @media (max-width:480px){.signcard .go{display:none}}
 .gear{font-weight:800;font-size:15px;font-family:inherit;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap}
-.topr{display:flex;gap:8px;align-items:center}
+.topr{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;min-width:0}
+@media (max-width:440px){.pts .lbl{display:none}.top .gear.tgb{font-size:15px;padding:7px 12px}}
 </style>
 <script src="lessons/settings.js"></script>
 <script src="lessons/account.js" defer></script>
@@ -129,7 +130,7 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
   items.sort((a, b) => (b.date - a.date) || ((b.pri || 0) - (a.pri || 0)));
   const newest = items[0];
   const upcoming = P.all.find(l => !P.isOpen(l.date) && !(P.openNowLessons || []).includes(l.n) && !P.isForced(l.n));
-  addEventListener("clv-open", () => location.reload());          /* the teacher opened a lesson from Telegram */
+  addEventListener("clv-open", e => P.reloadForOpen(e.detail || []));          /* the teacher opened a lesson from Telegram */
   const isToday = it => it && P.key(it.date) === P.key(new Date());
 
   let feature = "";
@@ -151,7 +152,7 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
     : `<p class="empty">Your lessons will appear here when class starts.</p>`;
 
   document.getElementById("app").innerHTML = `
-    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="topr"><span id="accBtn"></span><button class="gear" data-settings aria-label="Settings">⚙️</button><span class="pts">⭐ My points <b>${total}</b></span></span></div>
+    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="topr"><span id="accBtn"></span><button class="gear" data-settings aria-label="Settings">⚙️</button><span class="pts">⭐<span class="lbl"> My points</span> <b>${total}</b></span></span></div>
     <div class="hello"><h1>My English <span>lessons</span></h1>
       <p>Every lesson from class is here: rules, Uzbek examples, quizzes and games.</p>
       <p class="uz">Har bir dars shu yerda. Takrorlang va ball yig‘ing!</p></div>
