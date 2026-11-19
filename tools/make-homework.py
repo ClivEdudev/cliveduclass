@@ -18,6 +18,7 @@ Part types and their items:
   order      "seven / I / at / get up"                   → put the words in order
   odd        "teacher · doctor · kitchen · driver"       → circle the odd one out
   translate  "Men har kuni choy ichaman."                → write it in English
+  words      "2,500" or "7:30"                           → write it in words (two columns)
   write      { "prompt": "...", "hint": "...", "lines": 6 } (one object, not a list)
 Every item is worth 1 point; "write" is worth its number of lines. No answers are printed.
 """
@@ -108,6 +109,12 @@ def render_part(no, p, color):
         rnd = random.Random("%s-%s" % (no, p.get("title")))
         uzs = [u for _, u in items]; rnd.shuffle(uzs)
         letters = "abcdefghij"
+        if len(items) > 6:   # long lists: English in two columns, the Uzbek choices in a box under them
+            flow += [P("Write the letter. · Harfni yozing.", small), sp(1.5),
+                     cols(["%d.  %s   %s" % (i + 1, esc(e), line(4)) for i, (e, _) in enumerate(items)], 2), sp(1.5),
+                     box("   ".join("<b>%s)</b> %s" % (letters[i], esc(u)) for i, u in enumerate(uzs)), color)]
+            flow.append(sp(3))
+            return KeepTogether(flow)
         rows = [[P("%d.  %s   %s" % (i + 1, esc(e), line(4))), P("%s)  %s" % (letters[i], esc(uzs[i])))] for i, (e, _) in enumerate(items)]
         tb = Table(rows, colWidths=[CW / 2] * 2)
         tb.setStyle(TableStyle([("LEFTPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 5)]))
@@ -116,6 +123,8 @@ def render_part(no, p, color):
         flow.append(cols(["%d.  <i>%s</i><br/>%s" % (i + 1, esc(x), line(44)) for i, x in enumerate(items)], 1))
     elif t == "odd":
         flow.append(cols(["%d.  %s" % (i + 1, esc(x)) for i, x in enumerate(items)], 2))
+    elif t == "words":      # short prompt, long answer line, two columns: numbers / times in words
+        flow.append(cols(["%d.  <b>%s</b>  =  %s" % (i + 1, esc(x), line(28)) for i, x in enumerate(items)], 2))
     elif t == "translate":
         flow.append(cols(["%d.  <i>%s</i><br/>%s" % (i + 1, esc(x), line(52)) for i, x in enumerate(items)], 1))
     elif t == "write":
@@ -139,10 +148,16 @@ def points(p):
 def main():
     if len(sys.argv) < 2:
         raise SystemExit(__doc__)
-    n = int(sys.argv[1]); nn = "%02d" % n
-    src = os.path.join(ROOT, "lessons", nn, "homework.json")
-    out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "lessons", nn, "homework.pdf")
+    a = sys.argv[1]
+    if a.endswith(".json"):          # extra lessons: python3 tools/make-homework.py plurals/01/homework.json
+        src = os.path.join(ROOT, a); n = 0
+        out = sys.argv[2] if len(sys.argv) > 2 else src[:-5] + ".pdf"
+    else:
+        n = int(a); nn = "%02d" % n
+        src = os.path.join(ROOT, "lessons", nn, "homework.json")
+        out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "lessons", nn, "homework.pdf")
     spec = json.load(open(src, encoding="utf-8"))
+    lab = spec.get("label") or ("Lesson %d" % n)
     parts = spec["parts"]
     total = sum(points(p) for p in parts)
     title = spec.get("title", "Lesson %d" % n)
@@ -153,15 +168,15 @@ def main():
         c.setFillColor(YEL); c.rect(0, Hh - 9 * mm, 38 * mm, 9 * mm, stroke=0, fill=1)
         c.setFont(FB, 8); c.setFillColor(INK); c.drawString(14 * mm, Hh - 6 * mm, "ClivEdu Class")
         c.setFillColor(colors.white); c.setFont(F, 8)
-        c.drawRightString(W - 14 * mm, Hh - 6 * mm, ("Homework · Lesson %d · %s" % (n, title))[:90])
+        c.drawRightString(W - 14 * mm, Hh - 6 * mm, ("Homework · %s · %s" % (lab, title))[:90])
         c.setFillColor(SLATE); c.drawString(14 * mm, 8 * mm, "clivedu.me")
         c.drawRightString(W - 14 * mm, 8 * mm, "Page %d" % doc.page)
         c.restoreState()
 
     doc = BaseDocTemplate(out, pagesize=A4, leftMargin=14 * mm, rightMargin=14 * mm, topMargin=16 * mm, bottomMargin=15 * mm,
-                          title="Homework · Lesson %d · %s" % (n, title), author="Clive · ClivEdu Class")
+                          title="Homework · %s · %s" % (lab, title), author="Clive · ClivEdu Class")
     doc.addPageTemplates([PageTemplate(id="p", frames=[Frame(14 * mm, 15 * mm, W - 28 * mm, Hh - 31 * mm, id="f", leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)], onPage=deco)])
-    S = [P('<font name="%s" size="22">Homework</font>  <font color="#0B6E70" name="%s" size="11">Lesson %d · %s · Uyga vazifa</font>' % (FH, FI, n, esc(title)), ParagraphStyle("t", parent=body, leading=28)), sp(1.5)]
+    S = [P('<font name="%s" size="22">Homework</font>  <font color="#0B6E70" name="%s" size="11">%s · %s · Uyga vazifa</font>' % (FH, FI, esc(lab), esc(title)), ParagraphStyle("t", parent=body, leading=28)), sp(1.5)]
     nm = Table([[P("Name: " + line(26)), P("Date: " + line(12)), P("Score: " + line(3) + " / %d" % total)]], colWidths=[85 * mm, 47 * mm, None])
     nm.setStyle(TableStyle([("LEFTPADDING", (0, 0), (-1, -1), 0)]))
     S += [nm, sp(2)]

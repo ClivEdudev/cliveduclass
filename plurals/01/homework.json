@@ -1,0 +1,142 @@
+{
+  "label": "Extra lesson",
+  "title": "Plurals, numbers and time",
+  "minutes": 40,
+  "intro": "One → many, big numbers and telling the time. Write neatly!",
+  "intro_uz": "Ko’plik, katta sonlar va vaqtni aytish. Chiroyli yozing!",
+  "message": "Homework · Plurals, numbers and time. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    {
+      "type": "gaps",
+      "title": "Make it plural",
+      "uz": "Ko’plik shaklini yozing (-s, -es, -ies, -ves)",
+      "items": [
+        "one book → two ___",
+        "one bus → three ___",
+        "one city → two ___",
+        "one boy → four ___",
+        "one box → five ___",
+        "one knife → six ___",
+        "one baby → two ___",
+        "one watch → three ___",
+        "one leaf → many ___",
+        "one tomato → ten ___"
+      ]
+    },
+    {
+      "type": "circle",
+      "title": "Irregular plurals",
+      "uz": "Noto’g’ri ko’plik: to’g’risini aylantiring",
+      "items": [
+        "There are three {mans|men} in the shop.",
+        "The {childs|children} are playing.",
+        "Many {people|peoples} live in Tashkent.",
+        "I brush my {tooths|teeth} every morning.",
+        "My {foots|feet} are cold.",
+        "There are two {mice|mouses} in the kitchen!",
+        "Two {women|womans} are selling bread.",
+        "The farmer has ten {sheep|sheeps}."
+      ]
+    },
+    {
+      "type": "words",
+      "title": "Write the numbers in words",
+      "uz": "Sonlarni so’z bilan yozing (masalan: 250 = two hundred and fifty)",
+      "items": [
+        "100",
+        "365",
+        "1,000",
+        "2,500",
+        "10,000",
+        "48,700",
+        "150,000",
+        "1,000,000"
+      ]
+    },
+    {
+      "type": "gaps",
+      "title": "Write the number",
+      "uz": "Raqam bilan yozing",
+      "items": [
+        "three hundred and twelve = ___",
+        "five thousand = ___",
+        "seven thousand two hundred = ___",
+        "sixty thousand = ___",
+        "nine hundred thousand = ___",
+        "half a million = ___"
+      ]
+    },
+    {
+      "type": "words",
+      "title": "What time is it?",
+      "uz": "Vaqtni so’z bilan yozing (masalan: 7:30 = half past seven)",
+      "items": [
+        "7:00",
+        "8:15",
+        "9:30",
+        "10:45",
+        "2:20",
+        "11:55"
+      ]
+    },
+    {
+      "type": "match",
+      "title": "Useful words",
+      "uz": "Foydali so’zlar: inglizcha ↔ o’zbekcha",
+      "items": [
+        [
+          "hundred",
+          "yuz"
+        ],
+        [
+          "thousand",
+          "ming"
+        ],
+        [
+          "price",
+          "narx"
+        ],
+        [
+          "half past",
+          "yarim"
+        ],
+        [
+          "quarter",
+          "chorak"
+        ],
+        [
+          "o’clock",
+          "soat … (aniq)"
+        ],
+        [
+          "minute",
+          "daqiqa"
+        ],
+        [
+          "hour",
+          "soat (60 daqiqa)"
+        ],
+        [
+          "How much?",
+          "Qancha (pul)?"
+        ],
+        [
+          "How many?",
+          "Nechta?"
+        ]
+      ]
+    },
+    {
+      "type": "translate",
+      "title": "Translate into English",
+      "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Mening ikkita akam va uchta opam bor.",
+        "Soat necha? — Soat sakkiz yarim.",
+        "Bu kitob o’n besh ming so’m turadi.",
+        "Sinfimizda yigirmata o’quvchi bor.",
+        "Men soat yettida uyg’onaman."
+      ]
+    }
+  ]
+}
