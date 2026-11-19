@@ -9,17 +9,17 @@
     {
       "type": "gaps",
       "title": "Make it plural",
-      "uz": "Ko’plik shaklini yozing (-s, -es, -ies, -ves)",
+      "uz": "Ko’plik shaklini yozing (-s, -es, -ies)",
       "items": [
         "one book → two ___",
-        "one bus → three ___",
-        "one city → two ___",
-        "one boy → four ___",
-        "one box → five ___",
-        "one knife → six ___",
+        "one pen → three ___",
+        "one bus → two ___",
+        "one city → four ___",
+        "one boy → five ___",
+        "one box → six ___",
         "one baby → two ___",
         "one watch → three ___",
-        "one leaf → many ___",
+        "one class → two ___",
         "one tomato → ten ___"
       ]
     },
@@ -28,14 +28,14 @@
       "title": "Irregular plurals",
       "uz": "Noto’g’ri ko’plik: to’g’risini aylantiring",
       "items": [
-        "There are three {mans|men} in the shop.",
-        "The {childs|children} are playing.",
-        "Many {people|peoples} live in Tashkent.",
-        "I brush my {tooths|teeth} every morning.",
-        "My {foots|feet} are cold.",
-        "There are two {mice|mouses} in the kitchen!",
-        "Two {women|womans} are selling bread.",
-        "The farmer has ten {sheep|sheeps}."
+        "one man → two {mans|men}",
+        "one woman → three {womans|women}",
+        "one child → four {childs|children}",
+        "one person → five {persons|people}",
+        "one tooth → two {tooths|teeth}",
+        "one foot → two {foots|feet}",
+        "one mouse → two {mouses|mice}",
+        "one sheep → ten {sheeps|sheep}"
       ]
     },
     {
@@ -50,7 +50,9 @@
         "10,000",
         "48,700",
         "150,000",
-        "1,000,000"
+        "1,000,000",
+        "720",
+        "99,000"
       ]
     },
     {
@@ -76,7 +78,22 @@
         "9:30",
         "10:45",
         "2:20",
-        "11:55"
+        "11:55",
+        "6:05",
+        "12:30"
+      ]
+    },
+    {
+      "type": "gaps",
+      "title": "Write the time in numbers",
+      "uz": "Vaqtni raqam bilan yozing (masalan: half past four = 4:30)",
+      "items": [
+        "eight o’clock = ___",
+        "half past three = ___",
+        "quarter past nine = ___",
+        "quarter to six = ___",
+        "ten past eleven = ___",
+        "twenty to one = ___"
       ]
     },
     {
@@ -127,15 +144,16 @@
       ]
     },
     {
-      "type": "translate",
-      "title": "Translate into English",
-      "uz": "Ingliz tiliga tarjima qiling",
+      "type": "odd",
+      "title": "Odd one out",
+      "uz": "Boshqalardan farq qiladiganini aylantiring",
       "items": [
-        "Mening ikkita akam va uchta opam bor.",
-        "Soat necha? — Soat sakkiz yarim.",
-        "Bu kitob o’n besh ming so’m turadi.",
-        "Sinfimizda yigirmata o’quvchi bor.",
-        "Men soat yettida uyg’onaman."
+        "books · pens · man · cats",
+        "men · women · children · boy",
+        "hundred · thousand · million · minute",
+        "o’clock · half past · quarter · price",
+        "babies · cities · boys · box",
+        "seven · twenty · teeth · ninety"
       ]
     }
   ]
