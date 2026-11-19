@@ -26,6 +26,7 @@ speakers**: short sentences, everyday words, Uzbek help everywhere.
 | `lessons/NN/lesson.js` | The lesson itself (section 3). `NN` = two digits: `07` |
 | `lessons/live-sets.js` | Add the live-game set `l7` (section 5) after the last `l…` set |
 | `lessons/plan.js` | Add `ready: true` to the lesson |
+| `lessons/NN/homework.json` + `homework.pdf` | The homework the bot sends at 15:30 (section 5b) |
 
 Change nothing else. Never edit other lessons.
 
@@ -123,10 +124,30 @@ The right answer is always first (the game shuffles). For a review lesson:
 `{ id: "l12", lesson: 12, path: "lessons/12/lesson.js", title: "Week 2 review", topic: "Lesson 12 · lessons 7–11 mixed", mixOf: ["l7","l8","l9","l10","l11"], qs: [] }`.
 Keep the set "all" working: it is built automatically from every set.
 
+## 5b. Homework (sent to every student by the bot at 15:30)
+
+Write `lessons/NN/homework.json` and make the PDF:
+```bash
+python3 tools/make-homework.py N        # writes lessons/NN/homework.pdf
+```
+The format and every part type are described at the top of `tools/make-homework.py`; copy the
+shape of `lessons/07/homework.json`. Rules:
+- Grammar and vocabulary only (no listening), **no answers** in the file. About 35 minutes, 45–55 points,
+  2–3 pages. Uzbek line under every part title (`uz`).
+- Parts, in this order: today's grammar (circle), verb gaps, today's new words (match), negatives and
+  questions (transform), word order, Uzbek → English (translate, 4 sentences), **"What we learnt
+  before"** (circle, 6 items from earlier lessons: to be, can, there is/are, this/these, ’s, have to,
+  present continuous… whatever the course has taught), and "Write about …" (write, 6 lines).
+- Every item must have exactly one right answer. In `circle` items the options go in `{a|b}`.
+- `message`: one short line the bot sends with the PDF ("Lesson N · Title. Do it before the next lesson.").
+- Open the PDF (`pdftoppm -r 60 -jpeg lessons/NN/homework.pdf /tmp/hw` and look at the pages):
+  nothing cut off, Uzbek letters shown correctly.
+The PDF goes out by itself after class (`netlify/functions/homework-cron.mjs`); nothing else to do.
+
 ## 6. Publish
 
 ```bash
-git add lessons/NN lessons/live-sets.js lessons/plan.js
+git add lessons/NN lessons/live-sets.js lessons/plan.js     # lessons/NN has homework.json and homework.pdf
 git commit -m "Lesson N: Title (built automatically for <date>)"
 git push origin main
 ```

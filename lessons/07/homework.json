@@ -1,0 +1,78 @@
+{
+  "lesson": 7,
+  "title": "Present simple or continuous?",
+  "minutes": 35,
+  "intro": "Every day or now? Today’s grammar and words, and what we learnt before.",
+  "intro_uz": "Har kuni yoki hozir? Bugungi grammatika, so’zlar va oldingi mavzular.",
+  "message": "Lesson 7 · Present simple or continuous? Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "circle", "title": "Every day or now?", "uz": "Har kuni yoki hozir? To’g’risini aylantiring",
+      "items": [
+        "Look! It {snows|is snowing}.",
+        "My father {works|is working} in a bank.",
+        "Be quiet! The baby {sleeps|is sleeping}.",
+        "We {go|are going} to the bazaar every Saturday.",
+        "Listen! Someone {sings|is singing}.",
+        "Aziz {watches|is watching} TV every evening.",
+        "{Do|Does} your sister speak Russian?",
+        "I {don’t|doesn’t} drink coffee."
+      ] },
+    { "type": "gaps", "title": "Write the verb", "uz": "Fe’lni to’g’ri shaklda yozing",
+      "items": [
+        "My mother ___ (cook) plov on Fridays.",
+        "Lola ___ (study) English every day.",
+        "Right now, the children ___ (play) football.",
+        "He ___ (wash) the dishes after dinner.",
+        "I ___ (not / like) fish.",
+        "Look! Dad ___ (come) home.",
+        "She ___ (not / work) on Sundays.",
+        "___ you ___ (listen) to me now?"
+      ] },
+    { "type": "match", "title": "Daily routine words", "uz": "Kundalik ishlar: so’z va tarjimasi",
+      "items": [
+        ["wake up", "uyg’onmoq"],
+        ["get up", "o’rnidan turmoq"],
+        ["brush my teeth", "tish yuvmoq"],
+        ["have breakfast", "nonushta qilmoq"],
+        ["take a shower", "dush qabul qilmoq"],
+        ["go to bed", "uxlashga yotmoq"],
+        ["come home", "uyga kelmoq"],
+        ["finish", "tugatmoq"]
+      ] },
+    { "type": "transform", "title": "Negatives and questions", "uz": "Inkor va so’roq gap",
+      "items": [
+        ["He plays football.", "-"],
+        ["They live in Samarkand.", "?"],
+        ["She is cooking dinner now.", "?"],
+        ["You speak English.", "-"],
+        ["Aziz gets up at six.", "?"]
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "at seven / I / every morning / get up",
+        "your father / Where / work / does / ?",
+        "the bus / Look! / coming / is",
+        "drink / My sister / tea / doesn’t",
+        "doing / What / you / now / are / ?"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Men har kuni ertalab nonushta qilaman.",
+        "Hozir onam ovqat pishiryapti.",
+        "Akam futbol o’ynamaydi.",
+        "Siz qayerda ishlaysiz?"
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "There {is|are} two parks in my town.",
+        "{This|These} are my books.",
+        "My brother {can|cans} swim.",
+        "That is {Anvar|Anvar’s} bag.",
+        "You {have to|has to} wear a uniform.",
+        "{Are|Is} you a student?"
+      ] },
+    { "type": "write", "title": "Write about your day", "uz": "Kuningiz haqida yozing",
+      "items": { "prompt": "Write 6 sentences: 3 about every day (present simple) and 3 about now (present continuous).",
+                 "hint": "Example: I get up at seven every day. Now I am doing my homework.", "lines": 6 } }
+  ]
+}

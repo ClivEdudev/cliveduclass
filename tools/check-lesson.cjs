@@ -55,6 +55,25 @@ else {
 }
 if (!fs.existsSync(path.join(dir, "index.html"))) errs.push(`lessons/${pad}/index.html is missing (copy lessons/05/index.html, change the <title>)`);
 else { const h = fs.readFileSync(path.join(dir, "index.html"), "utf8"); if (!h.includes("../engine.js") || !h.includes("lesson.js")) errs.push("index.html must load ../plan.js, lesson.js and ../engine.js like lessons/05/index.html"); if (!h.includes(`Lesson ${n}`)) warn.push("index.html <title> should start with “Lesson " + n + " · ”"); }
+/* homework: the bot sends lessons/NN/homework.pdf after class */
+if (n >= 7) {
+  const hj = path.join(dir, "homework.json"), hp = path.join(dir, "homework.pdf");
+  if (!fs.existsSync(hj)) errs.push(`lessons/${pad}/homework.json is missing (LESSON-BUILDER.md 5b)`);
+  else {
+    try {
+      const h = JSON.parse(fs.readFileSync(hj, "utf8")), TYPES = ["circle", "gaps", "transform", "match", "order", "odd", "translate", "write"];
+      if (!Array.isArray(h.parts) || h.parts.length < 5) errs.push("homework.json: needs at least 5 parts");
+      else h.parts.forEach((p, i) => {
+        if (!TYPES.includes(p.type)) errs.push(`homework part ${i + 1}: unknown type "${p.type}"`);
+        if (!p.uz) warn.push(`homework part ${i + 1}: no Uzbek line (uz)`);
+        if (p.type === "circle" && (p.items || []).some(x => !/\{[^}|]+\|[^}]+\}/.test(x))) errs.push(`homework part ${i + 1}: every circle item needs {option|option}`);
+        if (p.type === "gaps" && (p.items || []).some(x => !x.includes("___"))) errs.push(`homework part ${i + 1}: every gaps item needs ___`);
+      });
+    } catch (e) { errs.push("homework.json is not valid JSON: " + e.message); }
+    if (!fs.existsSync(hp)) errs.push(`lessons/${pad}/homework.pdf is missing: run python3 tools/make-homework.py ${n}`);
+    else if (fs.statSync(hp).mtimeMs + 1000 < fs.statSync(hj).mtimeMs) errs.push("homework.pdf is older than homework.json: run tools/make-homework.py again");
+  }
+}
 const sets = load(path.join(ROOT, "lessons/live-sets.js")).LIVE_SETS || [];
 const set = sets.find(s => s.id === "l" + n);
 if (!set) errs.push(`lessons/live-sets.js: add { id: "l${n}", lesson: ${n}, path: "lessons/${pad}/lesson.js", … }`);

@@ -487,7 +487,8 @@ async function panelHome(chat, msgId) {
     [btn("\u{1F4DD} Send homework", "p:hw"), btn("\u{1F4E2} Message class", "p:msg")],
     [btn("❓ Class quiz", "p:qz"), btn("\u{1F4C8} Quiz results", "p:qr")],
     [btn("\u{1F3AE} Live game", "p:live"), btn("\u{1F4C5} Lessons", "p:les")],
-    [btn("\u{1F4DA} Homework list", "p:hwl"), ubtn("\u{1F310} Website", PUBLIC() + "/")]
+    [btn("\u{1F4C4} Today’s homework PDF", "p:ahw"), btn("\u{1F4DA} Homework list", "p:hwl")],
+    [ubtn("\u{1F310} Website", PUBLIC() + "/")]
   ]);
 }
 const stateName = s => ({ hw: "the homework (text or a file)", msg: "a message for the class", dm: "a message for " + (s.name || "a student"), code: "the live game code" }[s.mode] || s.mode);
@@ -589,6 +590,14 @@ async function onCallback(cq, req, context) {
     }
     const r = await broadcast({ text: st.draft.text, file: st.draft.file, to: TO[b], isHw: st.mode === "hw", site });
     return screen(chat, msgId, `✓ ${st.mode === "hw" ? "Homework" : "Message"} sent to <b>${r.sent}</b> of ${r.of} (${toLabel(TO[b])})${r.file ? " with the file" : ""}.` + (r.failed.length ? `\nNot delivered: ${esc(r.failed.join(", "))}` : ""), [[btn("\u{1F39B} Panel", "p:home")]]);
+  }
+  if (a === "ahw") {                                       /* send today's lesson homework PDF now */
+    await ack("Checking…");
+    const r = await autoHomework({ force: true });
+    if (r.skip === "already sent") return screen(chat, msgId, `\u{1F4C4} Today’s homework was already sent (${r.sent} of ${r.of} students).`, [[btn("\u{1F39B} Panel", "p:home")]]);
+    if (r.skip) return screen(chat, msgId, `\u{1F4C4} Not sent: ${esc(r.skip)}.`, [[btn("\u{1F39B} Panel", "p:home")]]);
+    if (r.error) return screen(chat, msgId, `✗ ${esc(r.error)}`, [[btn("\u{1F39B} Panel", "p:home")]]);
+    return;                                                 /* autoHomework already told the teacher */
   }
   if (a === "hwl") {
     await ack();
@@ -692,6 +701,45 @@ async function teacherInput(m, st, site) {
     await setState({ mode: st.mode, draft: { text: text.slice(0, 3500), file } });
     return say(chat, `${st.mode === "hw" ? "\u{1F4DD} Homework" : "\u{1F4E2} Message"} ready${file ? " with \u{1F4CE} " + esc(file.name) : ""}. Who gets it?`, { reply_markup: { inline_keyboard: targetRows("p:to:") } });
   }
+}
+
+
+/* ---------- homework PDF after class (scheduled: netlify/functions/homework-cron.mjs) ----------
+   On lesson days from 15:30 (Tashkent), the lesson's homework.pdf (made by tools/make-homework.py
+   with the lesson) goes to every student through the bot, once. The teacher gets a copy and a note. */
+export async function autoHomework({ force = false, site = "" } = {}) {
+  if (site) INTERNAL = site;
+  const now = new Date(Date.now() + 5 * 3600e3), hhmm = now.getUTCHours() * 60 + now.getUTCMinutes();
+  if (!force && hhmm < 15 * 60 + 30) return { skip: "before 15:30" };
+  const today = day(), P = (await siteData()).plan;
+  if (!P) return { skip: "plan not found" };
+  const lesson = (P.all || []).find(l => l.key === today && l.ready);
+  if (!lesson) return { skip: "no lesson today" };
+  const state = (await get("meta/autohw")) || {};
+  if (state[today] && state[today].sent != null) return { skip: "already sent", ...state[today] };
+  const t = await get("meta/teacher");
+  const nn = String(lesson.n).padStart(2, "0"), base = (INTERNAL || PUBLIC()) + `/lessons/${nn}/`;
+  const pdf = await fetch(base + "homework.pdf").catch(() => null);
+  if (!pdf || !pdf.ok) {
+    if (!state[today] || !state[today].warned) {
+      state[today] = { warned: true }; await put("meta/autohw", state);
+      if (t) await say(t.uid, `⚠️ The homework PDF for <b>Lesson ${lesson.n} · ${esc(lesson.title)}</b> is not on the website yet, so it was not sent. I try again every 30 minutes until 20:30.`);
+    }
+    return { skip: "no homework.pdf yet", lesson: lesson.n };
+  }
+  let spec = {}; try { const j = await fetch(base + "homework.json"); if (j.ok) spec = await j.json(); } catch (e) {}
+  const name = `Lesson-${lesson.n}-homework.pdf`;
+  const file = new File([await pdf.arrayBuffer()], name, { type: "application/pdf" });
+  if (!t) return { skip: "no teacher" };
+  const up = await tgUpload("sendDocument", { chat_id: t.uid, caption: `\u{1F4CE} Homework for Lesson ${lesson.n} (your copy). Sending it to every student now.` }, file, "document");
+  const d = up && up.ok && up.result && up.result.document;
+  if (!d) return { error: "upload failed: " + ((up && up.description) || "error") };
+  const text = spec.message || `Lesson ${lesson.n} · ${lesson.title}. Do it before the next lesson.`;
+  const r = await broadcast({ text, file: { id: d.file_id, name, size: file.size, type: "application/pdf", kind: "document" }, to: "all", isHw: true, site: PUBLIC() });
+  state[today] = { lesson: lesson.n, sent: r.sent, of: r.of, t: Date.now() };
+  const keep = Object.keys(state).sort().slice(-30); await put("meta/autohw", Object.fromEntries(keep.map(k => [k, state[k]])));
+  await say(t.uid, `✓ Homework for <b>Lesson ${lesson.n}</b> sent to <b>${r.sent}</b> of ${r.of} students.` + (r.failed.length ? `\nNot delivered: ${esc(r.failed.join(", "))}` : ""), { reply_markup: { inline_keyboard: [[btn("\u{1F39B} Panel", "p:home")]] } });
+  return { lesson: lesson.n, ...r };
 }
 
 /* ---------- HTTP ---------- */
