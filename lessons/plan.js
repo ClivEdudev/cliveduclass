@@ -40,7 +40,7 @@ window.PLAN = {
       { n: 5, title: "Present continuous", focus: "now: I am reading", ready: true },
       { n: 6, title: "Week 1 review", focus: "games with all week 1 topics", ready: true } ] },
     { name: "Week 2 · My day", lessons: [
-      { n: 7, title: "Present simple or continuous?", focus: "every day vs now" },
+      { n: 7, title: "Present simple or continuous?", focus: "every day vs now", ready: true },
       { n: 8, title: "How often?", focus: "always, usually, sometimes, never" },
       { n: 9, title: "Where is it?", focus: "in, on, under, next to, between" },
       { n: 10, title: "Time words", focus: "in, on, at · telling the time" },

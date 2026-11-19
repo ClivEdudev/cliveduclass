@@ -272,5 +272,37 @@ window.LIVE_SETS = [
     ["Your room must be ___. (toza)", "clean", "dirty", "heavy", "empty"],
     ["You must buy a ___ for the train.", "ticket", "taxi", "plane", "bicycle"]
   ] },
-  { id: "l6", lesson: 6, path: "lessons/06/lesson.js", title: "Week 1 review", topic: "Lesson 6 · lessons 1–5 mixed", mixOf: ["l1", "l2", "l3", "l4", "l5"], qs: [] }
+  { id: "l6", lesson: 6, path: "lessons/06/lesson.js", title: "Week 1 review", topic: "Lesson 6 · lessons 1–5 mixed", mixOf: ["l1", "l2", "l3", "l4", "l5"], qs: [] },
+  { id: "l7", lesson: 7, path: "lessons/07/lesson.js", title: "Present simple or continuous?", topic: "Lesson 7", qs: [
+    ["She ___ to school every day.", "goes", "is going", "go", "going"],
+    ["I ___ tea every morning.", "drink", "drinks", "am drink", "drinking"],
+    ["Look! It ___.", "is snowing", "snows", "snow", "snowing"],
+    ["My father ___ in a bank.", "works", "work", "is work", "working"],
+    ["Be quiet! The baby ___.", "is sleeping", "sleeps", "sleep", "sleeping"],
+    ["We ___ plov on Thursdays.", "eat", "eats", "are eat", "eating"],
+    ["Listen! Someone ___.", "is singing", "sings", "sing", "singing"],
+    ["go → he ___", "goes", "gos", "goies", "going"],
+    ["watch → she ___", "watches", "watchs", "watchies", "watching"],
+    ["study → he ___", "studies", "studys", "studyes", "studying"],
+    ["have → she ___", "has", "haves", "have", "having"],
+    ["play → he ___", "plays", "plaies", "playes", "playing"],
+    ["Make it negative: I like fish.", "I don’t like fish.", "I doesn’t like fish.", "I not like fish.", "I am not like fish."],
+    ["Make it negative: She speaks Russian.", "She doesn’t speak Russian.", "She don’t speak Russian.", "She doesn’t speaks Russian.", "She isn’t speak Russian."],
+    ["Make a question: You live in Tashkent.", "Do you live in Tashkent?", "Are you live in Tashkent?", "Does you live in Tashkent?", "You live in Tashkent?"],
+    ["Make a question: He drives a taxi.", "Does he drive a taxi?", "Does he drives a taxi?", "Do he drive a taxi?", "Is he drive a taxi?"],
+    ["Does he work here? (no)", "No, he doesn’t.", "No, he don’t.", "No, he isn’t.", "No, he not."],
+    ["Do you like plov? (yes)", "Yes, I do.", "Yes, I am.", "Yes, I like.", "Yes, I does."],
+    ["“Qayerda yashaysiz?”", "Where do you live?", "Where are you live?", "Where you live?", "Where does you live?"],
+    ["“Hozir nima qilyapsiz?”", "What are you doing now?", "What do you do now?", "What you are doing now?", "What are you do now?"],
+    ["“Kasbingiz nima?” (Nima ish qilasiz?)", "What do you do?", "What are you doing?", "What you do?", "What does you do?"],
+    ["“Otam qahva ichmaydi.”", "My father doesn’t drink coffee.", "My father don’t drink coffee.", "My father isn’t drinking coffee.", "My father doesn’t drinks coffee."],
+    ["Which sentence is correct?", "Does she like tea?", "Does she likes tea?", "Do she like tea?", "Is she like tea?"],
+    ["Which sentence is correct?", "I get up at seven every day.", "I am get up at seven every day.", "I getting up at seven every day.", "I gets up at seven every day."],
+    ["Which is a “now” word?", "at the moment", "every day", "on Sundays", "every morning"],
+    ["My mother cooks every day, but now she ___.", "is resting", "rests", "rest", "resting"],
+    ["“uyg’onmoq” in English:", "wake up", "get up", "go to bed", "take a shower"],
+    ["“nonushta qilmoq” in English:", "have breakfast", "have dinner", "do homework", "come home"],
+    ["A doctor ___ in a hospital.", "works", "work", "is work", "working"],
+    ["I ___ my homework in the evening.", "do", "does", "make", "am do"]
+  ] }
 ];
