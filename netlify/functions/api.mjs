@@ -183,7 +183,7 @@ async function upsertUser(f) {
   return { u, isNew: !old.id };
 }
 async function myHomework(u) {
-  const hw = (await get("meta/homework")) || [];
+  const hw = (await hwAll());
   return hw.filter(h => inTarget(h.to, u.group)).slice(-5);
 }
 const KINDS = { document: ["sendDocument", "document"], photo: ["sendPhoto", "photo"], audio: ["sendAudio", "audio"], voice: ["sendVoice", "voice"], video: ["sendVideo", "video"] };
@@ -318,6 +318,14 @@ async function each(list, fn, n = 8) {
   for (let i = 0; i < list.length; i += n) out.push(...await Promise.all(list.slice(i, i + n).map(x => fn(x).catch(e => (console.error(e), null)))));
   return out;
 }
+/* Homework sent before HW_CLEARED_AT was deleted for everyone (teacher's request, 20 Nov 2026).
+   The first read after the deploy removes it from the store for good. */
+const HW_CLEARED_AT = Date.parse("2026-11-20T10:32:33Z");
+async function hwAll() {
+  const hw = (await get("meta/homework")) || [], keep = hw.filter(h => (h.t || 0) > HW_CLEARED_AT);
+  if (keep.length !== hw.length) await put("meta/homework", keep);
+  return keep;
+}
 /* ---------- sending to the class (website and bot use the same code) ---------- */
 /* Groups: a = Elementary (Mon, Thu, Fri 14:00), b = Beginner (Mon, Thu 15:30).
    "notb" = everyone outside the Beginner group (Elementary and students with no group yet). */
@@ -334,7 +342,7 @@ async function broadcast({ text, file, to, isHw, site }) {
   const head = isHw ? "\u{1F4DD} <b>Homework · Uy vazifasi</b>" : "\u{1F4E2} <b>From your teacher · O‘qituvchidan</b>";
   const item = { id: rid(4), t: Date.now(), text: text || "", to };
   if (file) item.file = file;
-  if (isHw) { const hw = (await get("meta/homework")) || []; hw.push(item); await put("meta/homework", hw.slice(-50)); }
+  if (isHw) { const hw = (await hwAll()); hw.push(item); await put("meta/homework", hw.slice(-50)); }
   let sent = 0; const failed = [];
   await each(rows, async r => {
     const res = await sendHomework(r.u.id, head, item, kb("\u{1F4DA} Open ClivEdu", site + "/"));
@@ -491,7 +499,7 @@ async function lessonList(site) {
 async function panelHome(chat, msgId) {
   const rows = (await allStudents()).filter(r => !r.teacher), today = day(), start = Date.parse(today + "T00:00:00+05:00");
   const active = rows.filter(r => { const s = summary(r.u, r.p); return s.today > 0 || s.lastSeen >= start; }).length;
-  const hw = ((await get("meta/homework")) || []).slice(-1)[0];
+  const hw = ((await hwAll())).slice(-1)[0];
   const st = await getState();
   const text = `\u{1F39B} <b>Teacher panel</b> · ${today}\n\n\u{1F465} Students: <b>${rows.length}</b> · active today: <b>${active}</b>\n\u{1F4DD} Last homework: ${hw ? day(hw.t) + (hw.file ? " \u{1F4CE}" : "") : "none"}` +
     (st ? `\n\n⏳ Waiting for: <b>${esc(stateName(st))}</b> · /cancel to stop` : "");
@@ -614,12 +622,12 @@ async function onCallback(cq, req, context) {
   }
   if (a === "hwl") {
     await ack();
-    const hw = ((await get("meta/homework")) || []).slice(-6).reverse();
+    const hw = ((await hwAll())).slice(-6).reverse();
     return screen(chat, msgId, `\u{1F4DA} <b>Latest homework</b>\n\n` + (hw.map(h => `• ${day(h.t)} · ${toLabel(h.to)}${h.file ? " · \u{1F4CE} " + esc(h.file.name) : ""}\n  ${esc((h.text || "").slice(0, 120))}`).join("\n") || "None yet."),
       hw.map(h => [btn(`\u{1F5D1} Delete ${day(h.t)} ${(h.text || h.file && h.file.name || "").slice(0, 18)}`, "p:hwd:" + h.id)]).concat([[btn("\u{1F39B} Panel", "p:home")]]));
   }
   if (a === "hwd") {
-    const hw = (await get("meta/homework")) || []; await put("meta/homework", hw.filter(h => h.id !== b));
+    const hw = (await hwAll()); await put("meta/homework", hw.filter(h => h.id !== b));
     await ack("Deleted from the website and /homework"); return onCallback(Object.assign({}, cq, { data: "p:hwl", id: cq.id + "x" }), req, context);
   }
   if (a === "qz") { await ack(); return panelQuizTopics(chat, msgId, site); }
@@ -723,9 +731,11 @@ async function teacherInput(m, st, site) {
    Beginner (group B, beginner/NN/) from 17:00 to the Beginner group. The teacher gets a copy and a note. */
 export async function autoHomework({ force = false, site = "" } = {}) {
   if (site) INTERNAL = site;
+  /* plan.js autoHomework: false turns the automatic sending off (the teacher can still send it from /panel) */
   const now = new Date(Date.now() + 5 * 3600e3), hhmm = now.getUTCHours() * 60 + now.getUTCMinutes();
   const today = day(), P = (await siteData()).plan;
   if (!P) return { skip: "plan not found" };
+  if (P.autoHomework === false && !force) return { skip: "automatic homework is turned off (plan.js autoHomework: false)" };
   const pad = n => String(n).padStart(2, "0"), B = P.beginner || {};
   const tracks = [
     { id: "a", label: "Lesson", after: 15 * 60 + 30, to: "notb", lesson: (P.all || []).find(l => l.key === today && l.ready), path: l => `lessons/${pad(l.n)}/`, stateKey: today },
@@ -843,7 +853,7 @@ export default async (req, context) => {
     if (path === "/homework") return json({ items: (await myHomework(me.user)).reverse() });
     if (path === "/homework/file") {                       /* download the attachment on the website */
       const id = url.searchParams.get("id") || "";
-      const all = (await get("meta/homework")) || [];
+      const all = (await hwAll());
       const mine = await isTeacher(me.uid) ? all : await myHomework(me.user);
       const h = mine.find(x => x.id === id);
       if (!h || !h.file) return json({ error: "File not found." }, 404);
@@ -857,7 +867,7 @@ export default async (req, context) => {
     }
     if (path === "/homework/telegram" && method === "POST") {   /* "Send it to my Telegram" */
       const b = await body();
-      const h = (await myHomework(me.user)).find(x => x.id === b.id) || ((await isTeacher(me.uid)) && ((await get("meta/homework")) || []).find(x => x.id === b.id));
+      const h = (await myHomework(me.user)).find(x => x.id === b.id) || ((await isTeacher(me.uid)) && ((await hwAll())).find(x => x.id === b.id));
       if (!h) return json({ error: "Homework not found." }, 404);
       const r = await sendHomework(me.uid, `\u{1F4DD} <b>Homework · Uy vazifasi</b> (${day(h.t)})`, h, null);
       return json({ ok: !!(r && r.ok), why: r && r.description });
@@ -876,7 +886,7 @@ export default async (req, context) => {
       if (path === "/teacher/students") {
         const rows = await allStudents();
         const students = rows.filter(r => !r.teacher).map(r => summary(r.u, r.p)).sort((a, b) => b.points - a.points);
-        return json({ students, common: commonMistakes(rows.filter(r => !r.teacher)), homework: ((await get("meta/homework")) || []).slice(-10).reverse(), today: day() });
+        return json({ students, common: commonMistakes(rows.filter(r => !r.teacher)), homework: ((await hwAll())).slice(-10).reverse(), today: day() });
       }
       if (path === "/teacher/student") {
         const id = url.searchParams.get("id") || "";

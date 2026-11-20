@@ -144,7 +144,9 @@ shape of `lessons/07/homework.json`. Rules:
 - `message`: one short line the bot sends with the PDF ("Lesson N · Title. Do it before the next lesson.").
 - Open the PDF (`pdftoppm -r 60 -jpeg lessons/NN/homework.pdf /tmp/hw` and look at the pages):
   nothing cut off, Uzbek letters shown correctly.
-The PDF goes out by itself after class (`netlify/functions/homework-cron.mjs`); nothing else to do.
+Automatic sending is **off** (`autoHomework: false` in `lessons/plan.js`, since 20 Nov): still make the PDF; the
+teacher sends it from the bot's /panel when he wants. Set `autoHomework: true` to send it again after class
+(`netlify/functions/homework-cron.mjs`).
 
 ## 6. Publish
 

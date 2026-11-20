@@ -14,6 +14,7 @@ window.PLAN = {
   unlockHour: 14,           /* students open the lesson when class starts and follow along */
   openNowLessons: [5],      /* taught out of order; open to students straight away */
   teacherCode: "clivedu",
+  autoHomework: false,      /* true = the bot sends each lesson’s homework.pdf after class (15:30 / 17:00); off since 20 Nov */
   revision: { title: "Big Revision", date: "2026-11-09", path: "revision/", openNow: true },
   /* The two class groups. Students pick their group on the home page (saved as clv-group, and as
      user.group "a" / "b" on the server so the bot sends each group its own homework). */
