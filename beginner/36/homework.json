@@ -1,0 +1,122 @@
+{
+  "lesson": 36,
+  "label": "Beginner · Lesson 36",
+  "title": "Final review",
+  "minutes": 30,
+  "intro": "The whole beginner course: words and grammar from units 1–6.",
+  "intro_uz": "Butun kurs: 1–6-bo’limlarning so’zlari va grammatikasi.",
+  "message": "Beginner · Lesson 36 · Final review. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    {
+      "type": "match",
+      "title": "Words from the course",
+      "uz": "Kursdagi so’zlar: so’z va tarjimasi",
+      "items": [
+        [
+          "doctor",
+          "shifokor"
+        ],
+        [
+          "sister",
+          "opa / singil"
+        ],
+        [
+          "kitchen",
+          "oshxona"
+        ],
+        [
+          "chair",
+          "stul"
+        ],
+        [
+          "Monday",
+          "dushanba"
+        ],
+        [
+          "bread",
+          "non"
+        ],
+        [
+          "coat",
+          "palto"
+        ],
+        [
+          "cold",
+          "sovuq"
+        ]
+      ]
+    },
+    {
+      "type": "circle",
+      "title": "Units 4–6: grammar",
+      "uz": "4–6-bo’limlar: to’g’risini aylantiring",
+      "items": [
+        "She can {swim|swims}.",
+        "{Don’t|Doesn’t} open the window!",
+        "My brother {gets|get} up at seven.",
+        "{Does|Do} your mother like tea?",
+        "Look! The children {are playing|play} football.",
+        "What {are|is} you doing?",
+        "It’s cold. I’m {wearing|wear} a coat.",
+        "There aren’t {any|some} eggs."
+      ]
+    },
+    {
+      "type": "gaps",
+      "title": "Write the missing word",
+      "uz": "Tushib qolgan so’zni yozing",
+      "items": [
+        "I ___ fifteen.",
+        "This is Aziz. ___ bag is black.",
+        "There ___ two beds in my room.",
+        "He ___ (have) a car.",
+        "Lola ___ (not / like) fish.",
+        "How ___ apples are there?"
+      ]
+    },
+    {
+      "type": "order",
+      "title": "Put the words in order",
+      "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "from / are / Where / you / ?",
+        "can’t / I / drive",
+        "you / Do / tea / like / ?",
+        "reading / I / am / a book"
+      ]
+    },
+    {
+      "type": "translate",
+      "title": "Uzbek → English",
+      "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Mening ikkita singlim bor.",
+        "Akam har kuni ishlaydi.",
+        "Men hozir choy ichyapman."
+      ]
+    },
+    {
+      "type": "circle",
+      "title": "What we learnt before: Units 1–3",
+      "uz": "1–3-bo’limlar: to’g’risini aylantiring",
+      "items": [
+        "It’s {an|a} apple.",
+        "{Are|Is} you a student?",
+        "She {has|have} two brothers.",
+        "{These|This} are my books.",
+        "This is {Lola’s|Lola} bag.",
+        "The cat is {under|on} the table. (stol ostida)"
+      ]
+    },
+    {
+      "type": "write",
+      "title": "Write about you",
+      "uz": "O’zingiz haqingizda yozing: ism, uy, kuningiz, hozir",
+      "items": {
+        "prompt": "Write 4 sentences about you: your name, your home, your day, and now.",
+        "hint": "Example: My name is Aziz. There are three rooms in my home. I get up at seven. Now I am writing.",
+        "lines": 4
+      }
+    }
+  ]
+}

@@ -9,19 +9,23 @@
 "use strict";
 const fs = require("fs"), path = require("path");
 const ROOT = path.join(__dirname, "..");
-const n = Number(process.argv[2]);
-if (!n) { console.error("usage: node tools/check-lesson.cjs <lesson number>"); process.exit(2); }
-const pad = String(n).padStart(2, "0"), dir = path.join(ROOT, "lessons", pad);
+/* Beginner group:  node tools/check-lesson.cjs b5   (beginner/05/, id "b5", live set "b5") */
+const arg = String(process.argv[2] || ""), BEG = /^b\d+$/.test(arg);
+const n = Number(BEG ? arg.slice(1) : arg);
+if (!n) { console.error("usage: node tools/check-lesson.cjs <lesson number> | b<beginner lesson number>"); process.exit(2); }
+const pad = String(n).padStart(2, "0"), dir = path.join(ROOT, BEG ? "beginner" : "lessons", pad), LDIR = BEG ? "beginner" : "lessons", SID = (BEG ? "b" : "l") + n;
 const errs = [], warn = [];
 const load = file => { const w = {}; new Function("window", "localStorage", fs.readFileSync(file, "utf8"))(w, { getItem: () => null, setItem() {} }); return w; };
 
-if (!fs.existsSync(path.join(dir, "lesson.js"))) { console.log(`✗ lessons/${pad}/lesson.js is missing`); process.exit(1); }
+if (!fs.existsSync(path.join(dir, "lesson.js"))) { console.log(`✗ ${LDIR}/${pad}/lesson.js is missing`); process.exit(1); }
 let L; try { L = load(path.join(dir, "lesson.js")).LESSON; } catch (e) { console.log("✗ lesson.js does not run: " + e.message); process.exit(1); }
 const P = load(path.join(ROOT, "lessons/plan.js")).PLAN;
-const planL = P.weeks.flatMap(w => w.lessons).find(l => l.n === n);
+const planL = BEG ? (P.beginner.all || []).find(l => l.n === n) : P.weeks.flatMap(w => w.lessons).find(l => l.n === n);
 if (!L) errs.push("lesson.js must set window.LESSON");
 else {
   if (L.n !== n) errs.push(`LESSON.n is ${L.n}, expected ${n}`);
+  if (BEG && L.id !== SID) errs.push(`LESSON.id must be "${SID}"`);
+  if (!BEG && L.id) errs.push("elementary lessons have no id");
   if (!planL) errs.push(`lesson ${n} is not in lessons/plan.js`);
   else {
     if (L.title !== planL.title) errs.push(`title "${L.title}" differs from plan.js "${planL.title}"`);
@@ -53,12 +57,12 @@ else {
     if ((s.t === "quiz" || s.t === "gaps") && (s.rows || []).some(r => !Array.isArray(r) || r.length < 2 || !r[1])) errs.push(`slide ${i} (${s.t}): every row needs [question, answer]`);
   });
 }
-if (!fs.existsSync(path.join(dir, "index.html"))) errs.push(`lessons/${pad}/index.html is missing (copy lessons/05/index.html, change the <title>)`);
-else { const h = fs.readFileSync(path.join(dir, "index.html"), "utf8"); if (!h.includes("../engine.js") || !h.includes("lesson.js")) errs.push("index.html must load ../plan.js, lesson.js and ../engine.js like lessons/05/index.html"); if (!h.includes(`Lesson ${n}`)) warn.push("index.html <title> should start with “Lesson " + n + " · ”"); }
+if (!fs.existsSync(path.join(dir, "index.html"))) errs.push(`${LDIR}/${pad}/index.html is missing (copy lessons/05/index.html, change the <title>)`);
+else { const h = fs.readFileSync(path.join(dir, "index.html"), "utf8"); if (!h.includes(BEG ? "../../lessons/engine.js" : "../engine.js") || !h.includes("lesson.js")) errs.push(BEG ? "index.html must load ../../lessons/plan.js, lesson.js and ../../lessons/engine.js like start/01/index.html" : "index.html must load ../plan.js, lesson.js and ../engine.js like lessons/05/index.html"); if (!h.includes(`Lesson ${n}`)) warn.push("index.html <title> should start with “Lesson " + n + " · ”"); }
 /* homework: the bot sends lessons/NN/homework.pdf after class */
-if (n >= 7) {
+if (n >= 7 || BEG) {
   const hj = path.join(dir, "homework.json"), hp = path.join(dir, "homework.pdf");
-  if (!fs.existsSync(hj)) errs.push(`lessons/${pad}/homework.json is missing (LESSON-BUILDER.md 5b)`);
+  if (!fs.existsSync(hj)) errs.push(`${LDIR}/${pad}/homework.json is missing (LESSON-BUILDER.md 5b)`);
   else {
     try {
       const h = JSON.parse(fs.readFileSync(hj, "utf8")), TYPES = ["circle", "gaps", "transform", "match", "order", "odd", "translate", "write"];
@@ -70,16 +74,17 @@ if (n >= 7) {
         if (p.type === "gaps" && (p.items || []).some(x => !x.includes("___"))) errs.push(`homework part ${i + 1}: every gaps item needs ___`);
       });
     } catch (e) { errs.push("homework.json is not valid JSON: " + e.message); }
-    if (!fs.existsSync(hp)) errs.push(`lessons/${pad}/homework.pdf is missing: run python3 tools/make-homework.py ${n}`);
+    if (!fs.existsSync(hp)) errs.push(`${LDIR}/${pad}/homework.pdf is missing: run python3 tools/make-homework.py ${BEG ? LDIR + "/" + pad + "/homework.json" : n}`);
     else if (fs.statSync(hp).mtimeMs + 1000 < fs.statSync(hj).mtimeMs) errs.push("homework.pdf is older than homework.json: run tools/make-homework.py again");
   }
 }
 const sets = load(path.join(ROOT, "lessons/live-sets.js")).LIVE_SETS || [];
-const set = sets.find(s => s.id === "l" + n);
-if (!set) errs.push(`lessons/live-sets.js: add { id: "l${n}", lesson: ${n}, path: "lessons/${pad}/lesson.js", … }`);
+/* optional 2nd argument: a JSON file with the question rows, checked instead of the live-sets.js entry (before it is added) */
+const set = process.argv[3] ? (x => Array.isArray(x) ? { id: SID, qs: x } : Object.assign({ id: SID }, x))(JSON.parse(fs.readFileSync(process.argv[3], "utf8"))) : sets.find(s => s.id === SID);
+if (!set) errs.push(`lessons/live-sets.js: add { id: "${SID}", lesson: ${n}, path: "${LDIR}/${pad}/lesson.js", … }`);
 else if (!set.mixOf) {
-  if ((set.qs || []).length < 25) errs.push(`live-sets l${n}: ${(set.qs || []).length} questions, need at least 25`);
-  (set.qs || []).forEach((q, i) => { if (!Array.isArray(q) || q.length !== 5) errs.push(`live-sets l${n} qs[${i}]: needs [question, right, wrong, wrong, wrong]`); else if (new Set(q.slice(1)).size !== 4) errs.push(`live-sets l${n} qs[${i}]: answers must all differ`); });
+  if ((set.qs || []).length < (BEG ? 20 : 25)) errs.push(`live-sets ${SID}: ${(set.qs || []).length} questions, need at least ${BEG ? 20 : 25}`);
+  (set.qs || []).forEach((q, i) => { if (!Array.isArray(q) || q.length !== 5) errs.push(`live-sets ${SID} qs[${i}]: needs [question, right, wrong, wrong, wrong]`); else if (new Set(q.slice(1)).size !== 4) errs.push(`live-sets ${SID} qs[${i}]: answers must all differ`); });
 }
 warn.forEach(w => console.log("! " + w));
 if (errs.length) { errs.forEach(e => console.log("✗ " + e)); process.exit(1); }

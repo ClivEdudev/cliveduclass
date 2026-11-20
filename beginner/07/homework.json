@@ -1,0 +1,67 @@
+{
+  "lesson": 7,
+  "label": "Beginner · Lesson 7",
+  "title": "I am, you are",
+  "minutes": 25,
+  "intro": "I am, you are · I’m a student. You’re my friend. · jobs",
+  "intro_uz": "I am, you are · Men o’quvchiman. Sen mening do’stimsan. · kasblar",
+  "message": "Beginner · Lesson 7 · I am, you are. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Today’s words: jobs", "uz": "Kasblar: so’z va tarjimasini birlashtiring",
+      "items": [
+        ["student", "o’quvchi"],
+        ["teacher", "o’qituvchi"],
+        ["doctor", "shifokor"],
+        ["nurse", "hamshira"],
+        ["driver", "haydovchi"],
+        ["cook", "oshpaz"],
+        ["engineer", "muhandis"],
+        ["friend", "do’st"]
+      ] },
+    { "type": "circle", "title": "I am, you are", "uz": "To’g’risini aylantiring",
+      "items": [
+        "I {am|are} a student.",
+        "You {am|are} my friend.",
+        "I {am|is} Lola.",
+        "You {are|am} a doctor.",
+        "I’m {a|an} engineer.",
+        "You’re {a|an} teacher.",
+        "{I’m|You’re} fifteen. (Men o’n besh yoshdaman.)",
+        "{I’m|You’re} a nurse. (Siz hamshirasiz.)"
+      ] },
+    { "type": "gaps", "title": "Write am, are, a or an", "uz": "am, are, a yoki an yozing",
+      "items": [
+        "I ___ a driver.",
+        "You ___ a cook.",
+        "I’m ___ farmer.",
+        "You’re ___ engineer.",
+        "I ___ thirteen.",
+        "You ___ my friend."
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "student / I / a / am",
+        "friend / are / my / You",
+        "an / I’m / engineer",
+        "a / You’re / teacher"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Men shifokorman.",
+        "Sen mening do’stimsan.",
+        "Siz haydovchisiz."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi darslar: to’g’risini aylantiring",
+      "items": [
+        "My name {is|are} Bobur.",
+        "How {old|colour} are you?",
+        "It’s {a|an} orange bag.",
+        "It’s {a red car|a car red}.",
+        "What {colour|old} is it? It’s blue.",
+        "How do you {spell|spells} it?"
+      ] },
+    { "type": "write", "title": "Write about you and a friend", "uz": "O’zingiz va do’stingiz haqida yozing",
+      "items": { "prompt": "Write 4 sentences: 2 with I’m and 2 with You’re (to a friend or your teacher).",
+                 "hint": "Example: I’m Madina. I’m a student. You’re my friend. You’re a good cook!", "lines": 4 } }
+  ]
+}

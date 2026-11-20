@@ -1,0 +1,68 @@
+{
+  "lesson": 16,
+  "label": "Beginner · Lesson 16",
+  "title": "There is and there are",
+  "minutes": 30,
+  "intro": "My home: rooms and furniture. There is and there are. Today’s words and what we learnt before.",
+  "intro_uz": "Uyim: xonalar va jihozlar. There is va there are. Bugungi so’zlar va oldingi mavzular.",
+  "message": "Beginner · Lesson 16 · There is and there are. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Today’s words", "uz": "Bugungi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["kitchen", "oshxona"],
+        ["bedroom", "yotoqxona"],
+        ["bathroom", "vannaxona"],
+        ["sofa", "divan"],
+        ["bed", "karavot"],
+        ["fridge", "muzlatkich"],
+        ["lamp", "chiroq"],
+        ["carpet", "gilam"]
+      ] },
+    { "type": "circle", "title": "There is or there are?", "uz": "To’g’risini aylantiring",
+      "items": [
+        "There {is|are} a sofa in the living room.",
+        "There {is|are} two beds in my room.",
+        "There {is|are} a fridge in the kitchen.",
+        "There {is|are} four rooms in my house.",
+        "There is {a lamp|lamps} in the bedroom.",
+        "There are three {chair|chairs} in the kitchen.",
+        "Is there a TV? Yes, there {is|isn’t}.",
+        "{Is there|There is} a carpet in your room?"
+      ] },
+    { "type": "gaps", "title": "Write There is or There are", "uz": "Bo’sh joyga There is yoki There are yozing",
+      "bank": ["There is", "There are"],
+      "items": [
+        "___ a table in the kitchen.",
+        "___ two sofas in the living room.",
+        "___ a TV in my room.",
+        "___ five chairs in the kitchen.",
+        "___ a red carpet in the bedroom.",
+        "___ three lamps in my house."
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "a / There / bed / is",
+        "rooms / There / three / are",
+        "is / a / There / fridge / in the kitchen",
+        "there / Is / TV / a / ?"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Xonamda karavot bor.",
+        "Uyimda to’rtta xona bor.",
+        "Oshxonada muzlatkich bor."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "Lola is my sister. {His|Her} bag is red.",
+        "{Who|Whose} phone is this?",
+        "My brother {have|has} a car.",
+        "{This|These} are my keys.",
+        "This is {Aziz|Aziz’s} hat.",
+        "We {is|are} students."
+      ] },
+    { "type": "write", "title": "Write about your house", "uz": "Uyingiz haqida yozing",
+      "items": { "prompt": "Write 4 sentences about your house with There is and There are.",
+                 "hint": "Example: There are four rooms in my house. There is a sofa in the living room.", "lines": 4 } }
+  ]
+}

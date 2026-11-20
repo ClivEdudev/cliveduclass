@@ -111,8 +111,8 @@ button:focus-visible,input:focus-visible,a:focus-visible,textarea:focus-visible,
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const A = () => window.CLV_ACCOUNT;
   const day = (t = Date.now()) => new Date(t + 5 * 3600e3).toISOString().slice(0, 10);
-  const LNAME = { rev: "Big Revision", lis1: "Listening 1", v1: "Word Power", s1: "New group 1" };
-  const lname = k => LNAME[k] || (/^\d+$/.test(k) ? "Lesson " + k : k === "game" ? "Live game" : k);
+  const LNAME = { rev: "Big Revision", lis1: "Listening 1", v1: "Word Power", s1: "Beginner 1" };
+  const lname = k => LNAME[k] || (/^b\d+$/.test(k) ? "Beginner " + k.slice(1) : /^\d+$/.test(k) ? "Lesson " + k : k === "game" ? "Live game" : k);
   const ago = t => { if (!t) return "never"; const m = Math.round((Date.now() - t) / 60000); if (m < 2) return "now"; if (m < 60) return m + " min ago"; const h = Math.round(m / 60); if (h < 24) return h + " h ago"; const d = Math.round(h / 24); return d === 1 ? "yesterday" : d + " days ago"; };
   let data = null, sortKey = "points", filter = "all", selected = null, detail = null, sendTo = "all", sendKind = "hw", note = "", busy = false, attach = null;
   const kbSize = n => n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
@@ -210,7 +210,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,textarea:focus-visible,
         <div class="tile"><b>${st.reduce((a, s) => a + s.open, 0)}</b><span>mistakes still to fix</span></div>
       </div>
       <section class="panel"><h2>Students <small>${r.length} shown</small></h2>
-        <div class="seg" id="filter">${[["all", "All"], ["a", "Group A"], ["b", "Group B"], ["none", "No group"]].map(([v, t]) => `<button data-f="${v}" aria-pressed="${filter === v}">${t}</button>`).join("")}</div>
+        <div class="seg" id="filter">${[["all", "All"], ["a", "Elementary"], ["b", "Beginner"], ["none", "No group"]].map(([v, t]) => `<button data-f="${v}" aria-pressed="${filter === v}">${t}</button>`).join("")}</div>
         ${r.length ? `<div class="tbl"><table><thead><tr>${th("name", "Student")}<th>Group</th>${th("points", "⭐ Points")}${th("today", "Today")}${th("lessons", "Lessons")}${th("streak", "\u{1F525} Streak")}${th("open", "To fix")}${th("games", "Games")}${th("lastSeen", "Last seen")}</tr></thead><tbody>
           ${r.map(s => `<tr class="st ${selected === s.id ? "sel" : ""}" data-id="${esc(s.id)}" tabindex="0"><td class="n">${/^[gb]\d\d$/.test(s.avatar || "") ? `<img class="face" src="/avatars/${s.avatar}.webp" alt="">` : ""}<b>${esc(s.name)}</b>${s.username ? `<small>@${esc(s.username)}</small>` : ""}</td><td>${gtag(s.group)}</td>
             <td><b>${s.points}</b></td><td class="${s.today ? "hot" : "dim"}">${s.today ? "+" + s.today : "—"}</td><td>${s.lessons}</td><td>${s.streak || "—"}</td>
@@ -230,7 +230,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,textarea:focus-visible,
           <div class="att">${attach ? `<span class="chip">\u{1F4CE} <span>${esc(attach.name)}</span> ${kbSize(attach.size)}<button data-act="unattach" aria-label="Remove the file">✕</button></span>`
             : `<label>\u{1F4CE} Attach a file · Fayl biriktirish<input type="file" id="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.mp3,.m4a,.zip"></label>`}
             <span class="dim" style="font-size:13px">PDF, Word, PowerPoint, pictures, audio · up to 5 MB</span></div>
-          <div class="seg" id="to">${[["all", "Everyone"], ["group:a", "Group A"], ["group:b", "Group B"]].map(([v, t]) => `<button data-to="${v}" aria-pressed="${sendTo === v}">${t}</button>`).join("")}</div>
+          <div class="seg" id="to">${[["all", "Everyone"], ["group:a", "Elementary"], ["group:b", "Beginner"]].map(([v, t]) => `<button data-to="${v}" aria-pressed="${sendTo === v}">${t}</button>`).join("")}</div>
           <button class="btn" data-act="send" ${busy ? "disabled" : ""} style="align-self:flex-start">${busy ? "Sending…" : "Send"}</button>
           <p class="dim" style="font-size:14px">Homework is also saved on each student’s profile page. Students who turned messages off (/stop) are skipped.</p>
           ${(data.homework || []).length ? `<h2 style="font-size:18px;margin-top:6px">Recent homework</h2>` + data.homework.slice(0, 5).map(h => `<div class="hw"><small>${esc(day(h.t))} · ${h.to === "all" ? "everyone" : "group " + h.to.slice(6).toUpperCase()}</small>${esc(h.text)}${h.file ? `<span class="f">\u{1F4CE} ${esc(h.file.name)}</span>` : ""}</div>`).join("") : ""}

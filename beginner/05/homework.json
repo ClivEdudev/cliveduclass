@@ -1,0 +1,68 @@
+{
+  "lesson": 5,
+  "label": "Beginner · Lesson 5",
+  "title": "Colours",
+  "minutes": 25,
+  "intro": "Colours: red, blue, green… · a red pen · What colour is it?",
+  "intro_uz": "Ranglar: qizil, ko’k, yashil… · qizil ruchka · Bu qanday rangda?",
+  "message": "Beginner · Lesson 5 · Colours. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Today’s words: colours", "uz": "Ranglar: so’z va tarjimasini birlashtiring",
+      "items": [
+        ["red", "qizil"],
+        ["blue", "ko’k"],
+        ["green", "yashil"],
+        ["yellow", "sariq"],
+        ["black", "qora"],
+        ["white", "oq"],
+        ["brown", "jigarrang"],
+        ["pink", "pushti"]
+      ] },
+    { "type": "circle", "title": "Colour + thing", "uz": "To’g’risini aylantiring",
+      "items": [
+        "It’s {a|an} red pen.",
+        "It’s {a|an} orange bag.",
+        "It’s {a white car|a car white}.",
+        "What colour {is it|it is}?",
+        "It’s {green|a green}.",
+        "It’s {a|an} black chair.",
+        "{What|How} colour is it?",
+        "It’s {a yellow pencil|yellow a pencil}."
+      ] },
+    { "type": "gaps", "title": "Write the colour", "uz": "Rangni inglizcha yozing",
+      "bank": ["green", "white", "colour", "blue", "orange", "brown"],
+      "items": [
+        "It’s a ___ car. (oq)",
+        "It’s a ___ book. (yashil)",
+        "It’s an ___ pen. (to’q sariq)",
+        "It’s ___. (ko’k)",
+        "It’s a ___ desk. (jigarrang)",
+        "What ___ is it? (rang)"
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "pen / a / It’s / red",
+        "colour / is / What / it / ?",
+        "bag / It’s / orange / an",
+        "car / white / a / It’s"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Bu qora sumka.",
+        "Bu qanday rangda?",
+        "Bu yashil kitob."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi darslar: to’g’risini aylantiring",
+      "items": [
+        "My name {is|are} Lola.",
+        "How {are|is} you?",
+        "How {old|name} are you?",
+        "I {am|is} twelve.",
+        "How do you {spell|spells} it?",
+        "It’s {a|an} pen."
+      ] },
+    { "type": "write", "title": "Write about your things", "uz": "Narsalaringiz haqida yozing: rangini ayting",
+      "items": { "prompt": "Write 4 sentences about things in your bag or room. Say the colour.",
+                 "hint": "Example: It’s a blue pen. It’s an orange book.", "lines": 4 } }
+  ]
+}

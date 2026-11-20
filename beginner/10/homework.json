@@ -1,0 +1,67 @@
+{
+  "lesson": 10,
+  "label": "Beginner · Lesson 10",
+  "title": "Not and questions with to be",
+  "minutes": 30,
+  "intro": "I’m not…, isn’t, aren’t and questions with am, is, are. Today’s words and what we learnt before.",
+  "intro_uz": "Inkor (not) va so’roq gaplar: am, is, are. Bugungi so’zlar va oldingi mavzular.",
+  "message": "Beginner · Lesson 10 · Not and questions with to be. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Today’s words", "uz": "Bugungi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["happy", "xursand"],
+        ["sad", "xafa"],
+        ["hungry", "och (qorni och)"],
+        ["thirsty", "chanqagan"],
+        ["busy", "band"],
+        ["tired", "charchagan"],
+        ["cold", "sovuq"],
+        ["hot", "issiq"]
+      ] },
+    { "type": "circle", "title": "Not and questions", "uz": "To’g’risini aylantiring",
+      "items": [
+        "I {am not|is not} hungry.",
+        "She {isn’t|aren’t} a doctor.",
+        "They {aren’t|isn’t} from Korea.",
+        "{Are|Is} you a student?",
+        "{Is|Are} he from Bukhara?",
+        "{Are|Is} Lola and Bobur busy?",
+        "Are you tired? — Yes, {I am|I’m}.",
+        "Is she sad? — No, she {isn’t|aren’t}."
+      ] },
+    { "type": "gaps", "title": "Short answers", "uz": "Qisqa javobni yozing",
+      "items": [
+        "Are you hungry? — Yes, I ___.",
+        "Are you busy? — No, I’m ___.",
+        "Is Aziz a driver? — Yes, he ___.",
+        "Is it red? — No, it ___.",
+        "Are they from China? — Yes, they ___.",
+        "Are Lola and Madina sad? — No, they ___."
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "not / I’m / busy",
+        "a teacher / She / isn’t",
+        "you / Are / from Tashkent / ?",
+        "he / hungry / Is / ?"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Men band emasman.",
+        "Siz o’quvchimisiz?",
+        "Ular Samarqanddan emas."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "We {are|is} students.",
+        "two {buses|bus}",
+        "He {is|am} from Russia.",
+        "I {am|are} a teacher.",
+        "It’s {an|a} apple.",
+        "Lola is a doctor. {She|He} is from Tashkent."
+      ] },
+    { "type": "write", "title": "Write about you", "uz": "O’zingiz haqingizda yozing: «ha» va «yo’q» gaplar",
+      "items": { "prompt": "Write 4 sentences: 2 with I’m… and 2 with I’m not…",
+                 "hint": "Example: I’m a student. I’m not a teacher. I’m from Tashkent. I’m not hungry.", "lines": 4 } }
+  ]
+}

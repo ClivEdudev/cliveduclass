@@ -1,0 +1,67 @@
+{
+  "lesson": 33,
+  "label": "Beginner · Lesson 33",
+  "title": "Clothes and weather",
+  "minutes": 30,
+  "intro": "The weather and clothes: It’s cold. I’m wearing a coat. Today’s words and what we learnt before.",
+  "intro_uz": "Ob-havo va kiyim: Havo sovuq. Men palto kiyganman. Bugungi so’zlar va oldingi mavzular.",
+  "message": "Beginner · Lesson 33 · Clothes and weather. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Today’s words", "uz": "Bugungi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["hot", "issiq"],
+        ["cold", "sovuq"],
+        ["sunny", "quyoshli"],
+        ["coat", "palto"],
+        ["hat", "shapka"],
+        ["scarf", "sharf"],
+        ["T-shirt", "futbolka"],
+        ["dress", "ko’ylak (ayollar ko’ylagi)"]
+      ] },
+    { "type": "circle", "title": "Weather and clothes", "uz": "Ob-havo va kiyim: to’g’risini aylantiring",
+      "items": [
+        "{It’s|Is} cold today.",
+        "Look! It’s {raining|rain}.",
+        "I {am|is} wearing a coat.",
+        "Aziz {is|are} wearing a hat.",
+        "They {is|are} wearing T-shirts.",
+        "I’m wearing {a shoes|shoes}.",
+        "Is it hot? No, it {isn’t|aren’t}.",
+        "Lola is wearing a {red scarf|scarf red}."
+      ] },
+    { "type": "gaps", "title": "Write the words", "uz": "Bo’sh joyga yozing",
+      "items": [
+        "It’s ___ today. (sovuq)",
+        "It’s ___ now. (qor yog’yapti)",
+        "I ___ wearing a coat.",
+        "Madina is ___ a blue dress.",
+        "Is it raining? Yes, it ___.",
+        "What ___ you wearing?"
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "cold / It’s / very",
+        "wearing / I’m / a / coat",
+        "the / like / What’s / weather / ?",
+        "is / Lola / wearing / a / red / scarf"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Havo issiq.",
+        "Qor yog’yapti.",
+        "Men qora palto kiyganman."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "I {am not|not} sleeping now.",
+        "{Are|Do} you reading now?",
+        "She {doesn’t|don’t} work on Sundays.",
+        "She {sometimes cooks|cooks sometimes} plov.",
+        "There {is|are} a sofa in my room.",
+        "Ali {can|cans} swim."
+      ] },
+    { "type": "write", "title": "Write about today", "uz": "Bugungi ob-havo va kiyimingiz haqida 4 ta gap yozing",
+      "items": { "prompt": "Write 4 sentences: what the weather is like today and what you are wearing.",
+                 "hint": "Example: Today it’s cold. I’m wearing a black coat and a hat.", "lines": 4 } }
+  ]
+}

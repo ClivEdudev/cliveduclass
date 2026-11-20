@@ -1,0 +1,67 @@
+{
+  "lesson": 20,
+  "label": "Beginner · Lesson 20",
+  "title": "Commands",
+  "minutes": 25,
+  "intro": "Commands: Sit down! Open your book! Don’t run! And what we learnt before.",
+  "intro_uz": "Buyruq gaplar: O’tiring! Kitobingizni oching! Yugurmang! Va oldingi mavzular.",
+  "message": "Beginner · Lesson 20 · Commands. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Today’s words", "uz": "Bugungi so’zlar: inglizcha so’z va tarjimasi",
+      "items": [
+        ["stand up", "o’rningizdan turing"],
+        ["sit down", "o’tiring"],
+        ["open", "oching"],
+        ["close", "yoping"],
+        ["look at", "qarang"],
+        ["listen to", "tinglang"],
+        ["come here", "bu yerga keling"],
+        ["be quiet", "jim bo’ling"]
+      ] },
+    { "type": "circle", "title": "Commands: circle the right one", "uz": "Buyruq gaplar: to’g’risini aylantiring",
+      "items": [
+        "{Open|You open} your book.",
+        "{Don’t|No} run!",
+        "Look {at|to} the board.",
+        "Listen {to|at} me, please.",
+        "{Sit|Sits} down, please.",
+        "{Don’t|Not} close the door.",
+        "Please {give|gives} me a pen."
+      ] },
+    { "type": "gaps", "title": "Write the word", "uz": "So’zni yozing (qavsdagi tarjimaga qarang)",
+      "bank": ["stand", "sit", "open", "close", "write", "come"],
+      "items": [
+        "___ up, please. (turing)",
+        "___ down, please. (o’tiring)",
+        "___ the window. (oching)",
+        "___ the door. (yoping)",
+        "___ your name. (yozing)",
+        "___ here, please. (keling)"
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "your / Open / book",
+        "the / Don’t / door / open",
+        "at / Look / board / the",
+        "me / to / Listen"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "O’tiring, iltimos.",
+        "Eshikni oching.",
+        "Yugurmang!"
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "I {can|can to} swim.",
+        "{Can|Are} you cook plov?",
+        "There {are|is} three books on the desk.",
+        "This is {Aziz’s|Aziz} bag.",
+        "She {has|have} two brothers.",
+        "{These|This} pens are red."
+      ] },
+    { "type": "write", "title": "Write about your classroom", "uz": "Sinfingiz uchun 4 ta qoida yozing",
+      "items": { "prompt": "Write 4 rules for our classroom: 2 with “please” and 2 with “Don’t”.",
+                 "hint": "Example: Listen to the teacher, please. Don’t run in the classroom.", "lines": 4 } }
+  ]
+}

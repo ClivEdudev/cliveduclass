@@ -20,7 +20,11 @@
   };
   const sets = () => {
     const s = window.LIVE_SETS.map(x => Object.assign({}, x));
-    s.push({ id: "all", title: "Everything so far", topic: "Big Revision + all lessons + vocabulary", mixOf: s.filter(x => !/^s\d|^lis/.test(x.id)).map(x => x.id) });
+    s.push({ id: "all", title: "Everything so far", topic: "Elementary · Big Revision + all lessons + vocabulary", mixOf: s.filter(x => !/^s\d|^lis|^b\d/.test(x.id)).map(x => x.id) });
+    /* Beginner: only lessons already taught (by date), so the game never asks about next month's topic */
+    const P = window.PLAN, B = P && P.beginner, now = Date.now();
+    const bt = B ? B.all.filter(l => P.openAt(l.date, B.unlockHour).getTime() <= now).map(l => l.id) : [];
+    s.push({ id: "allb", group: "b", title: "Beginner: everything so far", topic: "Beginner · all lessons taught so far", mixOf: (bt.length ? bt : ["s1"]).filter(id => s.some(x => x.id === id)) });
     return s;
   };
   const cache = {};

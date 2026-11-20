@@ -1,0 +1,67 @@
+{
+  "lesson": 18,
+  "label": "Beginner · Lesson 18",
+  "title": "Unit 3 review",
+  "minutes": 30,
+  "intro": "Unit 3 review: have, this / these, his / her, there is / are, in / on / under.",
+  "intro_uz": "3-bo’lim takrori: have, this / these, his / her, there is / are, in / on / under.",
+  "message": "Beginner · Lesson 18 · Unit 3 review. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Unit 3 words", "uz": "3-bo’lim so’zlari: so’z va tarjimasi",
+      "items": [
+        ["phone", "telefon"],
+        ["bag", "sumka"],
+        ["kitchen", "oshxona"],
+        ["sofa", "divan"],
+        ["fridge", "muzlatkich"],
+        ["box", "quti"],
+        ["under", "tagida"],
+        ["next to", "yonida"]
+      ] },
+    { "type": "circle", "title": "Unit 3 grammar", "uz": "To’g’risini aylantiring",
+      "items": [
+        "I {have|has} a new phone.",
+        "My sister {have|has} a cat.",
+        "{This|These} are my keys.",
+        "{That|Those} is a big car.",
+        "Aziz is my friend. {His|Her} bag is black.",
+        "This is {Lola|Lola’s} pen.",
+        "There {is|are} two rooms in my home.",
+        "The ball is {under|on} the bed. (tagida)"
+      ] },
+    { "type": "gaps", "title": "Write the missing word", "uz": "Tushib qolgan so’zni yozing",
+      "items": [
+        "Bobur ___ two brothers. (have / has)",
+        "___ are my books. (This / These)",
+        "Madina has a bag. ___ bag is red.",
+        "There ___ a TV in my room.",
+        "___ bag is this? — It’s Dilnoza’s.",
+        "Where ___ my keys? (is / are)"
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "has / She / a cat",
+        "bag / is / Whose / this / ?",
+        "three rooms / There / are",
+        "on / is / the table / The phone"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Bular mening kalitlarim.",
+        "Oshxonada muzlatkich bor.",
+        "Mushuk karavot tagida."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular (1–2-bo’limlar): to’g’risini aylantiring",
+      "items": [
+        "It’s {a|an} apple.",
+        "I {am|is} a student.",
+        "They {is|are} from Samarkand.",
+        "one book → two {book|books}",
+        "{Are|Is} you a teacher?",
+        "No, I {am not|not am}."
+      ] },
+    { "type": "write", "title": "Write about your home", "uz": "Uyingiz haqida yozing",
+      "items": { "prompt": "Write 4 sentences about your home and your things.",
+                 "hint": "Example: There are three rooms in my home. My TV is in the living room. I have a red bag.", "lines": 4 } }
+  ]
+}

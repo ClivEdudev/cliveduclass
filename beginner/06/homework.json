@@ -1,0 +1,67 @@
+{
+  "lesson": 6,
+  "label": "Beginner · Lesson 6",
+  "title": "Unit 1 review",
+  "minutes": 25,
+  "intro": "Unit 1 review: hello, the alphabet, numbers 1–20, a / an, colours.",
+  "intro_uz": "1-bo’lim takrori: salomlashish, alifbo, 1–20 sonlar, a / an, ranglar.",
+  "message": "Beginner · Lesson 6 · Unit 1 review. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Unit 1 words", "uz": "1-bo’lim so’zlari: so’z va tarjimasini birlashtiring",
+      "items": [
+        ["hello", "salom"],
+        ["goodbye", "xayr"],
+        ["thank you", "rahmat"],
+        ["twenty", "yigirma"],
+        ["pen", "ruchka"],
+        ["book", "kitob"],
+        ["colour", "rang"],
+        ["white", "oq"]
+      ] },
+    { "type": "circle", "title": "Unit 1 grammar", "uz": "To’g’risini aylantiring",
+      "items": [
+        "How old {are|is} you?",
+        "I {am|is} fourteen.",
+        "It’s {a|an} pen.",
+        "It’s {a|an} orange book.",
+        "It’s {a blue bag|a bag blue}.",
+        "What colour {is it|it is}?",
+        "{What|How} is this? It’s a chair.",
+        "How do you {spell|spells} it?"
+      ] },
+    { "type": "gaps", "title": "Write the number", "uz": "Sonni so’z bilan yozing",
+      "items": [
+        "11 = ___",
+        "12 = ___",
+        "15 = ___",
+        "17 = ___",
+        "19 = ___",
+        "20 = ___"
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "name / My / Madina / is",
+        "old / How / you / are / ?",
+        "an / It’s / orange / pen",
+        "colour / it / What / is / ?"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Mening ismim Aziz.",
+        "Men o’n uch yoshdaman.",
+        "Bu qora sumka."
+      ] },
+    { "type": "circle", "title": "What we learnt before: lessons 1 and 2", "uz": "1- va 2-darslar: to’g’risini aylantiring",
+      "items": [
+        "Good {morning|evening}! (08:00)",
+        "How {are|is} you?",
+        "I’m fine, {thank you|thanks you}.",
+        "Nice to {meet|meeting} you!",
+        "My name {is|am} Bobur.",
+        "A, B, C, {D|E}, E, F"
+      ] },
+    { "type": "write", "title": "Write about you", "uz": "O’zingiz haqingizda yozing: ism, yosh, narsa va rangi",
+      "items": { "prompt": "Write 4 sentences: your name, your age, and two things in your bag with their colours.",
+                 "hint": "Example: My name is Lola. I am 14. It’s a pink pen. It’s a black book.", "lines": 4 } }
+  ]
+}

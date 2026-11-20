@@ -1,0 +1,67 @@
+{
+  "lesson": 24,
+  "label": "Beginner · Lesson 24",
+  "title": "Unit 4 review",
+  "minutes": 25,
+  "intro": "Unit 4 review: can, commands, numbers and prices, food, days and time, and what we learnt before.",
+  "intro_uz": "4-bo’lim takrori: can, buyruqlar, sonlar va narxlar, ovqat, kunlar va soat hamda oldingi mavzular.",
+  "message": "Beginner · Lesson 24 · Unit 4 review. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Unit 4 words", "uz": "4-bo’lim so’zlari: so’z va tarjimasi",
+      "items": [
+        ["swim", "suzmoq"],
+        ["sit down", "o’tirmoq"],
+        ["close", "yopmoq"],
+        ["bread", "non"],
+        ["tea", "choy"],
+        ["fifty", "ellik"],
+        ["Friday", "juma"],
+        ["tomorrow", "ertaga"]
+      ] },
+    { "type": "circle", "title": "Unit 4 grammar", "uz": "4-bo’lim grammatikasi: to’g’risini aylantiring",
+      "items": [
+        "She {can|cans} cook.",
+        "I {can’t|don’t can} drive.",
+        "{Don’t|Not} talk, please!",
+        "{Open|Opens} your book!",
+        "How {much|many} is the bread?",
+        "I {don’t|not} like fish.",
+        "The lesson is {on|at} half past three.",
+        "See you {on|at} Friday!"
+      ] },
+    { "type": "gaps", "title": "Write the word", "uz": "So’zni yozing",
+      "items": [
+        "Can you swim? Yes, I ___.",
+        "60 = ___",
+        "99 = ninety-___",
+        "8:30 → It’s half past ___.",
+        "Saturday, ___, Monday",
+        "How ___ is it? It’s 5 000 so’m."
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "can / I / swim / .",
+        "your / Open / book / !",
+        "is / How much / it / ?",
+        "like / I / plov / don’t / ."
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Men suza olmayman.",
+        "Eshikni yoping!",
+        "Dars juma kuni."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "I {am|is} a student.",
+        "Madina {is|are} from Samarkand.",
+        "This is {my|I} sister.",
+        "I {have|has} a phone.",
+        "{These|This} are my books.",
+        "There {are|is} two beds in my room."
+      ] },
+    { "type": "write", "title": "Write about you", "uz": "O’zingiz haqingizda yozing",
+      "items": { "prompt": "Write 4 sentences about you: can, like, days and time.",
+                 "hint": "Example: I can swim. I can’t drive. I like green tea. My English lesson is on Monday.", "lines": 4 } }
+  ]
+}

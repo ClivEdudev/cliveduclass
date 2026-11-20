@@ -1,0 +1,66 @@
+{
+  "lesson": 17,
+  "label": "Beginner · Lesson 17",
+  "title": "In, on, under",
+  "minutes": 30,
+  "intro": "Where is it? Today’s words and grammar, and what we learnt before.",
+  "intro_uz": "Qayerda? Bugungi so’zlar, grammatika va oldingi mavzular.",
+  "message": "Beginner · Lesson 17 · In, on, under. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Today’s words", "uz": "Bugungi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["in", "ichida"],
+        ["on", "ustida"],
+        ["under", "tagida"],
+        ["next to", "yonida"],
+        ["box", "quti"],
+        ["ball", "to’p"],
+        ["keys", "kalitlar"],
+        ["floor", "pol"]
+      ] },
+    { "type": "circle", "title": "In, on, under or next to?", "uz": "Uzbek so’zga qarang va to’g’risini aylantiring",
+      "items": [
+        "The cat is {in|on} the box. (ichida)",
+        "The phone is {under|on} the table. (ustida)",
+        "The ball is {under|next to} the bed. (tagida)",
+        "Lola is {in|next to} Madina. (yonida)",
+        "The keys are {in|under} my bag. (ichida)",
+        "The books are {on|under} the shelf. (ustida)",
+        "Where {is|are} my keys?"
+      ] },
+    { "type": "gaps", "title": "Write is or are", "uz": "is yoki are yozing",
+      "items": [
+        "The cat ___ on the sofa.",
+        "My books ___ in the box.",
+        "Where ___ the ball?",
+        "The keys ___ on the floor.",
+        "Where ___ my pens?",
+        "The TV ___ next to the window."
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "is / the cat / the bed / under",
+        "the bag / is / in / my phone",
+        "my keys / are / Where / ?",
+        "on / They’re / the shelf"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Mushuk qayerda?",
+        "To’p stol tagida.",
+        "Kitoblarim qutida."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "I {have|has} a red bag.",
+        "She {have|has} two brothers.",
+        "{This|These} are my books.",
+        "This is {Ali|Ali’s} phone.",
+        "There {is|are} three rooms in my home.",
+        "Madina is my sister. {His|Her} bag is red."
+      ] },
+    { "type": "write", "title": "Write about your room", "uz": "Xonangiz haqida yozing: narsalar qayerda?",
+      "items": { "prompt": "Write 4 sentences: where are the things in your room?",
+                 "hint": "Example: My bed is next to the window. My books are on the shelf.", "lines": 4 } }
+  ]
+}

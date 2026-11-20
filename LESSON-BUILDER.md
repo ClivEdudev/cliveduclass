@@ -2,8 +2,10 @@
 
 This is the recipe for building one lesson of the course. It is used by the automatic lesson
 builder on the morning of each lesson day (Monday, Thursday, Friday; class at 14:00 Tashkent time),
-and by anyone adding a lesson by hand. Follow it exactly. The students are **beginner Uzbek
-speakers**: short sentences, everyday words, Uzbek help everywhere.
+and by anyone adding a lesson by hand. Follow it exactly. Sections 1–7 are for **Group A · Elementary**
+(Mon, Thu, Fri · 14:00, `lessons/NN/`): Uzbek students at a low level, so short sentences, everyday
+words, Uzbek help everywhere. **Group B · Beginner** (Mon, Thu · 15:30, `beginner/NN/`) is at the end;
+all its lessons are already built.
 
 ## 1. Which lesson to build
 
@@ -160,3 +162,51 @@ the teacher sees it at once.
 One short message: the lesson number and title, how many slides, the games, the link
 `https://clivedu.me/lessons/NN/`, and anything that needs a human look (for example a word you
 were unsure how to translate).
+
+---
+
+# Group B · Beginner (Mon, Thu · 15:30)
+
+The course has two groups. Everything above is **Group A · Elementary** (Mon, Thu, Fri · 14:00,
+`lessons/NN/`). **Group B · Beginner** started from zero: lesson 1 is `start/01/` (taught 10 Nov),
+and from Monday 23 Nov there is a lesson every Monday and Thursday at 15:30 (class ends 17:00).
+Its plan is `PLAN.beginner.units` in `lessons/plan.js`; `PLAN.beginner.all` has every lesson with
+its date. The students know almost no English: **slow, simple, lots of repetition, Uzbek everywhere.**
+
+## B1. Files for beginner lesson N
+
+| File | What |
+|---|---|
+| `beginner/NN/index.html` | Copy `start/01/index.html`; change only `<title>Beginner · Lesson N · Title</title>` |
+| `beginner/NN/lesson.js` | `window.LESSON = { id: "bN", n: N, title: "…exactly as in plan.js…", slides, games }` |
+| `beginner/NN/homework.json` + `homework.pdf` | `python3 tools/make-homework.py beginner/NN/homework.json` |
+| `lessons/live-sets.js` | set `{ id: "bN", lesson: N, group: "b", path: "beginner/NN/lesson.js", title, topic: "Beginner · Lesson N", qs: [...] }` (20–25 rows) |
+| `lessons/plan.js` | `ready: true` on the lesson |
+
+Check: `node tools/check-lesson.cjs bN` must print ✓. Do not set `lockAnswers`, `openDate` or `openNow`.
+
+## B2. How a beginner lesson differs
+
+- **One new thing per lesson.** Only use grammar from this lesson and the beginner lessons before
+  it (see the plan). Before lesson 25 there is no present simple except fixed phrases the class has
+  learnt as chunks (`My name is…`, `I like…` from lesson 22, `I live in…`). Before lesson 31 no -ing.
+- **Words:** only words from earlier beginner lessons, the new words of this lesson (8–12 at most),
+  and very common words (yes, no, and, a, the, numbers, names). Sentences 3–7 words.
+- **Uzbek for everything**: every example, rule, note, card, quiz answer, game task where it helps.
+  Rules are explained in Uzbek first (`uz` lines), with the English example under it.
+- **About 24–30 slides.** Suggested order: `cover` (`tag: "Beginner · Lesson N"`) → `goals` (3) →
+  warm-up `spot` (`bg:"yel"`, revises the last lesson) → new words: 1–2 `examples` (`eb: "New words · Yangi so’zlar"`)
+  + 1 `quad` with emoji → the rule: `cols` / `formula` (ink) / `table` → 2 × `examples` → 2–3 × `gaps`
+  (easy) → negative / question slides only if the topic has them → `cols` "Be careful! · Ehtiyot bo’ling!"
+  → `quiz` uz (yel) → `quiz` fix (one) → 2 × `spot` speaking (personal; pairs) → games → `check` → `bye`.
+- **Games:** mime 10–12, board 6 categories (easy questions; 300 = still short), wheel 6 × 4 very
+  short tasks, build 8 (3–6 words), auction 10 (about half wrong, with a fix). Never the clue game.
+- **Review lessons** (6, 12, 18, 24, 30, 36): like `lessons/06/lesson.js`, about 16–20 slides, the
+  unit's lessons only; their live set may be `{ …, mixOf: ["b7","b8",…], qs: [] }` (lesson 6 includes "s1").
+- **Homework** (`homework.json`, add `"label": "Beginner · Lesson N"`): about 25–30 minutes, 30–40
+  points, 2 pages. Parts: today's words (`match`, 8), today's grammar (`circle`, 6–8), `gaps` (6),
+  `order` (4, short), `translate` (3 short Uzbek sentences), **"What we learnt before"** (`circle`, 6, earlier
+  beginner lessons only; for lesson 2 that is lesson 1), `write` (4 lines, with a model in `hint`).
+  Every item has exactly one right answer; no answers in the file. `message`:
+  "Beginner · Lesson N · Title. Do it before the next lesson. Rasmga oling yoki chop eting."
+  The bot sends it to Group B at 17:00 on the lesson day.

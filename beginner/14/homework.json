@@ -1,0 +1,68 @@
+{
+  "lesson": 14,
+  "label": "Beginner · Lesson 14",
+  "title": "This, that, these, those",
+  "minutes": 30,
+  "intro": "Near and far: this, that, these, those. Today’s words and what we learnt before.",
+  "intro_uz": "Yaqin va uzoq: this, that, these, those. Bugungi so’zlar va oldingi mavzular.",
+  "message": "Beginner · Lesson 14 · This, that, these, those. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Today’s words", "uz": "Bugungi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["apple", "olma"],
+        ["cup", "chashka"],
+        ["key", "kalit"],
+        ["watch", "qo’l soati"],
+        ["shoes", "poyabzal"],
+        ["flower", "gul"],
+        ["tree", "daraxt"],
+        ["bird", "qush"]
+      ] },
+    { "type": "circle", "title": "This, that, these or those?", "uz": "To’g’risini aylantiring (near = yaqin, far = uzoq)",
+      "items": [
+        "{This|That} is my pen. (near)",
+        "{These|Those} are trees. (far)",
+        "{This|These} are my keys. (near)",
+        "{That|Those} is a bird. (far)",
+        "This {is|are} an apple.",
+        "Those {is|are} my books.",
+        "These {apple|apples} are red.",
+        "What {is|are} these?"
+      ] },
+    { "type": "gaps", "title": "Write this, that, these or those", "uz": "Bo’sh joyni to’ldiring (near = yaqin, far = uzoq)",
+      "bank": ["this", "that", "these", "those"],
+      "items": [
+        "___ is a flower. (near)",
+        "___ are my sisters. (far)",
+        "___ cups are white. (near)",
+        "___ is my father. (far)",
+        "___ birds are black. (far)",
+        "___ is a key. (near)"
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "is / This / my / phone",
+        "are / those / What / ?",
+        "apples / These / green / are",
+        "a / That / tree / is"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Bu mening kitobim.",
+        "Anavilar — qushlar.",
+        "Bular nima?"
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "I {am|is|are} a student.",
+        "He is {a|an} doctor.",
+        "She {have|has} two brothers.",
+        "I have two {book|books}.",
+        "{Are|Is} you from Tashkent?",
+        "This is {my|I} mother."
+      ] },
+    { "type": "write", "title": "Write about your things", "uz": "Narsalaringiz haqida yozing",
+      "items": { "prompt": "Look at your room or your bag. Write 4 sentences with this, that, these and those.",
+                 "hint": "Example: This is my phone. Those are my books.", "lines": 4 } }
+  ]
+}

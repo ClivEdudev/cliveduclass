@@ -1,0 +1,122 @@
+{
+  "lesson": 35,
+  "label": "Beginner · Lesson 35",
+  "title": "Some and any",
+  "minutes": 30,
+  "intro": "Some and any, How many…?, shopping words, and what we learnt before.",
+  "intro_uz": "Some va any, How many…?, xarid so’zlari va oldingi mavzular.",
+  "message": "Beginner · Lesson 35 · Some and any. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    {
+      "type": "match",
+      "title": "Shopping words",
+      "uz": "Xarid so’zlari: so’z va tarjimasi",
+      "items": [
+        [
+          "tomato",
+          "pomidor"
+        ],
+        [
+          "potato",
+          "kartoshka"
+        ],
+        [
+          "onion",
+          "piyoz"
+        ],
+        [
+          "carrot",
+          "sabzi"
+        ],
+        [
+          "egg",
+          "tuxum"
+        ],
+        [
+          "rice",
+          "guruch"
+        ],
+        [
+          "sugar",
+          "shakar"
+        ],
+        [
+          "buy",
+          "sotib olmoq"
+        ]
+      ]
+    },
+    {
+      "type": "circle",
+      "title": "Some or any?",
+      "uz": "To’g’risini aylantiring",
+      "items": [
+        "There are {some|any} apples on the table.",
+        "We don’t have {some|any} bread.",
+        "There isn’t {some|any} sugar.",
+        "I have {some|any} tomatoes.",
+        "{Is|Are} there any milk?",
+        "{Is|Are} there any eggs?",
+        "How many {potato|potatoes} are there?",
+        "There is some {rice|rices} for plov."
+      ]
+    },
+    {
+      "type": "gaps",
+      "title": "Write the missing word",
+      "uz": "Tushib qolgan so’zni yozing",
+      "items": [
+        "There are some ___ in the bag. (onion)",
+        "How ___ eggs are there?",
+        "My mother ___ (buy) carrots every Sunday.",
+        "Do you have any ___? (tomato)",
+        "There ___ some milk in the kitchen.",
+        "How many brothers ___ Bobur have?"
+      ]
+    },
+    {
+      "type": "order",
+      "title": "Put the words in order",
+      "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "some / There / apples / are",
+        "any / I / have / don’t / milk",
+        "there / any / Are / eggs / ?",
+        "many / How / are / there / students / ?"
+      ]
+    },
+    {
+      "type": "translate",
+      "title": "Uzbek → English",
+      "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Stolda bir nechta olma bor.",
+        "Menda shakar yo’q.",
+        "Nechta tuxum bor?"
+      ]
+    },
+    {
+      "type": "circle",
+      "title": "What we learnt before",
+      "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "Look! It {is raining|rains}.",
+        "She {is wearing|wear} a red coat.",
+        "{Turn|Turning} left at the bank.",
+        "My father {works|work} in Tashkent.",
+        "{Does|Do} Madina like plov?",
+        "I {can|cans} cook plov."
+      ]
+    },
+    {
+      "type": "write",
+      "title": "Write about your kitchen",
+      "uz": "Oshxonangiz haqida yozing: nima bor, nima yo’q?",
+      "items": {
+        "prompt": "Write 4 sentences about your kitchen. What is there? What isn’t there?",
+        "hint": "Example: There are some eggs. There isn’t any sugar.",
+        "lines": 4
+      }
+    }
+  ]
+}

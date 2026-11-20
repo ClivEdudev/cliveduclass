@@ -104,6 +104,15 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
 @media (max-width:480px){.signcard .go{display:none}}
 .gear{font-weight:800;font-size:15px;font-family:inherit;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap}
 .topr{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;min-width:0}
+.grpbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border-radius:16px;padding:10px 14px;font-size:15px;color:var(--sub)}
+.grpbar b{color:var(--ink)}
+.grppick{background:var(--card);border:2px solid var(--blue);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:6px}
+.grppick h2{font-size:22px;font-weight:800}
+.grppick .uz{color:var(--teal);font-weight:600;font-size:15px}
+.grpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:10px;margin-top:6px}
+.grpbtn{font:inherit;text-align:left;cursor:pointer;border:2px solid var(--line);background:var(--pg);color:var(--ink);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.grpbtn:hover,.grpbtn:focus-visible{border-color:var(--blue)}
+.grpbtn b{font-size:20px}.grpbtn span{font-weight:800;color:var(--blue)}.grpbtn small{color:var(--sub);font-size:14px}
 @media (max-width:440px){.pts .lbl{display:none}.top .gear.tgb{font-size:15px;padding:7px 12px}}
 </style>
 <script src="lessons/settings.js"></script>
@@ -119,17 +128,27 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
   const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const pts = P.points();
   const total = Object.values(pts).reduce((a, b) => a + (+b || 0), 0);
-  const hh = String(P.unlockHour).padStart(2, "0");
+  /* Two groups: A · Elementary (lessons/NN/) and B · Beginner (start/01/ + beginner/NN/).
+     The student picks a group once; it is saved on the phone and, when signed in, on the server. */
+  const acct = () => window.CLV_ACCOUNT && window.CLV_ACCOUNT.user;
+  let grp = P.groupOf() || (acct() && acct().group) || "";
+  const BEG = P.beginner, isB = grp === "b";
+  const hh = P.hm(isB ? BEG.unlockHour : P.unlockHour);
   const items = [];
-  const rev = P.revision, revDate = P.parse(rev.date);
-  if (rev.openNow || P.isOpen(revDate)) items.push({ n: 0, title: rev.title, focus: "sentences · to be · questions · commands · may · must · have to", date: revDate, href: rev.path, key: "rev" });
-  [[P.starter, "New group"], [P.extras, "Vocabulary"]].forEach(([list, label]) =>
-    (list || []).forEach(s => { const d = P.parse(s.date); if (s.openNow || P.isForced(s.key) || P.isOpen(d, s.openHour))
-      items.push({ n: 0, group: s.group || label, title: s.title, focus: s.focus, date: d, href: s.path, key: s.key, pri: s.pri || 0 }); }));
-  P.all.filter(l => l.ready && ((P.openNowLessons || []).includes(l.n) || P.isForced(l.n) || P.isOpen(l.date))).forEach(l => items.push({ n: l.n, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: String(l.n) }));
+  if (isB) {
+    BEG.all.filter(l => l.ready && (l.done || P.isForced(l.id) || P.isOpen(l.date, BEG.unlockHour)))
+      .forEach(l => items.push({ n: l.n, beg: true, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: l.id }));
+  } else {
+    const rev = P.revision, revDate = P.parse(rev.date);
+    if (rev.openNow || P.isOpen(revDate)) items.push({ n: 0, title: rev.title, focus: "sentences · to be · questions · commands · may · must · have to", date: revDate, href: rev.path, key: "rev" });
+    (P.extras || []).forEach(s => { const d = P.parse(s.date); if (s.openNow || P.isForced(s.key) || P.isOpen(d, s.openHour))
+      items.push({ n: 0, group: s.group || "Vocabulary", title: s.title, focus: s.focus, date: d, href: s.path, key: s.key, pri: s.pri || 0 }); });
+    P.all.filter(l => l.ready && ((P.openNowLessons || []).includes(l.n) || P.isForced(l.n) || P.isOpen(l.date))).forEach(l => items.push({ n: l.n, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: String(l.n) }));
+  }
   items.sort((a, b) => (b.date - a.date) || ((b.pri || 0) - (a.pri || 0)));
   const newest = items[0];
-  const upcoming = P.all.find(l => !P.isOpen(l.date) && !(P.openNowLessons || []).includes(l.n) && !P.isForced(l.n));
+  const upcoming = isB ? BEG.all.find(l => !l.done && !P.isOpen(l.date, BEG.unlockHour) && !P.isForced(l.id))
+    : P.all.find(l => !P.isOpen(l.date) && !(P.openNowLessons || []).includes(l.n) && !P.isForced(l.n));
   addEventListener("clv-open", e => P.reloadForOpen(e.detail || []));          /* the teacher opened a lesson from Telegram */
   const isToday = it => it && P.key(it.date) === P.key(new Date());
 
@@ -139,14 +158,36 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
       <h2>${esc(newest.title)}</h2><p class="focus">${esc(newest.focus)}</p>
       <a class="btn" href="${newest.href}">Open the lesson →</a></section>`;
   } else if (upcoming) {
-    const at = P.openAt(upcoming.date);
+    const at = P.openAt(upcoming.date, isB ? BEG.unlockHour : null);
     feature = `<section class="feature locked"><p class="eb">Next lesson · ${esc(P.fmt(upcoming.date))}</p>
-      <h2>${esc(upcoming.title)}</h2><p class="focus">It opens here when class starts, at ${hh}:00 on ${esc(P.fmt(at))}. · Dars boshlanganda ochiladi.</p>
+      <h2>${esc(upcoming.title)}</h2><p class="focus">It opens here when class starts, at ${hh} on ${esc(P.fmt(at))}. · Dars boshlanganda ochiladi.</p>
       <span class="lock">🔒 Opens when class starts</span></section>`;
   }
+  const G = id => (P.groups || []).find(x => x.id === id) || {};
+  const groupBox = grp
+    ? `<div class="grpbar"><span>👥 My group · Guruhim: <b>${esc(G(grp).name)}</b> · ${esc(G(grp).when)}</span><button class="gear" data-pickgroup>Change · O‘zgartirish</button></div>`
+    : `<section class="grppick"><h2>Which group are you in?</h2><p class="uz">Qaysi guruhdasiz? Dars kunlari va vaqtiga qarang.</p>
+        <div class="grpgrid">${(P.groups || []).map(x => `<button class="grpbtn" data-group="${x.id}"><b>${esc(x.name)}</b><span>${esc(x.when)}</span><small>${esc(x.uz)}</small></button>`).join("")}</div></section>`;
+  function setGroup(g) {
+    P.setGroup(g);
+    const A = window.CLV_ACCOUNT;
+    if (A && A.signedIn && A.user && A.user.group !== g) A.api("/profile", { body: { group: g } }).then(j => { if (j && j.user) A.setUser(j.user); }).catch(() => {}).then(() => location.reload());
+    else location.reload();
+  }
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-group]"); if (b) { setGroup(b.dataset.group); return; }
+    if (e.target.closest("[data-pickgroup]")) { try { localStorage.removeItem("clv-group"); } catch (er) {} grp = ""; const box = document.getElementById("grpBox"); if (box) box.innerHTML = `<section class="grppick"><h2>Which group are you in?</h2><p class="uz">Qaysi guruhdasiz?</p><div class="grpgrid">${(P.groups || []).map(x => `<button class="grpbtn" data-group="${x.id}"><b>${esc(x.name)}</b><span>${esc(x.when)}</span><small>${esc(x.uz)}</small></button>`).join("")}</div></section>`; }
+  });
+  /* signed in: the group saved on the server wins on a new phone; a group picked here is sent to the server */
+  addEventListener("clv-account", e => {
+    const u = e.detail && e.detail.user; if (!u) return;
+    const local = P.groupOf();
+    if (!local && (u.group === "a" || u.group === "b")) { P.setGroup(u.group); if (u.group !== grp) location.reload(); }
+    else if (local && u.group !== local && window.CLV_ACCOUNT && window.CLV_ACCOUNT.signedIn) window.CLV_ACCOUNT.api("/profile", { body: { group: local } }).then(j => { if (j && j.user) window.CLV_ACCOUNT.setUser(j.user); }).catch(() => {});
+  });
 
   const cards = items.length ? items.map(it => `<a class="card ${isToday(it) ? "new" : ""}" href="${it.href}">
-      <span class="n">${it.n ? "Lesson " + it.n : (it.group || "Revision")} · ${esc(P.fmt(it.date))}</span>
+      <span class="n">${it.n ? (it.beg ? "Beginner · " : "") + "Lesson " + it.n : (it.group || "Revision")} · ${esc(P.fmt(it.date))}</span>
       <h3>${esc(it.title)}</h3><span class="f">${esc(it.focus)}</span>
       <span class="foot"><span class="my">My points: ${pts[it.key] || 0}</span><span class="go">Revise →</span></span></a>`).join("")
     : `<p class="empty">Your lessons will appear here when class starts.</p>`;
@@ -156,12 +197,13 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
     <div class="hello"><h1>My English <span>lessons</span></h1>
       <p>Every lesson from class is here: rules, Uzbek examples, quizzes and games.</p>
       <p class="uz">Har bir dars shu yerda. Takrorlang va ball yig‘ing!</p></div>
+    <div id="grpBox">${groupBox}</div>
     <div id="signBox"></div>
     <div id="liveBanner"><a class="game" href="play/"><span class="ic" aria-hidden="true">🎮</span><span class="t"><b>Join the class game</b><small>Get the code from the board · Kodni doskadan oling</small></span><span class="go">Join →</span></a></div>
     ${dailyCard()}
     <a class="game solo" href="play/?solo=1"><span class="ic" aria-hidden="true">\u{1F9D1}\u200D\u{1F393}</span><span class="t"><b>Play by yourself</b><small>Quiz, word order, vocabulary · any time · Yakka o‘ynash</small></span><span class="go">Play →</span></a>
     ${feature}
-    <section class="sec"><h2>Revise my lessons</h2><p>${items.length} open · newest first · Darslarni takrorlang</p><div class="grid">${cards}</div></section>
+    <section class="sec"><h2>Revise my lessons</h2><p>${items.length} open · newest first · ${esc(G(grp).name || "Elementary")} · Darslarni takrorlang</p><div class="grid">${cards}</div></section>
     <p class="foot-link"><a href="teacher/">Teacher</a></p>`;
   function dailyCard() {
     let D = {}; try { D = JSON.parse(localStorage.getItem("clv-daily") || "{}"); } catch (e) {}

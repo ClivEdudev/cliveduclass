@@ -1,0 +1,67 @@
+{
+  "lesson": 30,
+  "label": "Beginner · Lesson 30",
+  "title": "Unit 5 review",
+  "minutes": 30,
+  "intro": "Unit 5 · My day: I work, she works, Do you…?, my day, always and never.",
+  "intro_uz": "5-bo’lim · Mening kunim: 25–29-darslarni takrorlaymiz.",
+  "message": "Beginner · Lesson 30 · Unit 5 review. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "My day: words", "uz": "Kundalik ishlar: so’z va tarjimasini ulang",
+      "items": [
+        ["get up", "o’rnidan turmoq"],
+        ["have breakfast", "nonushta qilmoq"],
+        ["go to school", "maktabga bormoq"],
+        ["have lunch", "tushlik qilmoq"],
+        ["come home", "uyga kelmoq"],
+        ["have dinner", "kechki ovqat qilmoq"],
+        ["go to bed", "uxlashga yotmoq"],
+        ["always", "doim"]
+      ] },
+    { "type": "circle", "title": "Unit 5 grammar", "uz": "To’g’risini aylantiring",
+      "items": [
+        "I {live|lives} in Tashkent.",
+        "My sister {works|work} in a shop.",
+        "We {don’t|doesn’t} drink coffee.",
+        "{Does|Do} Aziz play football?",
+        "Does she {like|likes} plov?",
+        "Do you watch TV? Yes, I {do|am}.",
+        "He {never drinks|drinks never} coffee.",
+        "I have breakfast {at|in} eight o’clock."
+      ] },
+    { "type": "gaps", "title": "Write the verb", "uz": "Fe’lni to’g’ri shaklda yozing",
+      "items": [
+        "Lola ___ (live) in Samarkand.",
+        "My father ___ (go) to work at eight.",
+        "They ___ (play) football every Sunday.",
+        "Aziz ___ (watch) TV every evening.",
+        "I ___ (not / like) coffee.",
+        "My brother ___ (not / work) on Sunday."
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "in a shop / works / my mother",
+        "you / Do / tea / like / ?",
+        "at seven / get up / I",
+        "never / late / is / Bobur"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Men Toshkentda yashayman.",
+        "Onam do’konda ishlaydi.",
+        "Siz palovni yoqtirasizmi?"
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular (1–4-bo’limlar): to’g’risini aylantiring",
+      "items": [
+        "I {am|is} a student.",
+        "She {has|have} two brothers.",
+        "{These|This} are my books.",
+        "There {is|are} a sofa in my room.",
+        "Lola {can|cans} dance.",
+        "{Don’t|No} open the window!"
+      ] },
+    { "type": "write", "title": "Write about your day", "uz": "Kuningiz haqida 4 ta gap yozing",
+      "items": { "prompt": "Write 4 sentences about your day: what you do, what time, how often.",
+                 "hint": "Example: I get up at seven. I always have breakfast at home. I go to school at eight. I never watch TV in the morning.", "lines": 4 } }
+  ]
+}

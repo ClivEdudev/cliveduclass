@@ -9,6 +9,7 @@ const L = window.LESSON;
 if (!L) return;
 const SELF = (document.currentScript && document.currentScript.src) || "";
 const P = window.PLAN || null;
+const LNAME = (/^b\d+$/.test(L.id || "") ? "Beginner · Lesson " : "Lesson ") + L.n;
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -34,17 +35,19 @@ const CLASS_ONLY = ["mime", "boss"];
 let openDate = null;
 if (P) {
   if (L.openDate) openDate = P.parse(L.openDate);
-  else { const pl = P.lesson(L.n); if (pl) openDate = pl.date; }
+  else { const pl = (L.id && P.byId && P.byId(L.id)) || (L.id ? null : P.lesson(L.n)); if (pl) openDate = pl.date; }
 }
-document.title = `${L.n ? "Lesson " + L.n + " · " : ""}${strip(L.title)}`;
-if (STUDENT && openDate && !L.openNow && !(P.isForced && P.isForced(L.n || L.id)) && !P.isOpen(openDate, L.openHour)) {
-  addEventListener("clv-open", e => { if ((e.detail || []).includes(String(L.n || L.id))) P.reloadForOpen(e.detail); });
-  const at = P.openAt(openDate, L.openHour);
+/* Beginner lessons (id "b5") open at the beginner class time (15:30) */
+const OPEN_HOUR = L.openHour != null ? L.openHour : (/^b\d+$/.test(L.id || "") && P && P.beginner ? P.beginner.unlockHour : null);
+document.title = `${L.n ? LNAME + " · " : ""}${strip(L.title)}`;
+if (STUDENT && openDate && !L.openNow && !(P.isForced && P.isForced(L.id || L.n)) && !P.isOpen(openDate, OPEN_HOUR)) {
+  addEventListener("clv-open", e => { if ((e.detail || []).includes(String(L.id || L.n))) P.reloadForOpen(e.detail); });
+  const at = P.openAt(openDate, OPEN_HOUR);
   document.body.classList.add("locked-page");
   document.body.innerHTML = `<div class="lockbox">
-    <p class="eb">${L.n ? "Lesson " + L.n : "Lesson"}</p>
+    <p class="eb">${L.n ? LNAME : "Lesson"}</p>
     <h1>${esc(strip(L.title))}</h1>
-    <p>This lesson opens when class starts on <b>${esc(P.fmt(at))}</b> at ${String(at.getHours()).padStart(2, "0")}:00.</p>
+    <p>This lesson opens when class starts on <b>${esc(P.fmt(at))}</b> at ${String(at.getHours()).padStart(2, "0")}:${String(at.getMinutes()).padStart(2, "0")}.</p>
     <p class="uz">Bu dars ${esc(P.fmt(at))} kuni dars boshlanganda ochiladi.</p>
     <a class="lockbtn" href="${HOME}">← Back to my lessons</a></div>`;
   return;
@@ -65,7 +68,7 @@ function playerHTML(src, dur, times, mini) {
 }
 const R = {
   raw: s => s.html,
-  cover: s => `<div><span class="tag">${s.tag || (L.n ? "Lesson " + L.n : "Lesson")}</span></div><h1 class="h1">${s.title}</h1><p class="lead">${s.lead || ""}</p>
+  cover: s => `<div><span class="tag">${s.tag || (L.n ? LNAME : "Lesson")}</span></div><h1 class="h1">${s.title}</h1><p class="lead">${s.lead || ""}</p>
     <div class="row">${(s.chips || []).map(([t, c]) => `<span class="bub ${c}">${t}</span>`).join("")}</div>`,
   goals: s => `<h2 class="h2">${s.title || "Today you will…"}</h2><div class="cols flex1">${s.items.map((it, i) => `<div class="card big ${["peach","mint","skyb"][i % 3]}">
     <p class="numc">${i + 1}</p><p class="enb">${it[0]}</p><p class="en" style="font-size:40px">${it[1]}</p><p class="uz">${it[2]}</p></div>`).join("")}</div>`,
@@ -166,7 +169,7 @@ function sectionHTML(s, i) {
 
 /* ================= PAGE ================= */
 document.body.classList.add(STUDENT ? "student" : "teacher");
-const lname = `${L.n ? "Lesson " + L.n + " · " : ""}${esc(strip(L.title))}`;
+const lname = `${L.n ? LNAME + " · " : ""}${esc(strip(L.title))}`;
 document.body.innerHTML = `
 <div class="bar">
   <a class="back" href="${HOME}" aria-label="Back to ${STUDENT ? "my lessons" : "the teacher page"}">\u2190<span class="long"> ${STUDENT ? "My lessons" : "Teacher page"}</span><span class="short"> Back</span></a>

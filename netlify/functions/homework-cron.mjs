@@ -1,6 +1,7 @@
-/* After class on lesson days (Mon, Thu, Fri), send the lesson's homework PDF to every student.
-   Runs every 30 minutes from 15:00 to 20:30 Tashkent time (10:00–15:30 UTC); autoHomework itself
-   waits until 15:30, sends once per day, and tells the teacher if the PDF is missing. */
+/* After class on lesson days (Mon, Thu, Fri), send each group its lesson's homework PDF:
+   Elementary from 15:30, Beginner (Mon, Thu) from 17:00. Runs every 30 minutes from 15:00 to 20:30
+   Tashkent time (10:00–15:30 UTC); autoHomework sends once per group per day and tells the teacher
+   if a PDF is missing. */
 import { autoHomework } from "./api.mjs";
 
 export default async (req, context) => {

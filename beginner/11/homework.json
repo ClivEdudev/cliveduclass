@@ -1,0 +1,67 @@
+{
+  "lesson": 11,
+  "label": "Beginner · Lesson 11",
+  "title": "My family",
+  "minutes": 30,
+  "intro": "Family words, my and your, and what we learnt before.",
+  "intro_uz": "Oila so’zlari, my va your, hamda oldingi mavzular.",
+  "message": "Beginner · Lesson 11 · My family. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Family words", "uz": "Oila so’zlari: so’z va tarjimasi",
+      "items": [
+        ["mother", "ona"],
+        ["father", "ota"],
+        ["brother", "aka yoki uka"],
+        ["sister", "opa yoki singil"],
+        ["grandmother", "buvi"],
+        ["grandfather", "bobo"],
+        ["parents", "ota-ona"],
+        ["family", "oila"]
+      ] },
+    { "type": "circle", "title": "My or your? Is or are?", "uz": "To’g’risini aylantiring",
+      "items": [
+        "This is {my|me} mother.",
+        "Is this {your|you} bag?",
+        "My parents {is|are} teachers.",
+        "{Who|What} is this? — This is my sister.",
+        "My brother {is|are} 16.",
+        "{My|I} sister is a doctor.",
+        "Is this your father? — Yes, it {is|are}.",
+        "{Your|You} grandfather is a driver."
+      ] },
+    { "type": "gaps", "title": "Write the word", "uz": "O’zbekcha so’zga qarab inglizcha yozing",
+      "items": [
+        "This is my ___. (ota)",
+        "My ___ are from Bukhara. (ota-ona)",
+        "This is ___ grandmother. (mening)",
+        "Is this ___ pen? (sizning)",
+        "___ is this? — This is my son. (kim)",
+        "My ___ is 9. (singil)"
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "my / This / is / family",
+        "is / Who / this / ?",
+        "your / Is / brother / this / ?",
+        "are / My / teachers / parents"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Bu mening onam.",
+        "Bu kim?",
+        "Otam shifokor."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "I {am|is} a student.",
+        "She {is|are} from Samarkand.",
+        "We {are|is} friends.",
+        "one book → two {books|book}",
+        "It’s {an|a} orange pen.",
+        "Are you a teacher? — No, {I’m not|I amn’t}."
+      ] },
+    { "type": "write", "title": "Write about your family", "uz": "Oilangiz haqida yozing",
+      "items": { "prompt": "Write 4 sentences about your family.",
+                 "hint": "Example: This is my family. My father is a driver. My mother is a teacher. My sister is 12.", "lines": 4 } }
+  ]
+}

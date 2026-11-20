@@ -5,7 +5,7 @@ window.LESSON = {
   openNow: true,
   lockAnswers: false,
   slides: [
-    { t: "cover", tag: "New group · Lesson 1", title: "Hello! <span class='cy'>My name is…</span>", lead: "First words in English · Ingliz tilida birinchi so‘zlar", chips: [["Salom!", "peach"], ["Mening ismim…", "mint"]] },
+    { t: "cover", tag: "Beginner · Lesson 1", title: "Hello! <span class='cy'>My name is…</span>", lead: "First words in English · Ingliz tilida birinchi so‘zlar", chips: [["Salom!", "peach"], ["Mening ismim…", "mint"]] },
     { t: "goals", items: [
       ["Say hello and goodbye", "Hello! · Goodbye!", "Salom! · Xayr!"],
       ["Say your name", "My name is Ali.", "Mening ismim Ali."],

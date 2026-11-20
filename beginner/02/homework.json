@@ -1,0 +1,66 @@
+{
+  "lesson": 2,
+  "label": "Beginner · Lesson 2",
+  "title": "The alphabet",
+  "minutes": 25,
+  "intro": "Letters A to Z, spelling and capital letters, and lesson 1.",
+  "intro_uz": "A dan Z gacha harflar, harfma-harf aytish, bosh harflar va 1-dars.",
+  "message": "Beginner · Lesson 2 · The alphabet. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Today’s words", "uz": "Bugungi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["alphabet", "alifbo"],
+        ["letter", "harf"],
+        ["word", "so’z"],
+        ["capital letter", "bosh harf"],
+        ["small letter", "kichik harf"],
+        ["spell", "harfma-harf aytmoq"],
+        ["again", "yana bir marta"],
+        ["slowly", "sekin"]
+      ] },
+    { "type": "circle", "title": "Capital letters and spelling", "uz": "Bosh harf va yozilishi: to’g’risini aylantiring",
+      "items": [
+        "My name is {lola|Lola}.",
+        "{i|I} am Aziz.",
+        "Hello, {Madina|madina}!",
+        "{good|Good} morning!",
+        "How do you {spell|spells} it?",
+        "{How|What} do you spell your name?",
+        "hello: H-E-{double L|L}-O"
+      ] },
+    { "type": "gaps", "title": "Write the missing letter", "uz": "Tushib qolgan harfni yozing",
+      "items": [
+        "A, B, C, ___, E",
+        "J, K, ___, M",
+        "P, Q, ___, S",
+        "W, ___, Y, Z",
+        "hel___o (salom)",
+        "go___dbye (xayr)"
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "spell / How / you / it / do / ?",
+        "name / My / Lola / is",
+        "your / What’s / name / ?",
+        "you / How / spell / do / Tashkent / ?"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Ismingiz qanday yoziladi?",
+        "Mening ismim Dilnoza.",
+        "Sekinroq, iltimos."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "1-dars: to’g’risini aylantiring",
+      "items": [
+        "{Good morning|Good evening}! (08:00)",
+        "How {are|is} you?",
+        "I’m fine, {thank you|thanks you}.",
+        "Nice to {meet|meeting} you!",
+        "{What’s|How’s} your name?",
+        "3 + 4 = {seven|six}"
+      ] },
+    { "type": "write", "title": "Write and spell names", "uz": "Ismlarni yozing va harfma-harf yozing",
+      "items": { "prompt": "Write 4 lines: your name and 3 names from your family or class. Spell each name.",
+                 "hint": "Example: My name is Lola. L-O-L-A. · Bobur: B-O-B-U-R.", "lines": 4 } }
+  ]
+}

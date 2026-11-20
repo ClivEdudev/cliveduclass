@@ -167,6 +167,7 @@ html[data-theme="dark"] body .solo .chips button[aria-pressed="true"]::before,ht
 <body>
 <main class="app" id="app"></main>
 <script src="../lessons/live-net.js"></script>
+<script src="../lessons/plan.js"></script>
 <script src="../lessons/live-sets.js"></script>
 <script src="../lessons/qbank.js"></script>
 <script src="../lessons/live-rounds.js"></script>
@@ -478,9 +479,18 @@ document.addEventListener("click", e => {
 const R = window.LiveRounds;
 const SOLO_T = 20;
 let so = null;
-const soloPref = () => Object.assign({ set: "all", type: "mix", n: 10 }, load("clv-solo") || {});
+/* each group sees its own lessons: Beginner (group b) → s1, b2…; Elementary → the rest */
+const GRP = () => (window.PLAN && window.PLAN.groupOf ? window.PLAN.groupOf() : "");
+const mySets = () => {
+  const all = R.sets(), PL = window.PLAN, B = PL && PL.beginner, isB = x => /^(s1|b\d+|allb)$/.test(x.id);
+  if (GRP() !== "b") return all.filter(x => !isB(x));
+  const open = id => { const l = PL.byId(id); return !l || id === "allb" || PL.openAt(l.date, B.unlockHour).getTime() <= Date.now() || PL.isTeacher(); };
+  const mine = all.filter(x => isB(x) && open(x.id));
+  return [mine.find(x => x.id === "allb")].concat(mine.filter(x => x.id !== "allb")).filter(Boolean);
+};
+const soloPref = () => { const p = Object.assign({ set: GRP() === "b" ? "allb" : "all", type: "mix", n: 10 }, load("clv-solo") || {}); if (!mySets().some(x => x.id === p.set)) p.set = (mySets()[0] || {}).id; return p; };
 function soloCard() {
-  const P = soloPref(), sets = R.sets();
+  const P = soloPref(), sets = mySets();
   const ch = (k, v, label, sub) => `<button data-solo-k="${k}" data-solo-v="${esc(v)}" aria-pressed="${String(P[k]) === String(v)}">${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ""}</button>`;
   return `<div class="card solo"><h2 class="t" style="font-size:22px">Play by yourself<br><span class="uz" style="font-size:15px">Yakka o‘ynash · o‘qituvchisiz, istalgan vaqtda</span></h2>
     <div class="step"><b>Game · O‘yin</b><div class="chips">${R.TYPES.map(t => ch("type", t.id, t.name, t.uz)).join("")}</div></div>
@@ -489,7 +499,7 @@ function soloCard() {
     <button class="btn" data-solo-go>Start · Boshlash</button></div>`;
 }
 async function soloStart() {
-  const P = soloPref(), set = R.sets().find(x => x.id === P.set) || R.sets()[0];
+  const P = soloPref(), set = mySets().find(x => x.id === P.set) || mySets()[0];
   if (stopWatch) { stopWatch(); stopWatch = null; }
   app.innerHTML = `<div class="card mid"><p class="big">Getting questions…</p><p class="uz">Savollar tayyorlanmoqda…</p></div>`;
   const rounds = await R.build({ set, type: P.type, rounds: +P.n, base: "../" });

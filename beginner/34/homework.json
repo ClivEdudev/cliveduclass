@@ -1,0 +1,66 @@
+{
+  "lesson": 34,
+  "label": "Beginner · Lesson 34",
+  "title": "In town",
+  "minutes": 30,
+  "intro": "Places in town and directions: Where is the bank? Go straight. Turn left. Today’s words and what we learnt before.",
+  "intro_uz": "Shahardagi joylar va yo’l ko’rsatish. Bugungi so’zlar va oldingi mavzular.",
+  "message": "Beginner · Lesson 34 · In town. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "match", "title": "Today’s words", "uz": "Bugungi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["shop", "do’kon"],
+        ["hospital", "kasalxona"],
+        ["café", "kafe"],
+        ["bus stop", "avtobus bekati"],
+        ["go straight", "to’g’ri boring"],
+        ["turn left", "chapga buriling"],
+        ["turn right", "o’ngga buriling"],
+        ["near here", "shu yaqinda"]
+      ] },
+    { "type": "circle", "title": "Asking the way", "uz": "Yo’l so’rash: to’g’risini aylantiring",
+      "items": [
+        "Where is {the bank|bank}?",
+        "Turn {left|to left}.",
+        "Go {straight|to straight} and turn right.",
+        "The café is {on|in} the right.",
+        "{Is there|Is} a shop near here?",
+        "Is there a bank near here? Yes, there {is|are}.",
+        "The bus stop is {next to|next} the park."
+      ] },
+    { "type": "gaps", "title": "Write the words", "uz": "Bo’sh joyga yozing",
+      "items": [
+        "Turn ___. (chapga)",
+        "Go ___. (to’g’ri)",
+        "___ me, where is the park?",
+        "The shop is on the ___. (o’ngda)",
+        "Is ___ a café near here?",
+        "The bank is ___ to the hospital."
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "the / Where / bank / is / ?",
+        "straight / Go / and / turn / left",
+        "a / there / café / Is / near here / ?",
+        "is / on / The shop / the left"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Kechirasiz, park qayerda?",
+        "O’ngga buriling.",
+        "Bank do’kon yonida."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "{It’s|Is} raining now.",
+        "I’m {wearing|wear} a coat.",
+        "{Are|Do} you sleeping?",
+        "He {isn’t|not} reading now.",
+        "My brother {gets up|get up} at seven.",
+        "{How much|How many} is it? It’s 5,000 so’m."
+      ] },
+    { "type": "write", "title": "Write about your street", "uz": "Uyingiz yonidagi joylar haqida 4 ta gap yozing",
+      "items": { "prompt": "Write 4 sentences about places near your house.",
+                 "hint": "Example: There is a shop near my house. The bus stop is next to the park.", "lines": 4 } }
+  ]
+}

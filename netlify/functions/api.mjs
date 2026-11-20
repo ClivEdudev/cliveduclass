@@ -184,7 +184,7 @@ async function upsertUser(f) {
 }
 async function myHomework(u) {
   const hw = (await get("meta/homework")) || [];
-  return hw.filter(h => h.to === "all" || h.to === "group:" + (u.group || "")).slice(-5);
+  return hw.filter(h => inTarget(h.to, u.group)).slice(-5);
 }
 const KINDS = { document: ["sendDocument", "document"], photo: ["sendPhoto", "photo"], audio: ["sendAudio", "audio"], voice: ["sendVoice", "voice"], video: ["sendVideo", "video"] };
 /* the file inside a Telegram message, if any */
@@ -248,7 +248,7 @@ async function onUpdate(up, req, context) {
   if (!teacher && !cmd.startsWith("/") && (text || fileOf(m) || m.sticker)) {
     const t = await get("meta/teacher");
     if (t) {
-      const who = `${esc(u.name)}${u.username ? " @" + esc(u.username) : ""}${u.group ? " · group " + u.group.toUpperCase() : ""}`;
+      const who = `${esc(u.name)}${u.username ? " @" + esc(u.username) : ""}${u.group ? " · " + gname(u.group) : ""}`;
       if (text && !m.caption && !fileOf(m)) await say(t.uid, `\u{1F4AC} <b>${who}</b> wrote:\n\n${esc(text.slice(0, 3500))}`, { reply_markup: { inline_keyboard: [[btn("↩️ Reply", "p:dm:" + u.id), btn("\u{1F464} Profile", "p:s:" + u.id)]] } });
       else { await tg("copyMessage", { chat_id: t.uid, from_chat_id: chat, message_id: m.message_id }); await say(t.uid, `\u{1F4AC} From <b>${who}</b> ↑`, { reply_markup: { inline_keyboard: [[btn("↩️ Reply", "p:dm:" + u.id), btn("\u{1F464} Profile", "p:s:" + u.id)]] } }); }
       return say(chat, "✓ Sent to your teacher. The answer comes here.\nO‘qituvchingizga yuborildi. Javob shu yerga keladi.");
@@ -319,10 +319,15 @@ async function each(list, fn, n = 8) {
   return out;
 }
 /* ---------- sending to the class (website and bot use the same code) ---------- */
+/* Groups: a = Elementary (Mon, Thu, Fri 14:00), b = Beginner (Mon, Thu 15:30).
+   "notb" = everyone outside the Beginner group (Elementary and students with no group yet). */
+const GNAME = { a: "Elementary", b: "Beginner" };
+const gname = g => GNAME[g] || "no group";
 const TO = { all: "all", a: "group:a", b: "group:b" };
-const toLabel = to => to === "all" ? "everyone" : "group " + to.slice(6).toUpperCase();
+const toLabel = to => to === "all" ? "everyone" : to === "notb" ? "Elementary + no group" : gname(to.slice(6));
+const inTarget = (to, g) => to === "all" || (to === "notb" && (g || "") !== "b") || "group:" + (g || "") === to;
 async function recipients(to) {
-  return (await allStudents()).filter(r => !r.teacher && r.u.notify !== false && (to === "all" || "group:" + (r.u.group || "") === to));
+  return (await allStudents()).filter(r => !r.teacher && r.u.notify !== false && inTarget(to, r.u.group));
 }
 async function broadcast({ text, file, to, isHw, site }) {
   const rows = await recipients(to);
@@ -456,13 +461,15 @@ const screen = (chat, msgId, text, rows) => msgId
   ? tg("editMessageText", { chat_id: chat, message_id: msgId, text, parse_mode: "HTML", disable_web_page_preview: true, reply_markup: { inline_keyboard: rows } }).then(r => r && r.ok ? r : say(chat, text, { reply_markup: { inline_keyboard: rows } }))
   : say(chat, text, { reply_markup: { inline_keyboard: rows } });
 const ago = t => { if (!t) return "never"; const m = Math.round((Date.now() - t) / 60e3); return m < 2 ? "just now" : m < 60 ? m + " min ago" : m < 1440 ? Math.round(m / 60) + " h ago" : Math.round(m / 1440) + " days ago"; };
-const tashOpen = (dateStr, hour) => { const [y, mo, d] = dateStr.split("-").map(Number); return Date.UTC(y, mo - 1, d, (hour == null ? 16 : hour) - 5); };
+/* hour may be 15.5 = 15:30 */
+const tashOpen = (dateStr, hour) => { const [y, mo, d] = dateStr.split("-").map(Number); return Date.UTC(y, mo - 1, d) + ((hour == null ? 16 : hour) - 5) * 3600e3; };
+const hm = h => String(Math.floor(h)).padStart(2, "0") + ":" + String(Math.round((h % 1) * 60)).padStart(2, "0");
 async function lessonList(site) {
   const P = (await siteData(site)).plan; if (!P) return [];
   const forced = ((await get("meta/open")) || {}).keys || [];
   const pad = n => String(n).padStart(2, "0");
   const out = [];
-  const add = (key, title, date, hour, path, always) => out.push({ key: String(key), title: plain(title), date, path,
+  const add = (key, title, date, hour, path, always) => out.push({ key: String(key), title: plain(title), date, path, hour: hour == null ? P.unlockHour : hour,
     open: !!always || forced.includes(String(key)) || Date.now() >= tashOpen(date, hour == null ? P.unlockHour : hour), forced: forced.includes(String(key)) });
   if (P.revision) add("rev", P.revision.title, P.revision.date, null, P.revision.path, P.revision.openNow);
   (P.starter || []).concat(P.extras || []).forEach(x => add(x.key, x.title, x.date, x.openHour, x.path, x.openNow));
@@ -471,6 +478,12 @@ async function lessonList(site) {
     const ds = l.key;
     if (l.ready) add(l.n, "Lesson " + l.n + " · " + l.title, ds, null, `lessons/${pad(l.n)}/`, (P.openNowLessons || []).includes(l.n));
     else out.push({ key: String(l.n), title: plain("Lesson " + l.n + " · " + l.title), date: ds, notReady: true });
+  });
+  /* Group B · Beginner (plan.js dates them too) */
+  const B = P.beginner;
+  if (B && B.all) B.all.forEach(l => {
+    if (l.ready) add(l.id, "Beginner " + l.n + " · " + l.title, l.key, B.unlockHour, l.folder, !!l.done);
+    else out.push({ key: l.id, title: plain("Beginner " + l.n + " · " + l.title), date: l.key, notReady: true });
   });
   return out.sort((a, b) => a.date < b.date ? 1 : -1);
 }
@@ -497,7 +510,7 @@ async function panelStudents(chat, msgId, page) {
   const rows = (await allStudents()).filter(r => !r.teacher).map(r => summary(r.u, r.p)).sort((a, b) => (b.today - a.today) || (b.points - a.points));
   const pages = Math.max(1, Math.ceil(rows.length / PER)); page = Math.min(Math.max(0, page), pages - 1);
   const list = rows.slice(page * PER, page * PER + PER);
-  const kbRows = list.map(s => [btn(`${s.name}${s.group ? " · " + s.group.toUpperCase() : ""} · ⭐${s.today}/${s.points}`, "p:s:" + s.id)]);
+  const kbRows = list.map(s => [btn(`${s.name}${s.group ? " · " + gname(s.group) : ""} · ⭐${s.today}/${s.points}`, "p:s:" + s.id)]);
   const nav = []; if (page > 0) nav.push(btn("← Back", "p:stu:" + (page - 1))); if (page < pages - 1) nav.push(btn("More →", "p:stu:" + (page + 1)));
   if (nav.length) kbRows.push(nav);
   kbRows.push([btn("\u{1F39B} Panel", "p:home")]);
@@ -509,13 +522,13 @@ async function panelStudent(chat, msgId, id) {
   const mist = (d["clv-mistakes"] || []).filter(m => !m.fx).slice(-3).reverse();
   const games = (d["clv-games"] || []).slice(-3).reverse();
   const qz = (u.quizzes || []).slice(-3).reverse();
-  let t = `\u{1F464} <b>${esc(s.name)}</b>${s.username ? " · @" + esc(s.username) : ""}\nGroup: <b>${s.group ? s.group.toUpperCase() : "none"}</b> · seen ${ago(s.lastSeen)}${s.notify ? "" : " · \u{1F515} messages off"}\n\n` +
+  let t = `\u{1F464} <b>${esc(s.name)}</b>${s.username ? " · @" + esc(s.username) : ""}\nGroup: <b>${s.group ? gname(s.group) : "none"}</b> · seen ${ago(s.lastSeen)}${s.notify ? "" : " · \u{1F515} messages off"}\n\n` +
     `⭐ Points: <b>${s.points}</b> (today ${s.today})\n\u{1F525} Streak: ${s.streak} days · \u{1F4DA} Lessons: ${s.lessons}\n\u{1F3AE} Games: ${s.games} (best ${s.bestGame}) · ❓ Bot quizzes: ${s.quizzes}\n\u{1F4C5} Daily challenge: ${s.daily} days · streak ${s.dailyStreak}${s.dailyToday ? " · done today ✓" : ""}\n\u{1F3AF} Mistakes to fix: ${s.open}`;
   if (mist.length) t += `\n\n<b>Latest mistakes</b>\n` + mist.map(m => `• ${esc(plain(m.q).slice(0, 80))} → <b>${esc(plain(m.c))}</b>${m.a ? ` (said “${esc(plain(m.a))}”)` : ""}`).join("\n");
   if (games.length) t += `\n\n<b>Latest games</b>\n` + games.map(g => `• ${day(g.t)} ${g.solo ? "solo · " + esc(g.set || "") + ` · ${g.right}/${g.of}` : "class game · place " + g.pos + "/" + g.of} · ${g.score} pts`).join("\n");
   if (qz.length) t += `\n\n<b>Latest quizzes</b>\n` + qz.map(q => `• ${day(q.t)} ${esc(q.title)} · ${q.right}/${q.of}`).join("\n");
   return screen(chat, msgId, t.slice(0, 4000), [
-    [btn((s.group === "a" ? "✓ " : "") + "Group A", `p:g:${id}:a`), btn((s.group === "b" ? "✓ " : "") + "Group B", `p:g:${id}:b`), btn((!s.group ? "✓ " : "") + "No group", `p:g:${id}:n`)],
+    [btn((s.group === "a" ? "✓ " : "") + "Elementary", `p:g:${id}:a`), btn((s.group === "b" ? "✓ " : "") + "Beginner", `p:g:${id}:b`), btn((!s.group ? "✓ " : "") + "No group", `p:g:${id}:n`)],
     [btn("✉️ Message " + s.name.split(" ")[0], "p:dm:" + id), btn("❓ Send a quiz", "p:qs1:" + id)],
     [btn("← Students", "p:stu:0"), btn("\u{1F39B} Panel", "p:home")]
   ]);
@@ -532,16 +545,16 @@ async function panelLessons(chat, msgId, site) {
   const locked = ready.filter(l => !l.open), forced = ready.filter(l => l.forced), open = ready.filter(l => l.open).slice(0, 6);
   let t = `\u{1F4C5} <b>Lessons</b>\n\n<b>Open for students</b>\n` + (open.map(l => `✅ ${esc(l.title)}${l.forced ? " (opened early)" : ""}`).join("\n") || "none");
   const hh = String(((await siteData()).plan || {}).unlockHour || 14).padStart(2, "0");
-  if (locked.length) t += `\n\n<b>Ready but locked</b>\n` + locked.map(l => `\u{1F512} ${esc(l.title)} · opens ${l.date} at ${hh}:00`).join("\n");
+  if (locked.length) t += `\n\n<b>Ready but locked</b>\n` + locked.slice(-8).map(l => `\u{1F512} ${esc(l.title)} · opens ${l.date} at ${hm(l.hour != null ? l.hour : +hh)}`).join("\n");
   if (next) t += `\n\nNext lesson to write: ${esc(next.title)} (${next.date})`;
   const rows = [];
-  locked.slice(0, 4).forEach(l => rows.push([btn("\u{1F513} Open now: " + l.title.slice(0, 28), "p:lo:" + l.key)]));
+  locked.slice(-4).reverse().forEach(l => rows.push([btn("\u{1F513} Open now: " + l.title.slice(0, 28), "p:lo:" + l.key)]));
   forced.slice(0, 3).forEach(l => rows.push([btn("\u{1F512} Undo early opening: " + l.title.slice(0, 20), "p:lc:" + l.key)]));
   open.slice(0, 4).forEach(l => rows.push([btn("\u{1F4E3} Tell students: " + l.title.slice(0, 26), "p:la:" + l.key)]));
   rows.push([btn("\u{1F39B} Panel", "p:home")]);
   return screen(chat, msgId, t.slice(0, 4000), rows);
 }
-const targetRows = (prefix) => [[btn("\u{1F465} Everyone", prefix + "all"), btn("Group A", prefix + "a"), btn("Group B", prefix + "b")], [btn("✖️ Cancel", "p:cancel")]];
+const targetRows = (prefix) => [[btn("\u{1F465} Everyone", prefix + "all"), btn("Elementary", prefix + "a"), btn("Beginner", prefix + "b")], [btn("✖️ Cancel", "p:cancel")]];
 
 async function onCallback(cq, req, context) {
   const data = String(cq.data || ""), chat = cq.message && cq.message.chat && cq.message.chat.id, msgId = cq.message && cq.message.message_id;
@@ -705,40 +718,58 @@ async function teacherInput(m, st, site) {
 
 
 /* ---------- homework PDF after class (scheduled: netlify/functions/homework-cron.mjs) ----------
-   On lesson days from 15:30 (Tashkent), the lesson's homework.pdf (made by tools/make-homework.py
-   with the lesson) goes to every student through the bot, once. The teacher gets a copy and a note. */
+   Each group's homework.pdf (made by tools/make-homework.py with the lesson) goes out once, after class:
+   Elementary (group A, lessons/NN/) from 15:30 to every student outside the Beginner group,
+   Beginner (group B, beginner/NN/) from 17:00 to the Beginner group. The teacher gets a copy and a note. */
 export async function autoHomework({ force = false, site = "" } = {}) {
   if (site) INTERNAL = site;
   const now = new Date(Date.now() + 5 * 3600e3), hhmm = now.getUTCHours() * 60 + now.getUTCMinutes();
-  if (!force && hhmm < 15 * 60 + 30) return { skip: "before 15:30" };
   const today = day(), P = (await siteData()).plan;
   if (!P) return { skip: "plan not found" };
-  const lesson = (P.all || []).find(l => l.key === today && l.ready);
-  if (!lesson) return { skip: "no lesson today" };
-  const state = (await get("meta/autohw")) || {};
-  if (state[today] && state[today].sent != null) return { skip: "already sent", ...state[today] };
+  const pad = n => String(n).padStart(2, "0"), B = P.beginner || {};
+  const tracks = [
+    { id: "a", label: "Lesson", after: 15 * 60 + 30, to: "notb", lesson: (P.all || []).find(l => l.key === today && l.ready), path: l => `lessons/${pad(l.n)}/`, stateKey: today },
+    { id: "b", label: "Beginner · Lesson", after: Math.round((B.endHour || 17) * 60), to: "group:b", lesson: (B.all || []).find(l => l.key === today && l.ready && !l.done), path: l => l.folder, stateKey: today + ":b" }
+  ];
+  const results = [];
+  for (const tr of tracks) {
+    if (!tr.lesson) { results.push({ group: tr.id, skip: "no lesson today" }); continue; }
+    if (!force && hhmm < tr.after) { results.push({ group: tr.id, skip: "before " + hm(tr.after / 60) }); continue; }
+    results.push(Object.assign({ group: tr.id }, await sendLessonHomework(tr, today, tr.lesson)));
+  }
+  const done = results.filter(r => !r.skip);
+  if (!done.length) {
+    const already = results.find(r => r.skip === "already sent");
+    return already ? Object.assign({}, already) : { skip: results.map(r => `${gname(r.group)}: ${r.skip}`).join("; "), results };
+  }
+  return Object.assign({}, done[0], { results });
+}
+async function sendLessonHomework(tr, today, lesson) {
+  const state = (await get("meta/autohw")) || {}, sk = tr.stateKey;
+  if (state[sk] && state[sk].sent != null) return { skip: "already sent", ...state[sk] };
   const t = await get("meta/teacher");
-  const nn = String(lesson.n).padStart(2, "0"), base = (INTERNAL || PUBLIC()) + `/lessons/${nn}/`;
+  const name0 = `${tr.label} ${lesson.n}`, base = (INTERNAL || PUBLIC()) + "/" + tr.path(lesson);
   const pdf = await fetch(base + "homework.pdf").catch(() => null);
   if (!pdf || !pdf.ok) {
-    if (!state[today] || !state[today].warned) {
-      state[today] = { warned: true }; await put("meta/autohw", state);
-      if (t) await say(t.uid, `⚠️ The homework PDF for <b>Lesson ${lesson.n} · ${esc(lesson.title)}</b> is not on the website yet, so it was not sent. I try again every 30 minutes until 20:30.`);
+    if (!state[sk] || !state[sk].warned) {
+      state[sk] = { warned: true }; await put("meta/autohw", state);
+      if (t) await say(t.uid, `⚠️ The homework PDF for <b>${name0} · ${esc(lesson.title)}</b> is not on the website yet, so it was not sent. I try again every 30 minutes until 20:30.`);
     }
     return { skip: "no homework.pdf yet", lesson: lesson.n };
   }
   let spec = {}; try { const j = await fetch(base + "homework.json"); if (j.ok) spec = await j.json(); } catch (e) {}
-  const name = `Lesson-${lesson.n}-homework.pdf`;
+  const name = `${tr.id === "b" ? "Beginner-" : ""}Lesson-${lesson.n}-homework.pdf`;
   const file = new File([await pdf.arrayBuffer()], name, { type: "application/pdf" });
   if (!t) return { skip: "no teacher" };
-  const up = await tgUpload("sendDocument", { chat_id: t.uid, caption: `\u{1F4CE} Homework for Lesson ${lesson.n} (your copy). Sending it to every student now.` }, file, "document");
+  const up = await tgUpload("sendDocument", { chat_id: t.uid, caption: `\u{1F4CE} Homework for ${name0} (your copy). Sending it to ${toLabel(tr.to)} now.` }, file, "document");
   const d = up && up.ok && up.result && up.result.document;
   if (!d) return { error: "upload failed: " + ((up && up.description) || "error") };
-  const text = spec.message || `Lesson ${lesson.n} · ${lesson.title}. Do it before the next lesson.`;
-  const r = await broadcast({ text, file: { id: d.file_id, name, size: file.size, type: "application/pdf", kind: "document" }, to: "all", isHw: true, site: PUBLIC() });
-  state[today] = { lesson: lesson.n, sent: r.sent, of: r.of, t: Date.now() };
-  const keep = Object.keys(state).sort().slice(-30); await put("meta/autohw", Object.fromEntries(keep.map(k => [k, state[k]])));
-  await say(t.uid, `✓ Homework for <b>Lesson ${lesson.n}</b> sent to <b>${r.sent}</b> of ${r.of} students.` + (r.failed.length ? `\nNot delivered: ${esc(r.failed.join(", "))}` : ""), { reply_markup: { inline_keyboard: [[btn("\u{1F39B} Panel", "p:home")]] } });
+  const text = spec.message || `${name0} · ${lesson.title}. Do it before the next lesson.`;
+  const r = await broadcast({ text, file: { id: d.file_id, name, size: file.size, type: "application/pdf", kind: "document" }, to: tr.to, isHw: true, site: PUBLIC() });
+  const st2 = (await get("meta/autohw")) || {};
+  st2[sk] = { lesson: lesson.n, group: tr.id, sent: r.sent, of: r.of, t: Date.now() };
+  const keep = Object.keys(st2).sort().slice(-60); await put("meta/autohw", Object.fromEntries(keep.map(k => [k, st2[k]])));
+  await say(t.uid, `✓ Homework for <b>${name0}</b> sent to <b>${r.sent}</b> of ${r.of} students (${toLabel(tr.to)}).` + (r.failed.length ? `\nNot delivered: ${esc(r.failed.join(", "))}` : ""), { reply_markup: { inline_keyboard: [[btn("\u{1F39B} Panel", "p:home")]] } });
   return { lesson: lesson.n, ...r };
 }
 
