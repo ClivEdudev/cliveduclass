@@ -1,0 +1,78 @@
+{
+  "lesson": 8,
+  "title": "How often?",
+  "minutes": 35,
+  "intro": "Always, usually, often, sometimes, never. Today’s grammar and words, and what we learnt before.",
+  "intro_uz": "Doim, odatda, tez-tez, ba’zan, hech qachon. Bugungi grammatika, so’zlar va oldingi mavzular.",
+  "message": "Lesson 8 · How often? Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "circle", "title": "Always, usually, never…", "uz": "To’g’risini aylantiring",
+      "items": [
+        "I drink tea every day. I {always|never} drink tea.",
+        "I {always drink|drink always} tea in the morning.",
+        "My father {is never|never is} late.",
+        "She usually {walks|walk} to work.",
+        "We {sometimes go|go sometimes} to the cinema.",
+        "I {never eat|don’t never eat} fast food.",
+        "{How often|How much} do you play football? — Twice a week.",
+        "Bobur {doesn’t|don’t} usually watch TV."
+      ] },
+    { "type": "gaps", "title": "Write the verb", "uz": "Fe’lni to’g’ri shaklda yozing",
+      "items": [
+        "Madina always ___ (get up) at six.",
+        "My brother never ___ (watch) TV.",
+        "We usually ___ (go) to the bazaar on Saturdays.",
+        "Lola sometimes ___ (study) in the library.",
+        "The bus often ___ (come) late.",
+        "I ___ (be) always busy on Mondays.",
+        "My grandma ___ (not / usually / drink) coffee.",
+        "___ you often ___ (visit) your grandparents?"
+      ] },
+    { "type": "match", "title": "New words", "uz": "Yangi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["busy", "band"],
+        ["tired", "charchagan"],
+        ["hungry", "och (qorni och)"],
+        ["on time", "o’z vaqtida"],
+        ["go to the cinema", "kinoga bormoq"],
+        ["play chess", "shaxmat o’ynamoq"],
+        ["listen to music", "musiqa tinglamoq"],
+        ["go to the gym", "sport zaliga bormoq"]
+      ] },
+    { "type": "transform", "title": "Negatives and questions", "uz": "Inkor va so’roq gap",
+      "items": [
+        ["He usually walks to school.", "-"],
+        ["You often play chess.", "?"],
+        ["She is always busy.", "?"],
+        ["They usually eat meat.", "-"],
+        ["Aziz often goes to the gym.", "?"]
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "tea / I / drink / always",
+        "late / is / My father / never",
+        "often / How / you / do / play football / ?",
+        "usually / We / plov / eat / on Fridays",
+        "twice a week / goes / She / to the gym"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Men doim nonushta qilaman.",
+        "Akam hech qachon kech qolmaydi.",
+        "Biz ba’zan kinoga boramiz.",
+        "Qanchalik tez-tez sport zaliga borasiz?"
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "Look! The children {are playing|play} football.",
+        "My sister {works|work} in a hospital.",
+        "There {are|is} three apples on the table.",
+        "{Those|That} are my brother’s shoes.",
+        "I {can|can to} speak English.",
+        "This is {Madina’s|Madinas} phone."
+      ] },
+    { "type": "write", "title": "Write about your week", "uz": "Haftangiz haqida yozing",
+      "items": { "prompt": "Write 6 sentences about you. Use always, usually, often, sometimes, never and once / twice a week.",
+                 "hint": "Example: I always drink tea in the morning. I go to the gym twice a week.", "lines": 6 } }
+  ]
+}
