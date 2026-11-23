@@ -1,7 +1,8 @@
 [build]
   publish = "."
-  # adds ?v=<commit> to script and style links so a deploy never mixes old and new files
-  command = "node tools/stamp.cjs"
+  # stamp: adds ?v=<commit> to script and style links so a deploy never mixes old and new files
+  # legacy: rewrites scripts into older JavaScript for smart boards and old Android browsers
+  command = "node tools/stamp.cjs && node tools/legacy.cjs"
 
 [functions]
   directory = "netlify/functions"
