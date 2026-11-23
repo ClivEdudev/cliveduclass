@@ -97,7 +97,7 @@ window.PLAN = {
     { name: "Week 2 · My day", lessons: [
       { n: 7, title: "Present simple or continuous?", focus: "every day vs now", ready: true },
       { n: 8, title: "How often?", focus: "always, usually, sometimes, never", ready: true },
-      { n: 9, title: "Where is it?", focus: "in, on, under, next to, between" },
+      { n: 9, title: "Where is it?", focus: "in, on, under, next to, between", ready: true },
       { n: 10, title: "Time words", focus: "in, on, at · telling the time" },
       { n: 11, title: "Some and any", focus: "food · countable and uncountable" },
       { n: 12, title: "Week 2 review", focus: "games with all week 2 topics" } ] },

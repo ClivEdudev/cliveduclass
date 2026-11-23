@@ -1,0 +1,79 @@
+{
+  "lesson": 9,
+  "title": "Where is it?",
+  "minutes": 35,
+  "intro": "In, on, under, next to, between. Today’s grammar and words, and what we learnt before.",
+  "intro_uz": "Ichida, ustida, tagida, yonida, orasida. Bugungi grammatika, so’zlar va oldingi mavzular.",
+  "message": "Lesson 9 · Where is it? Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "circle", "title": "In, on, under, next to, between", "uz": "To’g’risini aylantiring",
+      "items": [
+        "The cat is {on|under} the bed. (karavot tagida)",
+        "My phone is {in|on} my bag. (sumkamda)",
+        "The picture is {in|on} the wall.",
+        "I sit {next|next to} Aziz.",
+        "The bank is between the café {and|or} the shop.",
+        "My keys {is|are} in my bag.",
+        "{What|Where} is my phone? — It’s on the sofa.",
+        "Is the book on the desk? — No, it {isn’t|aren’t}."
+      ] },
+    { "type": "gaps", "title": "Write the place word", "uz": "Joy so’zini yozing: o’zbekcha so’zga qarang",
+      "bank": ["in", "on", "under", "next to", "between", "behind", "in front of", "near"],
+      "items": [
+        "The cat is ___ the sofa. (ustida)",
+        "My shoes are ___ the bed. (tagida)",
+        "The milk is ___ the fridge. (ichida)",
+        "The pharmacy is ___ the bank. (yonida)",
+        "Lola is sitting ___ Madina and Aziz. (orasida)",
+        "The car is ___ the house. (orqasida)",
+        "Bobur is waiting ___ the school. (oldida)",
+        "I live ___ the metro. (yaqinida)"
+      ] },
+    { "type": "match", "title": "New words", "uz": "Yangi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["shelf", "javon"],
+        ["wardrobe", "kiyim shkafi"],
+        ["fridge", "muzlatgich"],
+        ["pillow", "yostiq"],
+        ["carpet", "gilam"],
+        ["pharmacy", "dorixona"],
+        ["bus stop", "avtobus bekati"],
+        ["bakery", "novvoyxona"]
+      ] },
+    { "type": "transform", "title": "Negatives and questions", "uz": "Inkor va so’roq gap",
+      "items": [
+        ["The book is on the desk.", "-"],
+        ["The keys are in your bag.", "?"],
+        ["The cat is under the table.", "?"],
+        ["The shoes are next to the door.", "-"],
+        ["There is a bank next to the bazaar.", "?"]
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "on / The plov / the table / is",
+        "my / Where / keys / are / ?",
+        "between / is sitting / Lola / Aziz and Madina",
+        "the school / The bank / next to / is",
+        "under / Is / the bed / the cat / ?"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Telefonim divan ustida.",
+        "Mushuk karavot tagida emas.",
+        "Dorixona bank yonida.",
+        "Kalitlarim qayerda?"
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "My father {never is|is never} late.",
+        "Look! The baby {is sleeping|sleeps}.",
+        "I {can swim|can swimming}.",
+        "{This|These} are my keys.",
+        "There {is|are} two shelves in my room.",
+        "This is {Lolas|Lola’s} wardrobe."
+      ] },
+    { "type": "write", "title": "Write about your room", "uz": "Xonangiz haqida yozing",
+      "items": { "prompt": "Write 6 sentences about your room or your home. Use in, on, under, next to, between.",
+                 "hint": "Example: My bed is next to the window. There is a carpet on the floor.", "lines": 6 } }
+  ]
+}
