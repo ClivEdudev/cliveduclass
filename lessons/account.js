@@ -6,7 +6,7 @@
   if (window.CLV_ACCOUNT) return;
   const API = "/api";
   const TOK = "clv-token", USR = "clv-user";
-  const PLAIN = ["clv-points", "clv-settings", "clv-name", "clv-mistakes", "clv-games", "clv-daily"];
+  const PLAIN = ["clv-points", "clv-settings", "clv-name", "clv-mistakes", "clv-games", "clv-daily", "clv-words"];
   const tracked = k => PLAIN.includes(k) || k.startsWith("clv-picks-") || k.startsWith("clv-awarded-");
   let LS = null; try { LS = window.localStorage; } catch (e) {}
   const raw = k => { try { return LS ? LS.getItem(k) : null; } catch (e) { return null; } };

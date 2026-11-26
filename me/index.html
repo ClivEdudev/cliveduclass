@@ -85,9 +85,23 @@ label.f{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:15p
 .saved{color:var(--green);font-weight:800;font-size:15px}
 button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
 html[data-theme="dark"]{--pg:#0E1A26;--card:#16263A;--ink:#EAF0F5;--sub:#A9B8C7;--line:#2B3E52;--teal:#6FD6D8;--yelsoft:#2E2A14;--blue:#8CB2F5;--greensoft:#123A26;--redsoft:#3A1A1A;--red:#FF8A80;--green:#6CCB8A;color-scheme:dark}
+/* level and badges (lessons/progress.js) */
+.lvbox{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.lvbox .medal{width:132px;height:132px;flex:none}
+.medal .pet{fill:#E4E9F7;stroke:#C5CEE8;stroke-width:.6}.medal .pet.on{fill:#F4A91D;stroke:#FFE2A6}.medal .pet.on:nth-child(even){fill:#FFC54D}
+.medal .core{fill:#2338A8}.medal .lv{fill:#fff;font:700 17px "Unbounded",system-ui;text-anchor:middle}.medal .lvl{fill:#C9D3FF;font:600 6.4px system-ui;text-anchor:middle}
+html[data-theme="dark"] .medal .pet:not(.on){fill:#1E2A60;stroke:#33408A}
+.lvbox .t{flex:1;min-width:200px}.lvbox .t b{display:block;font-size:22px}
+.lvbar{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0}.lvbar i{display:block;height:100%;background:linear-gradient(90deg,#F4A91D,#FFD27A)}
+.bdgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:14px}
+.bdgs div{text-align:center;font-size:13px;font-weight:700;line-height:1.2;display:grid;justify-items:center;gap:4px}
+.bdgs div i{width:52px;height:52px;display:grid;place-items:center;font-size:24px;font-style:normal;background:url(/brand/star.svg) center/contain no-repeat}
+.bdgs div.no{opacity:.45}.bdgs div.no i{filter:grayscale(1)}
+.bdgs small{font-weight:500;color:var(--sub);font-size:12px}
 </style>
 <script src="../lessons/settings.js"></script>
 <script src="../lessons/account.js"></script>
+<script src="../lessons/progress.js"></script>
 </head>
 <body>
 <main class="wrap" id="app"></main>
@@ -159,6 +173,14 @@ html[data-theme="dark"]{--pg:#0E1A26;--card:#16263A;--ink:#EAF0F5;--sub:#A9B8C7;
     draw();
   }
 
+  function levelBox() {
+    const PR = window.CLV_PROGRESS; if (!PR) return "";
+    const S = PR.stats();
+    return `<section class="box"><h2>⭐ My level <small>Darajam</small></h2>
+      <div class="lvbox">${PR.medallion(S, 132)}<div class="t"><b>${esc(S.name)}</b><span class="muted">${esc(S.nameUz)} · level ${S.level}</span>
+        <div class="lvbar"><i style="width:${Math.round(100 * S.into / Math.max(1, S.need))}%"></i></div><span class="muted">${S.total} points · ${S.next - S.total} to level ${S.level + 1}</span></div></div>
+      <div class="bdgs">${S.badges.map(b => `<div class="${b.got ? "" : "no"}" title="${esc(b.how)}"><i>${b.icon}</i>${esc(b.en)}<small>${esc(b.got ? b.uz : b.how)}</small></div>`).join("")}</div></section>`;
+  }
   function draw() {
     const acc = A(), u = acc && acc.user, s = stats();
     const all = mistakes(), op = all.filter(m => !m.fx).slice().reverse();
@@ -183,6 +205,7 @@ html[data-theme="dark"]{--pg:#0E1A26;--card:#16263A;--ink:#EAF0F5;--sub:#A9B8C7;
           <div class="stat"><b>${s.open}</b><span>\u{1F3AF} to fix · xato</span></div></div>
         ${u ? "" : `<p class="muted">Sign in with Telegram to keep your points on every phone and get homework in Telegram.<br>Telegram orqali kiring — ballaringiz saqlanadi.</p><button class="btn tg" data-signin>✈️ Sign in with Telegram</button>`}
       </section>
+      ${levelBox()}
       ${u ? `<section class="box"><h2>\u{1F4DD} Homework <small>Uy vazifasi</small></h2>
         ${homework == null ? `<p class="muted">Loading…</p>` : homework.length ? homework.map(h => `<div class="hw"><small>${esc(day(h.t))}</small>${esc(h.text)}${h.file ? `<div class="hwf"><small>\u{1F4CE} ${esc(h.file.name)}</small>
           <button class="btn" data-act="hwdl" data-id="${esc(h.id)}">⬇️ Download · Yuklab olish</button>

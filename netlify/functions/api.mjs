@@ -51,7 +51,7 @@ const SESSION_DAYS = 180, LOGIN_MIN = 15;
 
 /* ---------- progress merging (same rules on every device) ---------- */
 const PREF = ["clv-picks-", "clv-awarded-"];
-const PLAIN = ["clv-points", "clv-settings", "clv-name", "clv-mistakes", "clv-games", "clv-daily"];
+const PLAIN = ["clv-points", "clv-settings", "clv-name", "clv-mistakes", "clv-games", "clv-daily", "clv-words"];
 const tracked = k => PLAIN.includes(k) || PREF.some(p => k.startsWith(p) && k.length < 80);
 const byId = (a, b, cap) => {
   const m = new Map();
@@ -76,6 +76,11 @@ function mergeKey(k, a, b) {
   if (k === "clv-daily") {                                     /* daily challenge: one entry per day, keep the last 120 days */
     const o = Object.assign({}, a || {}, (b && typeof b === "object") ? b : {});
     return Object.fromEntries(Object.entries(o).filter(([d]) => /^\d{4}-\d\d-\d\d$/.test(d)).sort().slice(-120));
+  }
+  if (k === "clv-words") {                                     /* Word bank: per word, the newer review wins */
+    const o = Object.assign({}, a || {});
+    for (const [w, v] of Object.entries((b && typeof b === "object") ? b : {})) if (v && typeof v === "object" && w.length < 80 && (!o[w] || (+v.t || 0) >= (+o[w].t || 0))) o[w] = { b: Math.max(0, Math.min(5, +v.b || 0)), n: +v.n || 0, t: +v.t || 0 };
+    return Object.fromEntries(Object.entries(o).slice(-800));
   }
   return b;                                                    /* settings, name: newest wins */
 }

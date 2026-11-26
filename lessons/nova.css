@@ -1,0 +1,51 @@
+/* ClivEdu "New look" (the default style). Samarkand tilework: lapis, turquoise, saffron, pomegranate,
+   porcelain white, and the 8-point star. Settings → Style → Classic brings the old look back.
+   This file recolours the student pages through their own colour variables, so each page keeps its layout.
+   The lesson slides keep their teaching colours; only the scrolling lesson on phones gets the tile background. */
+html.clv-nova.clvpaper{
+  --lapis:#2338A8;--lapis-d:#16206B;--turq:#13A3B0;--saff:#F4A91D;--pom:#D23B55;--porc:#F3F6FC;
+  --pg:#F3F6FC;--card:#FFFFFF;--ink:#101A45;--sub:#56608A;--line:#DCE2F2;--teal:#0E8792;
+  --yel:#F4A91D;--yelsoft:#FFF1D2;--blue:#2338A8;--green:#138A6B;--greensoft:#DDF4EC;--good:#138A6B;--bad:#C92F4B;
+  --red:#C92F4B;--redsoft:#FCE8EC;
+  --o0:#D23B55;--o1:#2338A8;--o2:#E39A0C;--o3:#13938F;
+  --nv-head:"Unbounded","Rubik",system-ui,sans-serif;--nv-body:"Rubik",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --nv-shadow:0 1px 0 rgba(16,26,69,.06),0 10px 28px -14px rgba(16,26,69,.28);
+}
+html.clv-nova.clvpaper[data-theme="dark"]{
+  --pg:#0A1030;--card:#131C4A;--ink:#EEF1FF;--sub:#A9B3DB;--line:#27326C;--teal:#5FD6DF;
+  --yelsoft:#3A2C0E;--blue:#93A8FF;--green:#4CD3A8;--greensoft:#0F3A33;--good:#4CD3A8;--bad:#FF7A90;--red:#FF7A90;--redsoft:#3A1422;
+  --nv-shadow:0 1px 0 rgba(255,255,255,.04),0 14px 34px -16px rgba(0,0,0,.6);
+}
+/* background: porcelain with a faint tile lattice, a saffron glow top-left and a turquoise one bottom-right */
+html.clv-nova.clvpaper body,html.clv-nova body.flow.student{
+  background-color:#F3F6FC!important;
+  background-image:url(/brand/tiles-light.svg),radial-gradient(60% 50% at 0% 0%,rgba(244,169,29,.16),transparent 70%),
+    radial-gradient(55% 50% at 100% 100%,rgba(19,163,176,.14),transparent 70%),radial-gradient(40% 40% at 100% 0%,rgba(35,56,168,.10),transparent 70%)!important;
+  background-size:120px 120px,100% 100vh,100% 100vh,100% 100vh!important;background-attachment:scroll,fixed,fixed,fixed!important;background-position:0 0!important}
+html.clv-nova[data-theme="dark"].clvpaper body,html.clv-nova[data-theme="dark"] body.flow.student{
+  background-color:#0A1030!important;
+  background-image:url(/brand/tiles-dark.svg),radial-gradient(60% 50% at 0% 0%,rgba(244,169,29,.12),transparent 70%),
+    radial-gradient(55% 50% at 100% 100%,rgba(19,163,176,.16),transparent 70%),linear-gradient(180deg,#0A1030,#111A4C)!important}
+
+/* type */
+html.clv-nova.clvpaper body{font-family:var(--nv-body)}
+html.clv-nova.clvpaper h1,html.clv-nova.clvpaper h2{font-family:var(--nv-head);letter-spacing:-.01em;font-weight:700}
+html.clv-nova.clvpaper h1{line-height:1.08}
+
+/* cards and buttons on the other student pages (game, daily challenge, profile) */
+html.clv-nova.clvpaper .card,html.clv-nova.clvpaper .panel,html.clv-nova.clvpaper .box,html.clv-nova.clvpaper section.sec,html.clv-nova.clvpaper .feature{box-shadow:var(--nv-shadow)}
+html.clv-nova.clvpaper .btn,html.clv-nova.clvpaper button.big,html.clv-nova.clvpaper .go-btn{border-radius:16px}
+html.clv-nova.clvpaper .pts{background:var(--lapis)!important;color:#fff}
+html.clv-nova[data-theme="dark"].clvpaper .pts{background:#1D2A70!important}
+html.clv-nova.clvpaper ::selection{background:var(--saff);color:#101A45}
+html.clv-nova a:focus-visible,html.clv-nova button:focus-visible{outline:3px solid var(--saff);outline-offset:3px}
+/* dark: the starry night stays, now over lapis tiles */
+html.clv-nova[data-theme="dark"].clvpaper body,html.clv-nova[data-theme="dark"] body.flow.student{position:relative;isolation:isolate}
+html.clv-nova[data-theme="dark"].clvpaper body::before,html.clv-nova[data-theme="dark"] body.flow.student::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:url(/brand/stars-far.svg) 0 0/600px 600px,url(/brand/stars-near.svg) 120px 80px/700px 700px;opacity:.8;animation:nvTwinkle 6s ease-in-out infinite alternate}
+@keyframes nvTwinkle{0%{opacity:.55}100%{opacity:.9}}
+html.clv-calm.clv-nova body::before{animation:none!important}
+/* settings sheet */
+html.clv-nova .clvsheet{--a:#F4A91D;--t:#0E8792;font-family:"Rubik",system-ui,sans-serif}
+html.clv-nova .clvsheet h2{font-family:"Unbounded","Rubik",system-ui,sans-serif;font-weight:700;letter-spacing:-.01em}
+html.clv-nova[data-theme="dark"] .clvsheet{--b:#131C4A;--soft:#1A2558;--l:#27326C;--t:#5FD6DF}

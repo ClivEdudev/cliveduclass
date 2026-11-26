@@ -5,15 +5,17 @@
   "use strict";
   const KEY = "clv-settings";
   window.CLV_V = "dev";      /* replaced by the deploy's version (tools/stamp.cjs) */
-  const DEF = { theme: "light", style: "classic", bright: 100, size: 100, reading: false, calm: false, uz: true, sound: true };
+  const DEF = { theme: "light", style: "nova", bright: 100, size: 100, reading: false, calm: false, uz: true, sound: true };
   const root = document.documentElement;
   const load = () => { try { return Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { return Object.assign({}, DEF); } };
   const keep = s => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} };
   let S = load();
+  /* Nov 2026: the new look became the default, also for phones that had saved settings before */
+  if (!S.v2) { S.style = "nova"; S.v2 = true; keep(S); }
   const mq = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
   const rm = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : null;
 
-  try { if (/^\/(index\.html)?$|^\/(me|play|daily)\//.test(location.pathname)) document.documentElement.classList.add("clvpaper"); } catch (e) {}
+  try { if (/^\/(index\.html)?$|^\/(me|play|daily|words)\//.test(location.pathname)) document.documentElement.classList.add("clvpaper"); } catch (e) {}
   function apply() {
     const dark = S.theme === "dark" || (S.theme === "auto" && mq && mq.matches);
     root.dataset.theme = dark ? "dark" : "light";
@@ -23,6 +25,13 @@
     root.classList.toggle("clv-mute", !S.sound);
     root.style.setProperty("--clv-scale", String((S.size || 100) / 100));
     /* Modern style: its own stylesheet, loaded only when chosen */
+    const nova = S.style === "nova" || !S.style;
+    root.classList.toggle("clv-nova", nova);
+    if (nova && !document.getElementById("clvNova") && document.head) {
+      const f = document.createElement("link"); f.rel = "stylesheet"; f.id = "clvNovaFont";
+      f.href = "https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap"; document.head.appendChild(f);
+      const l = document.createElement("link"); l.id = "clvNova"; l.rel = "stylesheet"; l.href = "/lessons/nova.css?v=" + window.CLV_V; document.head.appendChild(l);
+    }
     const modern = S.style === "modern";
     root.classList.toggle("clv-modern", modern);
     if (modern && !document.getElementById("clvModern") && document.head) {
@@ -102,32 +111,32 @@ html .brand i{background:#0A1020 url(/brand/mark.webp) center/cover no-repeat!im
 @supports (-moz-appearance:none){*{scrollbar-color:#7B5CFA transparent;scrollbar-width:thin}}
 /* Classic style background: warm notebook paper with faint English-class doodles (dark: indigo night).
    Home, profile, game, daily challenge and lessons on a phone. Modern style has its own background. */
-html.clvpaper:not(.clv-modern) body,html:not(.clv-modern) body.flow.student{--pg:#FAF3E6;
+html.clvpaper:not(.clv-modern):not(.clv-nova) body,html:not(.clv-modern):not(.clv-nova) body.flow.student{--pg:#FAF3E6;
   background-color:#FAF3E6!important;
   background-image:url(/brand/doodles-light.svg),radial-gradient(circle at 1px 1px,rgba(140,100,40,.16) 1.2px,transparent 1.6px),
     radial-gradient(55% 45% at 0% 0%,rgba(255,201,60,.22),transparent 70%),radial-gradient(50% 45% at 100% 100%,rgba(11,143,140,.13),transparent 70%),
     radial-gradient(40% 35% at 100% 0%,rgba(226,85,110,.10),transparent 70%)!important;
   background-size:560px 560px,24px 24px,100% 100vh,100% 100vh,100% 100vh!important;
   background-attachment:scroll,scroll,fixed,fixed,fixed!important;background-position:300px 330px,0 0,0 0,0 0,0 0!important}
-html.clvpaper[data-theme="dark"]:not(.clv-modern) body,html[data-theme="dark"]:not(.clv-modern) body.flow.student{--pg:#111433;
+html.clvpaper[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body,html[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body.flow.student{--pg:#111433;
   background-color:#0B0E26!important;
   background-image:radial-gradient(38% 30% at 86% 6%,rgba(255,236,170,.20),transparent 70%),radial-gradient(9% 7% at 86% 6%,rgba(255,240,200,.35),transparent 70%),
     radial-gradient(70% 50% at 50% 115%,rgba(124,77,255,.35),transparent 70%),radial-gradient(60% 40% at 0% 100%,rgba(22,182,201,.16),transparent 70%),
     linear-gradient(180deg,#070A1E 0%,#0E1236 45%,#1E1650 85%,#2A1B5C 100%)!important;
   background-size:100% 100vh!important;background-attachment:fixed!important;background-position:0 0!important;position:relative;isolation:isolate}
 /* starry night: two fixed star layers that twinkle, and a shooting star now and then */
-html.clvpaper[data-theme="dark"]:not(.clv-modern) body::before,html[data-theme="dark"]:not(.clv-modern) body.flow.student::before,
-html.clvpaper[data-theme="dark"]:not(.clv-modern) body::after,html[data-theme="dark"]:not(.clv-modern) body.flow.student::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none}
-html.clvpaper[data-theme="dark"]:not(.clv-modern) body::before,html[data-theme="dark"]:not(.clv-modern) body.flow.student::before{
+html.clvpaper[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body::before,html[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body.flow.student::before,
+html.clvpaper[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body::after,html[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body.flow.student::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none}
+html.clvpaper[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body::before,html[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body.flow.student::before{
   background:url(/brand/stars-far.svg) 0 0/600px 600px,url(/brand/stars-near.svg) 120px 80px/700px 700px;animation:clvTwinkle 6s ease-in-out infinite alternate}
-html.clvpaper[data-theme="dark"]:not(.clv-modern) body::after,html[data-theme="dark"]:not(.clv-modern) body.flow.student::after{
+html.clvpaper[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body::after,html[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body.flow.student::after{
   inset:auto;top:12vh;left:-20vw;width:180px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9));
   transform:rotate(-24deg);opacity:0;animation:clvShoot 11s ease-in 3s infinite}
 @keyframes clvTwinkle{0%{opacity:.75}50%{opacity:1}100%{opacity:.6}}
 @keyframes clvShoot{0%{opacity:0;transform:translate(0,0) rotate(-24deg)}2%{opacity:1}9%{opacity:0;transform:translate(70vw,-30vh) rotate(-24deg)}100%{opacity:0;transform:translate(70vw,-30vh) rotate(-24deg)}}
 html.clv-calm body::before,html.clv-calm body::after{animation:none!important}
 html.clv-calm body.flow.student::after,html.clv-calm.clvpaper body::after{display:none}
-@media (prefers-reduced-motion:reduce){html:not(.clv-modern) body::before{animation:none!important}html:not(.clv-modern) body::after{display:none}}
+@media (prefers-reduced-motion:reduce){html:not(.clv-modern):not(.clv-nova) body::before{animation:none!important}html:not(.clv-modern):not(.clv-nova) body::after{display:none}}
 `;
 
   function mount() {
@@ -173,7 +182,7 @@ html.clv-calm body.flow.student::after,html.clv-calm.clvpaper body::after{displa
       <div data-accslot>${account()}</div>
       ${faces()}
       <div class="clvgrp"><b>Look · Ko‘rinish</b>
-        <div class="clvrow"><span>${L("Style", "Uslub: klassik yoki zamonaviy, harakatli")}</span>${seg("style", [["classic", "Classic"], ["modern", "✨ Modern"]])}</div>
+        <div class="clvrow"><span>${L("Style", "Uslub: yangi, klassik yoki shisha")}</span>${seg("style", [["nova", "⭐ New"], ["classic", "Classic"], ["modern", "Glass"]])}</div>
         <div class="clvrow"><span>${L("Theme", "Mavzu")}</span>${seg("theme", [["auto", "Auto"], ["light", "☀️ Light"], ["dark", "\u{1F319} Dark"]])}</div>
         <div class="clvrow"><span>${L("Brightness", "Yorqinlik")}</span><input class="clvrange" type="range" min="40" max="100" step="5" data-r="bright" value="${S.bright}" aria-label="Brightness"><span class="clvval" data-rv="bright">${S.bright}%</span></div>
         <div class="clvrow"><span>${L("Text size", "Matn o‘lchami")}</span><input class="clvrange" type="range" min="85" max="150" step="5" data-r="size" value="${S.size}" aria-label="Text size"><span class="clvval" data-rv="size">${S.size}%</span></div>
@@ -213,9 +222,9 @@ html.clv-calm body.flow.student::after,html.clv-calm.clvpaper body::after{displa
         if (b.dataset.close != null) return close();
         if (b.dataset.ftab) { faceTab = b.dataset.ftab; const f = box.querySelector("[data-faces]"); if (f) f.outerHTML = faces(); return; }
         if (b.dataset.av != null) { pickFace(b.dataset.av); return; }
-        if (b.dataset.k) { if (S[b.dataset.k] === b.dataset.v) return; S[b.dataset.k] = b.dataset.v; }
+        if (b.dataset.k) { if (S[b.dataset.k] === b.dataset.v) return; S[b.dataset.k] = b.dataset.v; if (b.dataset.k === "style" && /^\/(index\.html)?$/.test(location.pathname)) setTimeout(() => location.reload(), 150); }
         else if (b.dataset.sw) { S[b.dataset.sw] = !S[b.dataset.sw]; }
-        else if (b.dataset.reset != null) { S = Object.assign({}, DEF); }
+        else if (b.dataset.reset != null) { S = Object.assign({}, DEF, { v2: true }); }
         else if (window.CLV_ACCOUNT && window.CLV_ACCOUNT.onClick && window.CLV_ACCOUNT.onClick(b)) return;
         else return;
         update(); apply(); save(true);

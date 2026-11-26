@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/png" sizes="32x32" href="/brand/icon-32.png">
+<link rel="apple-touch-icon" href="/brand/icon-180.png">
+<link rel="manifest" href="/brand/site.webmanifest">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Word bank · ClivEdu Class</title>
+<meta name="theme-color" content="#F3F6FC">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+/* Word bank: every new word from the lessons that are open, as flashcards.
+   Tap the card to turn it, then "Again" or "I know it". Cards you know come back later and later
+   (boxes 0–5: now, 10 minutes, 1 day, 3 days, 7 days, 21 days). Saved on the phone, and in the account when signed in. */
+:root{--pg:#F3F6FC;--card:#FFFFFF;--ink:#101A45;--sub:#56608A;--line:#DCE2F2;--soft:#EAF0FB;--lapis:#2338A8;--turq:#13A3B0;--saff:#F4A91D;--pom:#D23B55;--teal:#0E8792;
+  --head:"Unbounded","Rubik",system-ui,sans-serif;--body:"Rubik",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --sh:0 1px 0 rgba(16,26,69,.06),0 12px 30px -16px rgba(16,26,69,.30);color-scheme:light}
+html[data-theme="dark"]{--pg:#0A1030;--card:#131C4A;--ink:#EEF1FF;--sub:#A9B3DB;--line:#27326C;--soft:#1A2558;--teal:#5FD6DF;--sh:0 16px 36px -18px rgba(0,0,0,.7);color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--pg);color:var(--ink);font:17px/1.45 var(--body);padding:14px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px));-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+h1,h2,p{margin:0}
+.wrap{max-width:720px;margin:0 auto;display:grid;gap:16px;zoom:var(--clv-scale,1)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--saff);outline-offset:3px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:15px;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:7px 13px;cursor:pointer;text-decoration:none;color:var(--ink)}
+h1{font:700 clamp(28px,7vw,40px)/1.05 var(--head);letter-spacing:-.02em}
+.lead{color:var(--sub);margin-top:6px}.uz{color:var(--teal);font-weight:500;font-size:15px}
+.tabs{display:flex;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:4px;gap:4px}
+.tabs button{flex:1;border:0;background:none;border-radius:12px;padding:10px;font-weight:600;cursor:pointer;color:var(--sub)}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--pg)}
+.opts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+select,.search{border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:9px 12px;font-size:16px;max-width:100%}
+.search{flex:1;min-width:0}
+.boxes{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.boxes span{background:var(--card);border-radius:14px;padding:8px 4px;text-align:center;font-size:12px;color:var(--sub);box-shadow:var(--sh)}
+.boxes b{display:block;font:700 18px var(--head);color:var(--ink)}
+.boxes span:nth-child(1) b{color:var(--pom)}.boxes span:nth-child(n+4) b{color:var(--turq)}
+
+/* the card: tap to turn */
+.stage{perspective:1400px}
+.fc{position:relative;width:100%;min-height:330px;border:0;padding:0;background:none;cursor:pointer;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.fc.turned{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:30px;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;
+  -webkit-backface-visibility:hidden;backface-visibility:hidden;overflow:hidden;isolation:isolate}
+.face.front{background:linear-gradient(150deg,#2B44C2,#16206B);color:#fff;box-shadow:0 22px 50px -24px rgba(22,32,107,.8)}
+.face.back{background:var(--card);color:var(--ink);transform:rotateY(180deg);border:2px solid var(--saff);box-shadow:var(--sh)}
+.face::before{content:"";position:absolute;inset:0;background:url(/brand/tiles-dark.svg) 0 0/96px 96px;z-index:-1;opacity:.8}
+.face.back::before{background-image:url(/brand/tiles-light.svg);opacity:.7}
+.face .w{font:700 clamp(30px,9vw,52px)/1.1 var(--head);letter-spacing:-.02em;overflow-wrap:anywhere}
+.face .t{font-size:13px;font-weight:600;opacity:.8}
+.face .hint{position:absolute;bottom:14px;font-size:13px;opacity:.7}
+.face .ex{color:var(--sub);max-width:34ch}
+.face .ex mark{background:#FFE7B0;color:#101A45;border-radius:6px;padding:0 4px}
+html[data-theme="dark"] .face .ex mark{background:#5A4210;color:#FFE7B0}
+.say{border:0;border-radius:999px;padding:8px 14px;background:rgba(255,255,255,.16);color:#fff;font-weight:600;cursor:pointer}
+.back .say{background:var(--soft);color:var(--ink)}
+.box-tag{position:absolute;top:14px;left:16px;font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;background:rgba(255,255,255,.18)}
+.back .box-tag{background:var(--soft)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.acts button{border:0;border-radius:20px;padding:16px;font:700 17px var(--head);cursor:pointer;color:#fff;box-shadow:var(--sh);transition:transform .12s}
+.acts button:active{transform:scale(.97)}
+.acts .again{background:linear-gradient(150deg,#E2506A,#A8213F)}
+.acts .know{background:linear-gradient(150deg,#13A3B0,#0B6F86)}
+.acts button small{display:block;font:500 13px var(--body);opacity:.9}
+.acts button:disabled{opacity:.4}
+.meter{height:10px;border-radius:99px;background:var(--soft);overflow:hidden}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--saff),#FFD27A);border-radius:inherit;transition:width .4s}
+.note{color:var(--sub);text-align:center;font-size:15px}
+.done{background:var(--card);border-radius:30px;padding:28px 22px;text-align:center;box-shadow:var(--sh);display:grid;gap:10px;justify-items:center}
+.done .big{font-size:48px}.done h2{font:700 24px var(--head)}
+.cta{border:0;background:var(--saff);color:#101A45;font-weight:700;border-radius:16px;padding:13px 20px;cursor:pointer}
+/* list */
+.list{display:grid;gap:8px}
+.row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--card);border-radius:18px;padding:12px 14px;box-shadow:var(--sh)}
+.row b{font-weight:700}.row small{display:block;color:var(--sub);font-size:14px}
+.row .lv{font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;background:var(--soft);white-space:nowrap}
+.row .sp{border:0;background:var(--soft);border-radius:12px;width:40px;height:40px;cursor:pointer}
+.empty{background:var(--card);border-radius:22px;padding:18px;color:var(--sub);box-shadow:var(--sh)}
+</style>
+<script src="../lessons/settings.js"></script>
+<script src="../lessons/account.js" defer></script>
+</head>
+<body>
+<div class="wrap" id="app"><p class="note">Loading your words… · So‘zlar yuklanmoqda…</p></div>
+<script src="../lessons/plan.js"></script>
+<script>
+(() => {
+  const P = window.PLAN;
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const ENT = { "&nbsp;": " ", "&amp;": "&", "&rsquo;": "’", "&lsquo;": "‘", "&mdash;": "—" };
+  const strip = s => String(s == null ? "" : s).replace(/<[^>]*>/g, "").replace(/&[a-z#0-9]+;/gi, m => ENT[m] || m).replace(/\s+/g, " ").trim();
+  const read = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || "null") || d; } catch (e) { return d; } };
+  const KEY = "clv-words", WAIT = [0, 10 * 60e3, 864e5, 3 * 864e5, 7 * 864e5, 21 * 864e5];
+  let W = read(KEY, {});
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(W)); } catch (e) {} };
+
+  /* the lessons this student can open (same rules as the home page) */
+  const grp = P.groupOf(), lessons = [];
+  if (grp === "b") P.beginner.all.filter(l => l.ready && (l.done || P.isForced(l.id) || P.isOpen(l.date, P.beginner.unlockHour))).forEach(l => lessons.push({ id: l.id, name: "Lesson " + l.n + ": " + l.title, path: l.folder, date: l.date }));
+  else {
+    (P.extras || []).forEach(s => { const d = P.parse(s.date); if (s.openNow || P.isForced(s.key) || P.isOpen(d, s.openHour)) lessons.push({ id: s.key, name: s.title, path: s.path, date: d }); });
+    P.all.filter(l => l.ready && ((P.openNowLessons || []).includes(l.n) || P.isForced(l.n) || P.isOpen(l.date))).forEach(l => lessons.push({ id: String(l.n), name: "Lesson " + l.n + ": " + l.title, path: l.folder, date: l.date }));
+  }
+  lessons.sort((a, b) => b.date - a.date);
+
+  /* lesson files set window.LESSON: load them one by one */
+  function load(path) {
+    return new Promise(res => {
+      window.LESSON = undefined; const sc = document.createElement("script");
+      sc.src = "../" + path + "lesson.js" + (window.CLV_V ? "?v=" + window.CLV_V : "");
+      sc.onload = () => res(window.LESSON || null); sc.onerror = () => res(null); document.head.appendChild(sc);
+    });
+  }
+  /* new words: "words" slides, "New words" example slides ("word = so‘z") and "New words" picture slides */
+  function wordsOf(L, les) {
+    const out = [];
+    const add = (en, uz, ex) => { en = strip(en).replace(/[.!?]$/, ""); uz = strip(uz); if (en && uz && en.length < 60 && uz.length < 80) out.push({ en, uz, ex: ex || "", from: les.name, lid: les.id }); };
+    ((L && L.slides) || []).forEach(s => {
+      if (s.t === "words" && Array.isArray(s.items)) s.items.forEach(it => Array.isArray(it) && add(it[0], it[1], it[2]));
+      const isNew = /new words|yangi so/i.test(String(s.eb || ""));
+      if (!isNew) return;
+      if (s.t === "examples") (s.items || []).forEach(it => {
+        if (!Array.isArray(it)) return;
+        const pairs = String(it[1] || "").split(/\s+·\s+/);
+        if (pairs.some(p => p.includes("="))) pairs.forEach(p => { const m = p.split(/\s+=\s+/); if (m.length === 2) add(m[0], m[1], it[0]); });
+        else { const hl = /<span class=['"]c[a-z]['"]>([\s\S]*?)<\/span>/.exec(it[0]); add(hl ? hl[1] : it[0], it[1], hl ? it[0] : ""); }
+      });
+      if (s.t === "quad") (s.items || []).forEach(it => { const m = String(it.label || "").split(/\s+=\s+/); if (m.length === 2) add(m[0], m[1], it.en || ""); });
+    });
+    return out;
+  }
+
+  let ALL = [], deck = "all", mode = "learn", dir = "en", q = "", cur = null, turned = false, done = 0;
+  const key = w => w.en.toLowerCase();
+  const boxOf = w => (W[key(w)] || {}).b || 0;
+  const due = w => { const r = W[key(w)]; return !r || (r.n || 0) <= Date.now(); };
+  const pool = () => ALL.filter(w => deck === "all" || w.lid === deck);
+  function nextCard() {
+    const p = pool(), seen = p.filter(w => W[key(w)] && due(w)), fresh = p.filter(w => !W[key(w)]);
+    const list = seen.length ? seen.sort((a, b) => boxOf(a) - boxOf(b)) : fresh;
+    if (!list.length) return null;
+    const pick = list.slice(0, Math.min(list.length, 4));            /* a little shuffle so the order is not always the same */
+    let c = pick[Math.floor(Math.random() * pick.length)];
+    if (cur && c === cur && list.length > 1) c = list.find(x => x !== cur);
+    return c;
+  }
+  function speak(t) {
+    try { if (!window.speechSynthesis) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = "en-GB"; u.rate = .9;
+      const v = speechSynthesis.getVoices().find(v => /^en[-_]GB/i.test(v.lang)) || speechSynthesis.getVoices().find(v => /^en/i.test(v.lang)); if (v) u.voice = v; speechSynthesis.speak(u); } catch (e) {}
+  }
+  function mark(ok) {
+    if (!cur) return;
+    const k = key(cur), r = W[k] || { b: 0 };
+    r.b = ok ? Math.min(5, (W[k] ? r.b : 1) + 1) : 0;     /* a brand-new word you already know goes straight to box 2 */
+    r.n = Date.now() + WAIT[r.b]; r.t = Date.now(); W[k] = r; save(); done++;
+    cur = nextCard(); turned = false; draw();
+    if (navigator.vibrate) try { navigator.vibrate(ok ? 12 : [10, 40, 10]); } catch (e) {}
+  }
+  const exHTML = w => w.ex ? `<p class="ex">${strip(w.ex).replace(new RegExp("(" + w.en.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "i"), "<mark>$1</mark>")}</p>` : "";
+  function cardHTML() {
+    const w = cur, front = dir === "en" ? w.en : w.uz, back = dir === "en" ? w.uz : w.en, b = boxOf(w);
+    return `<div class="stage"><button class="fc ${turned ? "turned" : ""}" id="fc" aria-label="Card: ${esc(front)}. Tap to turn">
+      <span class="face front"><span class="box-tag">${W[key(w)] ? "Box " + b : "New word"}</span><span class="t">${esc(w.from)}</span><span class="w">${esc(front)}</span>
+        ${dir === "en" ? `<span class="say" data-say>🔊 Listen</span>` : ""}<span class="hint">Tap to turn · Aylantirish uchun bosing</span></span>
+      <span class="face back"><span class="box-tag">${dir === "en" ? "O‘zbekcha" : "English"}</span><span class="w">${esc(back)}</span>${exHTML(w)}
+        ${dir === "uz" ? `<span class="say" data-say>🔊 Listen</span>` : ""}</span></button></div>
+      <div class="acts"><button class="again" data-mark="0" ${turned ? "" : "disabled"}>Again<small>Yana · soon</small></button><button class="know" data-mark="1" ${turned ? "" : "disabled"}>I know it<small>Bilaman · later</small></button></div>`;
+  }
+  function stats() {
+    const p = pool(), c = [0, 0, 0, 0, 0, 0]; p.forEach(w => { if (W[key(w)]) c[boxOf(w)]++; });
+    const fresh = p.filter(w => !W[key(w)]).length, dueN = p.filter(w => W[key(w)] && due(w)).length;
+    return { c, fresh, dueN, total: p.length, known: p.filter(w => boxOf(w) >= 2).length };
+  }
+  function draw() {
+    const s = stats(), app = document.getElementById("app");
+    const opts = `<option value="all">All lessons · ${ALL.length} words</option>` + lessons.map(l => { const n = ALL.filter(w => w.lid === l.id).length; return n ? `<option value="${esc(l.id)}" ${deck === l.id ? "selected" : ""}>${esc(l.name)} · ${n}</option>` : ""; }).join("");
+    let body = "";
+    if (!ALL.length) body = `<p class="empty">No new words yet. They appear here after your first lessons. · Hali so‘zlar yo‘q.</p>`;
+    else if (mode === "learn") {
+      body = `<div class="meter" aria-label="${s.known} of ${s.total} words known"><i style="width:${s.total ? Math.round(100 * s.known / s.total) : 0}%"></i></div>
+        <p class="note"><b>${s.known}</b> of ${s.total} words known · ${s.dueN} to review · ${s.fresh} new</p>`;
+      body += cur ? cardHTML() : `<div class="done"><span class="big">🌟</span><h2>All done for now!</h2><p class="note">You reviewed ${done} cards. Words come back when it is time to see them again. · Hozircha hammasi!</p>
+        <button class="cta" data-again>Practise all words again</button></div>`;
+    } else {
+      const k = q.trim().toLowerCase(), list = pool().filter(w => !k || (w.en + " " + w.uz).toLowerCase().includes(k));
+      body = `<input class="search" id="q" type="search" placeholder="Find a word · So‘z qidirish" value="${esc(q)}">
+        <div class="boxes">${s.c.map((n, i) => `<span><b>${n}</b>box ${i}</span>`).join("")}</div>
+        <div class="list">${list.map(w => `<div class="row"><button class="sp" data-sayw="${esc(w.en)}" aria-label="Listen: ${esc(w.en)}">🔊</button><span><b>${esc(w.en)}</b><small>${esc(w.uz)}</small></span><span class="lv">${W[key(w)] ? (boxOf(w) >= 2 ? "✓ known" : "learning") : "new"}</span></div>`).join("") || `<p class="empty">No word matches “${esc(q)}”.</p>`}</div>`;
+    }
+    app.innerHTML = `<div class="top"><a class="chip" href="../">← Home</a><button class="chip" data-settings aria-label="Settings">⚙️</button></div>
+      <div><h1>Word bank</h1><p class="lead">Every new word from your lessons, as cards. <span class="uz">Darslardagi barcha yangi so‘zlar.</span></p></div>
+      <div class="tabs" role="group"><button data-mode="learn" aria-pressed="${mode === "learn"}">🃏 Cards</button><button data-mode="list" aria-pressed="${mode === "list"}">📋 All words</button></div>
+      <div class="opts"><select id="deck" aria-label="Which lesson">${opts}</select>${mode === "learn" ? `<button class="chip" data-dir>${dir === "en" ? "English → Uzbek" : "Uzbek → English"} ⇄</button>` : ""}</div>
+      ${body}`;
+    const d = document.getElementById("deck"); if (d) d.value = deck;
+    const qi = document.getElementById("q"); if (qi && document.activeElement !== qi && q) { qi.focus(); qi.setSelectionRange(q.length, q.length); }
+  }
+  document.addEventListener("click", e => {
+    if (e.target.closest("[data-say]")) { e.stopPropagation(); if (cur) speak(cur.en); return; }
+    const sw = e.target.closest("[data-sayw]"); if (sw) { speak(sw.dataset.sayw); return; }
+    if (e.target.closest("#fc")) { turned = !turned; document.getElementById("fc").classList.toggle("turned", turned); document.querySelectorAll("[data-mark]").forEach(b => b.disabled = !turned); if (turned && dir === "uz") speak(cur.en); return; }
+    const m = e.target.closest("[data-mark]"); if (m) { mark(m.dataset.mark === "1"); return; }
+    const md = e.target.closest("[data-mode]"); if (md) { mode = md.dataset.mode; draw(); return; }
+    if (e.target.closest("[data-dir]")) { dir = dir === "en" ? "uz" : "en"; turned = false; draw(); return; }
+    if (e.target.closest("[data-again]")) { pool().forEach(w => { if (W[key(w)]) W[key(w)].n = 0; }); save(); cur = nextCard(); draw(); }
+  });
+  document.addEventListener("change", e => { if (e.target.id === "deck") { deck = e.target.value; cur = nextCard(); turned = false; draw(); } });
+  document.addEventListener("input", e => { if (e.target.id === "q") { q = e.target.value; draw(); } });
+  document.addEventListener("keydown", e => {
+    if (mode !== "learn" || !cur || e.target.closest("input,select")) return;
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); document.getElementById("fc").click(); }
+    else if (turned && (e.key === "ArrowRight" || e.key === "2")) mark(true);
+    else if (turned && (e.key === "ArrowLeft" || e.key === "1")) mark(false);
+  });
+  addEventListener("clv-account", e => { if (e.detail && e.detail.fresh) { W = read(KEY, {}); draw(); } });
+
+  (async () => {
+    const seen = new Set();
+    for (const l of lessons.slice().reverse()) {            /* oldest first, so a word belongs to the lesson that taught it */
+      const L = await load(l.path); wordsOf(L, l).forEach(w => { const k = key(w); if (!seen.has(k)) { seen.add(k); ALL.push(w); } });
+    }
+    cur = nextCard(); draw();
+  })();
+})();
+</script>
+</body>
+</html>

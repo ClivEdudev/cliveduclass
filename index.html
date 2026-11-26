@@ -9,111 +9,194 @@
 <meta property="og:image" content="https://clivedu.me/brand/logo.jpg">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ClivEdu Class · My lessons</title>
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#F3F6FC">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
-/* Student home. Light and plain so it opens fast on any phone and reads well in daylight.
-   Three jobs, in order: join today's class game, open today's lesson, revise older lessons. */
+/* Student home, new look: Samarkand tilework. The level medallion (an 8-point star whose petals fill up)
+   is the one big thing; everything else stays calm. Order on a phone: who I am and my level,
+   when class is, today's lesson, the four things to do, my lesson journey, my badges. */
 :root{
-  --pg:#EEF3F8; --card:#FFFFFF; --ink:#12263A; --sub:#4B5F73; --line:#D2DCE6; --teal:#0B6E70;
-  --yel:#FFC93C; --yelsoft:#FFF6D6; --blue:#1F5FD1; --green:#1C8F50; --greensoft:#E3F5EA;
+  --pg:#F3F6FC;--card:#FFFFFF;--ink:#101A45;--sub:#56608A;--line:#DCE2F2;
+  --lapis:#2338A8;--lapis-d:#16206B;--turq:#13A3B0;--saff:#F4A91D;--pom:#D23B55;--green:#138A6B;
+  --soft:#EAF0FB;--teal:#0E8792;
+  --head:"Unbounded","Rubik",system-ui,sans-serif;--body:"Rubik",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --sh:0 1px 0 rgba(16,26,69,.06),0 12px 30px -16px rgba(16,26,69,.30);
   color-scheme:light;
 }
+html[data-theme="dark"]{--pg:#0A1030;--card:#131C4A;--ink:#EEF1FF;--sub:#A9B3DB;--line:#27326C;--soft:#1A2558;--teal:#5FD6DF;--green:#4CD3A8;
+  --sh:0 1px 0 rgba(255,255,255,.04),0 16px 36px -18px rgba(0,0,0,.7);color-scheme:dark}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{margin:0;background:var(--pg);color:var(--ink);font:17px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 48px}
+body{margin:0;background:var(--pg);color:var(--ink);font:17px/1.45 var(--body);touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+  padding:14px max(16px,env(safe-area-inset-right,0px)) 56px max(16px,env(safe-area-inset-left,0px))}
 a{color:inherit}
 h1,h2,h3,p{margin:0}
-.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.brand{font-weight:800;font-size:18px;display:flex;align-items:center;gap:9px}
-.brand i{width:22px;height:22px;border-radius:6px;background:conic-gradient(from 45deg,var(--blue) 0 25%,var(--teal) 0 50%,var(--blue) 0 75%,var(--teal) 0)}
-.pts{background:var(--ink);color:#fff;border-radius:999px;padding:6px 14px;font-weight:800;white-space:nowrap}
-.pts b{color:var(--yel);margin-left:4px;font-variant-numeric:tabular-nums}
-.hello h1{font-size:clamp(30px,7vw,46px);line-height:1.1;font-weight:800;text-wrap:balance}
-.hello p{color:var(--sub);margin-top:6px}
-.hello .uz{color:var(--teal);font-weight:600;font-size:15px}
+button{font:inherit;color:inherit}
+.wrap{max-width:1120px;margin:0 auto;zoom:var(--clv-scale,1)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--saff);outline-offset:3px}
 
-/* 1 · class game */
-.game{display:flex;align-items:center;gap:14px;background:var(--ink);color:#fff;border-radius:22px;padding:16px 18px;text-decoration:none}
-.game .ic{width:48px;height:48px;border-radius:14px;background:var(--yel);color:var(--ink);display:grid;place-items:center;font-size:24px;flex:none}
-.game span.t{flex:1;min-width:0}
-.game b{display:block;font-size:19px}
-.game small{display:block;color:#BFD8D5;font-size:14px}
-.game .go{font-weight:800;color:var(--yel);white-space:nowrap}
-.game.daily{background:linear-gradient(120deg,#B45309,#E8A90A);color:#fff}
-.game.daily .ic{background:#fff}
-.game.daily small{color:#FFF3D6}
-.game.daily .go{color:#fff;background:rgba(0,0,0,.18);border-radius:999px;padding:4px 10px}
-.game.daily.done{background:var(--card);color:var(--ink);border:2px solid var(--line)}
-.game.daily.done small{color:var(--sub)}.game.daily.done .go{color:var(--ink);background:var(--yelsoft)}
-html[data-theme="dark"] .game.daily:not(.done){background:linear-gradient(120deg,#8A3F06,#B98208)!important}
-html[data-theme="dark"] .game.daily.done{background:var(--card)!important}
-.game.solo{background:var(--card);color:var(--ink);border:2px solid var(--line);padding:12px 18px}
-.game.solo .ic{background:var(--yelsoft);width:42px;height:42px;font-size:21px}
-.game.solo small{color:var(--sub)}
-.game.solo .go{color:var(--blue)}
-html[data-theme="dark"] .game.solo{background:var(--card)!important;color:var(--ink)}
-.game.live{background:var(--green)}
-.game.live .ic{background:#fff}
-.game.live small{color:#E3F5EA}
-.game.live .go{color:#fff}
+/* top bar */
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}
+.brand{font:700 17px/1 var(--head);display:flex;align-items:center;gap:10px;letter-spacing:-.01em}
+.brand i{width:30px;height:30px;border-radius:9px;flex:none}
+.topr{display:flex;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:15px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:999px;padding:7px 13px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.chip img{width:26px;height:26px;border-radius:50%;object-fit:cover;margin:-4px 0 -4px -7px}
+.chip.tg{background:#229ED9;border-color:#229ED9;color:#fff}
+.chip.icon{padding:7px 10px}
 
-/* 2 · today */
-.feature{background:var(--card);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:12px;border:2px solid var(--yel)}
-.feature .eb{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#B45309}
-.feature h2{font-size:clamp(26px,6vw,38px);line-height:1.1;font-weight:800;text-wrap:balance}
-.feature .focus{color:var(--sub);font-weight:600}
-.feature.locked{border-color:var(--line)}
-.feature.locked .eb{color:var(--sub)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 22px;border-radius:14px;font-weight:800;font-size:18px;text-decoration:none;background:var(--yel);color:var(--ink);align-self:flex-start}
-.lock{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;background:var(--pg);color:var(--sub);font-weight:800;align-self:flex-start}
+/* layout: one column on phones, two on wide screens */
+.grid2{display:grid;gap:16px}
+.colL,.colR{display:grid;gap:16px;align-content:start;min-width:0}
+@media (min-width:900px){.grid2{grid-template-columns:1.15fr .85fr;gap:20px}.colL,.colR{gap:20px}}
 
-/* 3 · revise */
-.sec h2{font-size:22px;font-weight:800}
-.sec > p{color:var(--sub);margin-top:2px;font-size:15px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(250px,100%),1fr));gap:10px;margin-top:12px}
-.card{background:var(--card);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;text-decoration:none;border:2px solid transparent;box-shadow:0 1px 0 var(--line)}
-a.card:active,a.card:hover{border-color:var(--ink)}
-.card .n{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
-.card h3{font-size:20px;line-height:1.2;font-weight:800}
-.card .f{color:var(--sub);font-size:14px}
-.card .foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:4px;font-size:14px;font-weight:800}
-.card .go{color:var(--blue)}
-.card .my{color:var(--sub)}
-.card.new{border-color:var(--yel);background:var(--yelsoft)}
-.empty{background:var(--card);border-radius:18px;padding:18px;color:var(--sub)}
-.foot-link{color:var(--sub);font-size:14px;text-align:center}
-a:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
-/* Dark theme and text size (Settings) */
-html[data-theme="dark"]{--pg:#0E1A26;--card:#16263A;--ink:#EAF0F5;--sub:#A9B8C7;--line:#2B3E52;--teal:#6FD6D8;--yelsoft:#2E2A14;--blue:#8CB2F5;--greensoft:#123A26;color-scheme:dark}
-html[data-theme="dark"] .pts,html[data-theme="dark"] .game:not(.live){background:#0A1520;color:#fff}
-html[data-theme="dark"] .game .ic,html[data-theme="dark"] .btn{color:#12263A}
-html[data-theme="dark"] .feature .eb{color:#FFB37A}
-html[data-theme="dark"] .card.new{background:#2E2A14}
-.wrap{zoom:var(--clv-scale,1)}
-.gear.tgb{background:#229ED9;border-color:#229ED9;color:#fff;font-size:16px;padding:8px 16px;box-shadow:0 4px 14px rgba(34,158,217,.35)}
-.signcard{display:flex;align-items:center;gap:14px;background:#229ED9;color:#fff;border-radius:22px;padding:16px 18px;border:0;width:100%;font:inherit;text-align:left;cursor:pointer;margin:16px 0 0}
-.signcard .ic{width:48px;height:48px;border-radius:14px;background:#fff;display:grid;place-items:center;font-size:26px;flex:none}
-.signcard .t{flex:1;min-width:0}
-.signcard b{display:block;font-size:19px}
-.signcard small{display:block;color:#E4F4FC;font-size:14px}
-.signcard .go{font-weight:800;white-space:nowrap;background:#fff;color:#1B7DB0;border-radius:999px;padding:8px 14px}
-.signcard:hover .go,.signcard:focus-visible .go{background:var(--yel);color:#12263A}
-@media (max-width:480px){.signcard .go{display:none}}
-.gear{font-weight:800;font-size:15px;font-family:inherit;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap}
-.topr{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;min-width:0}
-.grpbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border-radius:16px;padding:10px 14px;font-size:15px;color:var(--sub)}
-.grpbar b{color:var(--ink)}
-.grppick{background:var(--card);border:2px solid var(--blue);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:6px}
-.grppick h2{font-size:22px;font-weight:800}
-.grppick .uz{color:var(--teal);font-weight:600;font-size:15px}
-.grpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:10px;margin-top:6px}
-.grpbtn{font:inherit;text-align:left;cursor:pointer;border:2px solid var(--line);background:var(--pg);color:var(--ink);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
-.grpbtn:hover,.grpbtn:focus-visible{border-color:var(--blue)}
-.grpbtn b{font-size:20px}.grpbtn span{font-weight:800;color:var(--blue)}.grpbtn small{color:var(--sub);font-size:14px}
-@media (max-width:440px){.pts .lbl{display:none}.top .gear.tgb{font-size:15px;padding:7px 12px}}
+/* hero: who I am + the level medallion */
+.hero{position:relative;overflow:hidden;border-radius:30px;padding:22px;color:#fff;
+  background:radial-gradient(120% 90% at 100% 0%,#3550D6 0%,transparent 55%),linear-gradient(150deg,#2338A8 0%,#16206B 100%);
+  box-shadow:0 22px 50px -24px rgba(22,32,107,.8);isolation:isolate}
+.hero::before{content:"";position:absolute;inset:0;background:url(/brand/tiles-dark.svg) 0 0/96px 96px;opacity:.9;z-index:-1;
+  -webkit-mask-image:linear-gradient(110deg,transparent 30%,#000 90%);mask-image:linear-gradient(110deg,transparent 30%,#000 90%)}
+.hero .hi{font:600 15px var(--body);color:#C9D3FF}
+.hero h1{font:700 clamp(28px,7.4vw,44px)/1.04 var(--head);letter-spacing:-.02em;margin-top:4px;overflow-wrap:anywhere}
+.hero .row{display:flex;align-items:center;gap:18px;margin-top:18px}
+.medal{flex:none;width:clamp(120px,34vw,168px);height:auto;overflow:visible;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+.medal .pet{fill:rgba(255,255,255,.14);stroke:rgba(255,255,255,.35);stroke-width:.6;transition:fill .4s}
+.medal .pet.on{fill:var(--saff);stroke:#FFE2A6;animation:petal .5s cubic-bezier(.2,.9,.3,1.3) both;animation-delay:calc(.25s + var(--i) * .09s)}
+.medal .pet.on:nth-child(even){fill:#FFC54D}
+.medal .core{fill:#101A45;stroke:#FFE2A6;stroke-width:1.2}
+.medal .lv{fill:#fff;font:700 17px var(--head);text-anchor:middle}
+.medal .lvl{fill:#C9D3FF;font:600 6.4px var(--body);text-anchor:middle;letter-spacing:.06em}
+@keyframes petal{from{fill:rgba(255,255,255,.14);transform:scale(.7);transform-origin:50px 50px}to{transform:none}}
+.lvinfo{min-width:0;display:grid;gap:8px}
+.lvinfo .nm{font:700 clamp(18px,4.6vw,24px)/1.15 var(--head)}
+.lvinfo .nm small{display:block;font:500 14px var(--body);color:#C9D3FF;margin-top:3px}
+.bar{height:10px;border-radius:99px;background:rgba(255,255,255,.16);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#F4A91D,#FFD27A);width:0;transition:width 1.2s cubic-bezier(.2,.8,.2,1) .3s}
+.lvinfo .ptl{font-size:14px;color:#DCE3FF}
+.lvinfo .ptl b{color:#fff;font-variant-numeric:tabular-nums}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:5px 11px;font-weight:600;font-size:14px}
+@media (max-width:420px){.hero{padding:18px}.hero .row{gap:12px}}
+
+/* countdown to class */
+.clock{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:22px;padding:14px 18px;box-shadow:var(--sh);border:1.5px solid var(--line)}
+.clock .ico{width:44px;height:44px;border-radius:14px;background:var(--soft);display:grid;place-items:center;font-size:22px;flex:none}
+.clock .t{flex:1;min-width:0}
+.clock b{display:block;font-weight:700}
+.clock small{display:block;color:var(--sub);font-size:14px}
+.clock .num{font:700 clamp(18px,5vw,24px) var(--head);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--lapis)}
+html[data-theme="dark"] .clock .num{color:#FFC54D}
+.clock.live{background:#E2F6EF;border-color:#9ADCC4}
+.clock.live .num{color:var(--green)}
+html[data-theme="dark"] .clock.live{background:#0F3A33;border-color:#1F6B5B}
+.dot{width:10px;height:10px;border-radius:50%;background:#18B486;box-shadow:0 0 0 0 rgba(24,180,134,.6);animation:ping 1.6s infinite;display:inline-block;margin-right:6px}
+@keyframes ping{70%{box-shadow:0 0 0 10px rgba(24,180,134,0)}100%{box-shadow:0 0 0 0 rgba(24,180,134,0)}}
+
+/* today's lesson */
+.today{position:relative;overflow:hidden;background:var(--card);border-radius:30px;padding:22px;box-shadow:var(--sh);border:2px solid var(--saff);display:grid;gap:12px}
+.today::after{content:"";position:absolute;right:-48px;top:-48px;width:170px;height:170px;background:url(/brand/star.svg) center/contain no-repeat;opacity:.16;pointer-events:none}
+.today .when{font-weight:700;color:#B26B00;font-size:15px}
+html[data-theme="dark"] .today .when{color:#FFC54D}
+.today h2{font:700 clamp(24px,6vw,36px)/1.1 var(--head);letter-spacing:-.02em;max-width:22ch}
+.today .focus{color:var(--sub);max-width:52ch}
+.today.locked{border-color:var(--line)}
+html[data-theme="dark"] .today::after{opacity:.07}
+/* next badge to win */
+.goal{display:flex;gap:14px;align-items:center;background:var(--card);border-radius:24px;padding:16px 18px;box-shadow:var(--sh);border:1.5px dashed var(--saff)}
+.goal .i{width:58px;height:58px;flex:none;display:grid;place-items:center;font-size:27px;background:url(/brand/star.svg) center/contain no-repeat;filter:grayscale(.2)}
+.goal p{color:var(--sub);font-size:14.5px}.goal b{display:block;font:700 16px var(--head);color:var(--ink);margin-bottom:2px}
+.today.locked .when{color:var(--sub)}
+.cta{display:inline-flex;align-items:center;gap:10px;justify-self:start;background:var(--saff);color:#101A45;font-weight:700;font-size:18px;text-decoration:none;
+  padding:14px 22px;border-radius:16px;box-shadow:0 8px 20px -10px rgba(180,110,0,.8);transition:transform .15s}
+.cta:active{transform:scale(.97)}
+.lock{justify-self:start;display:inline-flex;gap:8px;align-items:center;font-weight:600;background:var(--soft);color:var(--sub);padding:10px 16px;border-radius:14px}
+
+/* four things to do */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{position:relative;overflow:hidden;border-radius:24px;padding:16px;min-height:132px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;
+  text-decoration:none;color:#fff;box-shadow:var(--sh);isolation:isolate;transition:transform .15s}
+.tile:active{transform:scale(.97)}
+.tile::before{content:"";position:absolute;right:-26px;bottom:-26px;width:110px;height:110px;background:url(/brand/star.svg) center/contain no-repeat;opacity:.22;z-index:-1;
+  filter:brightness(0) invert(1)}
+.tile .em{font-size:28px;line-height:1}
+.tile b{display:block;font:700 17px/1.15 var(--head)}
+.tile small{display:block;font-size:13.5px;opacity:.92;margin-top:3px}
+.tile.game{background:linear-gradient(150deg,#2B44C2,#16206B)}
+.tile.daily{background:linear-gradient(150deg,#F4A91D,#D9780B);color:#101A45}
+.tile.daily::before{filter:none;opacity:.25}
+.tile.solo{background:linear-gradient(150deg,#13A3B0,#0B6F86)}
+.tile.words{background:linear-gradient(150deg,#E2506A,#A8213F)}
+.tile.live{background:linear-gradient(150deg,#18B486,#0C7A5B);animation:liveglow 2s ease-in-out infinite}
+@keyframes liveglow{50%{box-shadow:0 0 0 6px rgba(24,180,134,.25),var(--sh)}}
+.tile .badge{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.2);border-radius:999px;padding:3px 9px;font-weight:700;font-size:13px}
+.tile.daily .badge{background:rgba(255,255,255,.55)}
+
+/* group, sign in */
+.grppick{background:var(--card);border:2px solid var(--lapis);border-radius:24px;padding:18px;display:grid;gap:8px;box-shadow:var(--sh)}
+.grppick h2{font:700 20px var(--head)}
+.uz{color:var(--teal);font-weight:500;font-size:15px}
+.grpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:10px;margin-top:4px}
+.grpbtn{text-align:left;cursor:pointer;border:2px solid var(--line);background:var(--soft);border-radius:18px;padding:14px 16px;display:grid;gap:2px}
+.grpbtn:hover,.grpbtn:focus-visible{border-color:var(--lapis)}
+.grpbtn b{font:700 18px var(--head)}.grpbtn span{font-weight:600;color:var(--lapis)}.grpbtn small{color:var(--sub);font-size:14px}
+html[data-theme="dark"] .grpbtn span{color:#93A8FF}
+.signcard{display:flex;align-items:center;gap:14px;background:#229ED9;color:#fff;border-radius:24px;padding:16px 18px;border:0;width:100%;text-align:left;cursor:pointer;box-shadow:var(--sh)}
+.signcard .ic{width:46px;height:46px;border-radius:14px;background:#fff;display:grid;place-items:center;font-size:24px;flex:none}
+.signcard .t{flex:1;min-width:0}.signcard b{display:block;font:700 17px var(--head)}.signcard small{display:block;color:#E4F4FC;font-size:14px}
+
+/* section heads */
+.sh{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:34px 0 14px}
+.sh h2{font:700 clamp(22px,5vw,30px)/1.1 var(--head);letter-spacing:-.02em}
+.sh p{color:var(--sub);font-size:15px;margin-top:4px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg{display:flex;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:3px}
+.seg button{border:0;background:none;border-radius:11px;padding:7px 12px;font-weight:600;cursor:pointer;color:var(--sub)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--pg)}
+.search{border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:9px 14px;font:inherit;font-size:16px;color:var(--ink);width:min(260px,100%)}
+.search::placeholder{color:var(--sub)}
+
+/* journey: the lessons as stops on a road, newest at the top */
+.road{position:relative;display:grid;gap:14px;padding-left:34px;align-items:start}
+.road::before{content:"";position:absolute;left:13px;top:10px;bottom:10px;width:4px;border-radius:4px;
+  background:repeating-linear-gradient(180deg,var(--saff) 0 12px,transparent 12px 22px)}
+.stop{position:relative;display:block;text-decoration:none;background:var(--card);border-radius:22px;padding:14px 16px;box-shadow:var(--sh);border:1.5px solid var(--line)}
+.stop::before{content:"";position:absolute;left:-34px;top:16px;width:30px;height:30px;background:url(/brand/star.svg) center/contain no-repeat;filter:grayscale(1) opacity(.45)}
+.stop.got::before{filter:none}
+.stop.here{border-color:var(--saff);border-width:2px}
+.stop.here::after{content:"You are here";position:absolute;right:14px;top:-11px;background:var(--saff);color:#101A45;font-weight:700;font-size:12px;border-radius:999px;padding:3px 10px}
+.stop .k{font-size:13px;font-weight:600;color:var(--teal)}
+.stop h3{font:700 18px/1.2 var(--head);margin-top:3px}
+.stop .f{color:var(--sub);font-size:14px;margin-top:3px}
+.stop .ft{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font-size:14px;font-weight:600}
+.stop .ft .p{color:var(--sub)}
+.stop .ft .go{color:var(--lapis)}
+html[data-theme="dark"] .stop .ft .go{color:#93A8FF}
+@media (min-width:760px){
+  .road{padding-left:0;grid-template-columns:1fr 1fr;column-gap:64px}
+  .road::before{left:calc(50% - 2px)}
+  .stop:nth-child(odd){grid-column:1}.stop:nth-child(even){grid-column:2;margin-top:44px}
+  .stop:nth-child(odd)::before{left:auto;right:-49px}.stop:nth-child(even)::before{left:-49px}
+}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:12px}
+.list .stop::before{display:none}
+.empty{background:var(--card);border-radius:22px;padding:18px;color:var(--sub);box-shadow:var(--sh)}
+
+/* badges */
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.bdg{background:var(--card);border-radius:20px;padding:12px 8px;text-align:center;box-shadow:var(--sh);border:1.5px solid var(--line);cursor:pointer;display:grid;gap:4px;justify-items:center}
+.bdg .i{width:54px;height:54px;display:grid;place-items:center;font-size:26px;background:url(/brand/star.svg) center/contain no-repeat}
+.bdg b{font-size:13px;line-height:1.2}
+.bdg.no{opacity:.55}.bdg.no .i{filter:grayscale(1);opacity:.6}
+.bdg[aria-expanded="true"]{border-color:var(--lapis)}
+.tip{grid-column:1/-1;background:var(--ink);color:var(--pg);border-radius:16px;padding:10px 14px;font-size:15px}
+
+.foot{display:flex;justify-content:center;gap:18px;margin-top:38px;color:var(--sub);font-size:14px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#101A45;color:#fff;border-radius:18px;padding:14px 20px;font-weight:600;
+  box-shadow:0 20px 40px -16px rgba(0,0,0,.6);z-index:50;text-align:center;max-width:calc(100% - 32px)}
+.toast b{color:#FFC54D;font-family:var(--head)}
+@media (max-width:380px){.tile{min-height:120px;padding:14px}.tile b{font-size:15.5px}}
+@media (max-width:440px){.chip .lbl{display:none}}
 </style>
 <script src="lessons/settings.js"></script>
 <script src="lessons/account.js" defer></script>
@@ -122,25 +205,26 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
 <div class="wrap" id="app"></div>
 <script src="lessons/plan.js"></script>
 <script src="lessons/live-net.js"></script>
+<script src="lessons/progress.js"></script>
 <script>
 (() => {
-  const P = window.PLAN;
-  const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const P = window.PLAN, PR = window.CLV_PROGRESS;
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const pts = P.points();
-  const total = Object.values(pts).reduce((a, b) => a + (+b || 0), 0);
+
   /* Two groups: A · Elementary (lessons/NN/) and B · Beginner (start/01/ + beginner/NN/).
      The student picks a group once; it is saved on the phone and, when signed in, on the server. */
   const acct = () => window.CLV_ACCOUNT && window.CLV_ACCOUNT.user;
   let grp = P.groupOf() || (acct() && acct().group) || "";
   const BEG = P.beginner, isB = grp === "b";
-  const hh = P.hm(isB ? BEG.unlockHour : P.unlockHour);
+  const HOUR = isB ? BEG.unlockHour : P.unlockHour, hh = P.hm(HOUR);
   const items = [];
   if (isB) {
     BEG.all.filter(l => l.ready && (l.done || P.isForced(l.id) || P.isOpen(l.date, BEG.unlockHour)))
       .forEach(l => items.push({ n: l.n, beg: true, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: l.id }));
   } else {
     const rev = P.revision, revDate = P.parse(rev.date);
-    if (rev.openNow || P.isOpen(revDate)) items.push({ n: 0, title: rev.title, focus: "sentences · to be · questions · commands · may · must · have to", date: revDate, href: rev.path, key: "rev" });
+    if (rev.openNow || P.isOpen(revDate)) items.push({ n: 0, group: "Revision", title: rev.title, focus: "sentences · to be · questions · commands · may · must · have to", date: revDate, href: rev.path, key: "rev" });
     (P.extras || []).forEach(s => { const d = P.parse(s.date); if (s.openNow || P.isForced(s.key) || P.isOpen(d, s.openHour))
       items.push({ n: 0, group: s.group || "Vocabulary", title: s.title, focus: s.focus, date: d, href: s.path, key: s.key, pri: s.pri || 0 }); });
     P.all.filter(l => l.ready && ((P.openNowLessons || []).includes(l.n) || P.isForced(l.n) || P.isOpen(l.date))).forEach(l => items.push({ n: l.n, title: l.title, focus: l.focus, date: l.date, href: l.folder, key: String(l.n) }));
@@ -151,33 +235,137 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
     : P.all.find(l => !P.isOpen(l.date) && !(P.openNowLessons || []).includes(l.n) && !P.isForced(l.n));
   addEventListener("clv-open", e => P.reloadForOpen(e.detail || []));          /* the teacher opened a lesson from Telegram */
   const isToday = it => it && P.key(it.date) === P.key(new Date());
-
-  let feature = "";
-  if (newest && (isToday(newest) || newest.date > new Date())) {   /* opened early counts as today */
-    feature = `<section class="feature"><p class="eb">Today’s lesson · Bugungi dars</p>
-      <h2>${esc(newest.title)}</h2><p class="focus">${esc(newest.focus)}</p>
-      <a class="btn" href="${newest.href}">Open the lesson →</a></section>`;
-  } else if (upcoming) {
-    const at = P.openAt(upcoming.date, isB ? BEG.unlockHour : null);
-    feature = `<section class="feature locked"><p class="eb">Next lesson · ${esc(P.fmt(upcoming.date))}</p>
-      <h2>${esc(upcoming.title)}</h2><p class="focus">It opens here when class starts, at ${hh} on ${esc(P.fmt(at))}. · Dars boshlanganda ochiladi.</p>
-      <span class="lock">🔒 Opens when class starts</span></section>`;
-  }
   const G = id => (P.groups || []).find(x => x.id === id) || {};
-  const groupBox = grp
-    ? `<div class="grpbar"><span>👥 My group · Guruhim: <b>${esc(G(grp).name)}</b> · ${esc(G(grp).when)}</span><button class="gear" data-pickgroup>Change · O‘zgartirish</button></div>`
-    : `<section class="grppick"><h2>Which group are you in?</h2><p class="uz">Qaysi guruhdasiz? Dars kunlari va vaqtiga qarang.</p>
-        <div class="grpgrid">${(P.groups || []).map(x => `<button class="grpbtn" data-group="${x.id}"><b>${esc(x.name)}</b><span>${esc(x.when)}</span><small>${esc(x.uz)}</small></button>`).join("")}</div></section>`;
+
+  /* ---------- pieces ---------- */
+  const todayLesson = newest && (isToday(newest) || newest.date > new Date()) ? newest : null;
+  function todayCard() {
+    if (todayLesson) return `<section class="today"><p class="when">Today’s lesson · Bugungi dars</p>
+      <h2>${esc(todayLesson.title)}</h2><p class="focus">${esc(todayLesson.focus)}</p>
+      <a class="cta" href="${todayLesson.href}">Open the lesson</a></section>`;
+    if (upcoming) { const at = P.openAt(upcoming.date, isB ? BEG.unlockHour : null);
+      return `<section class="today locked"><p class="when">Next lesson · ${esc(P.fmt(upcoming.date))}, ${hh}</p>
+      <h2>${esc(upcoming.title)}</h2><p class="focus">It opens here when class starts, at ${hh} on ${esc(P.fmt(at))}. Dars boshlanganda ochiladi.</p>
+      <span class="lock">🔒 Opens when class starts</span></section>`; }
+    return "";
+  }
+  /* class clock: "class is on now" for 90 minutes after the start, otherwise a countdown to the next class */
+  const CLASS_MIN = 90;
+  function classTimes() {
+    const now = Date.now();
+    const todays = (isB ? BEG.all : P.all).find(l => isToday(l));            /* a class day, even before its lesson is built */
+    if (todays) { const s = P.openAt(todays.date, HOUR).getTime(); if (now >= s && now < s + CLASS_MIN * 60e3) return { live: true, end: s + CLASS_MIN * 60e3 }; }
+    if (upcoming) return { live: false, start: P.openAt(upcoming.date, HOUR).getTime(), date: upcoming.date };
+    return null;
+  }
+  const two = n => String(n).padStart(2, "0");
+  function clockHTML() {
+    const c = classTimes(); if (!c || !grp) return "";
+    if (c.live) return `<div class="clock live" id="clock"><span class="ico">🏫</span><span class="t"><b><span class="dot"></span>Class is on now</b><small>Hozir dars bor · follow the board</small></span><span class="num" data-cd="${c.end}"></span></div>`;
+    return `<div class="clock" id="clock"><span class="ico">⏳</span><span class="t"><b>Next class</b><small>${esc(P.fmt(c.date))} · ${hh} · Keyingi dars</small></span><span class="num" data-cd="${c.start}"></span></div>`;
+  }
+  function tick() {
+    document.querySelectorAll("[data-cd]").forEach(el => {
+      let ms = Math.max(0, +el.dataset.cd - Date.now()); if (!ms) { location.reload(); return; }
+      const d = Math.floor(ms / 864e5); ms -= d * 864e5; const h = Math.floor(ms / 36e5); ms -= h * 36e5; const m = Math.floor(ms / 6e4); const s = Math.floor((ms - m * 6e4) / 1e3);
+      el.textContent = (el.closest(".live") ? "ends in " : "") + (d ? d + "d " : "") + (d || h ? two(h) + ":" : "") + two(m) + ":" + two(s);
+    });
+  }
+
+  function groupBox() {
+    if (grp) return "";
+    return `<section class="grppick"><h2>Which group are you in?</h2><p class="uz">Qaysi guruhdasiz? Dars kunlari va vaqtiga qarang.</p>
+      <div class="grpgrid">${(P.groups || []).map(x => `<button class="grpbtn" data-group="${x.id}"><b>${esc(x.name)}</b><span>${esc(x.when)}</span><small>${esc(x.uz)}</small></button>`).join("")}</div></section>`;
+  }
   function setGroup(g) {
     P.setGroup(g);
     const A = window.CLV_ACCOUNT;
     if (A && A.signedIn && A.user && A.user.group !== g) A.api("/profile", { body: { group: g } }).then(j => { if (j && j.user) A.setUser(j.user); }).catch(() => {}).then(() => location.reload());
     else location.reload();
   }
+
+  function dailyInfo() {
+    let D = {}; try { D = JSON.parse(localStorage.getItem("clv-daily") || "{}"); } catch (e) {}
+    const k = t => new Date(t + 5 * 3600e3).toISOString().slice(0, 10);
+    return D[k(Date.now())];
+  }
+  function tiles(live) {
+    const S = PR.stats(), d = dailyInfo();
+    const game = live
+      ? `<a class="tile live" href="play/?code=${encodeURIComponent(live.code)}"><span class="badge">LIVE</span><span class="em">🎮</span><span><b>Game on now!</b><small>Code ${esc(live.code)} · Hozir o‘yin bor</small></span></a>`
+      : `<a class="tile game" href="play/"><span class="em">🎮</span><span><b>Class game</b><small>Code from the board · Kodni oling</small></span></a>`;
+    return `<div class="tiles" id="tiles">${game}
+      <a class="tile daily" href="daily/">${S.streak ? `<span class="badge">🔥 ${S.streak}</span>` : ""}<span class="em">${d ? "✅" : "📅"}</span><span><b>${d ? "Daily done!" : "Daily challenge"}</b><small>${d ? "Come back tomorrow · Ertaga" : "2 minutes · Kunlik sinov"}</small></span></a>
+      <a class="tile solo" href="play/?solo=1"><span class="em">🧑‍🎓</span><span><b>Practice</b><small>Play by yourself · Yakka o‘ynash</small></span></a>
+      <a class="tile words" href="words/">${S.words ? `<span class="badge">${S.known}/${S.words}</span>` : ""}<span class="em">🃏</span><span><b>Word bank</b><small>Flashcards · So‘z kartalari</small></span></a></div>`;
+  }
+  function hero() {
+    const S = PR.stats(), u = acct(), first = u && u.name ? String(u.name).split(" ")[0] : "";
+    const hour = new Date().getHours(), hi = hour < 12 ? "Good morning · Xayrli tong" : hour < 18 ? "Good afternoon · Xayrli kun" : "Good evening · Xayrli kech";
+    return `<section class="hero" id="hero"><p class="hi">${hi}</p><h1>${first ? "Salom, " + esc(first) + "!" : "My English lessons"}</h1>
+      <div class="row">${PR.medallion(S)}
+        <div class="lvinfo"><p class="nm">${esc(S.name)}<small>${esc(S.nameUz)} · level ${S.level}</small></p>
+          <div class="bar" aria-hidden="true"><i data-w="${Math.round(100 * S.into / Math.max(1, S.need))}%"></i></div>
+          <p class="ptl"><b>${S.total}</b> points · <b>${S.next - S.total}</b> to level ${S.level + 1}</p>
+          <div class="stats"><span class="stat">🔥 ${S.streak} ${S.streak === 1 ? "day" : "days"}</span><span class="stat">🏅 ${S.badges.filter(b => b.got).length}/${S.badges.length}</span>${S.known ? `<span class="stat">🃏 ${S.known} words</span>` : ""}</div></div></div></section>`;
+  }
+
+  let view = "road", q = "";
+  try { view = localStorage.getItem("clv-homeview") || "road"; } catch (e) {}
+  function lessons() {
+    const k = q.trim().toLowerCase();
+    const list = items.filter(it => !k || (it.title + " " + it.focus + " " + (it.n || "")).toLowerCase().includes(k));
+    if (!items.length) return `<p class="empty">Your lessons appear here when class starts. Darslar dars boshlanganda shu yerda paydo bo‘ladi.</p>`;
+    if (!list.length) return `<p class="empty">No lesson matches “${esc(q)}”. Try another word.</p>`;
+    return `<div class="${view === "list" ? "list" : "road"}">${list.map((it, i) => `<a class="stop ${pts[it.key] ? "got" : ""} ${i === 0 && !k ? "here" : ""}" href="${it.href}">
+      <span class="k">${it.n ? (it.beg ? "Beginner " : "") + "Lesson " + it.n : esc(it.group || "Extra")} · ${esc(P.fmt(it.date))}</span>
+      <h3>${esc(it.title)}</h3><p class="f">${esc(it.focus)}</p>
+      <span class="ft"><span class="p">⭐ ${pts[it.key] || 0} points</span><span class="go">Revise</span></span></a>`).join("")}</div>`;
+  }
+  function goal() {
+    const S = PR.stats(), x = S.badges.find(b => !b.got);
+    if (!x) return `<div class="goal" id="goal"><span class="i">👑</span><p><b>Every badge won!</b>Siz barcha nishonlarni oldingiz.</p></div>`;
+    return `<div class="goal" id="goal"><span class="i">${x.icon}</span><p><b>Next badge: ${esc(x.en)}</b>${esc(x.how)}. · ${esc(x.uz)}</p></div>`;
+  }
+  function badges() {
+    const S = PR.stats();
+    return `<div class="shelf" id="shelf">${S.badges.map(b => `<button class="bdg ${b.got ? "" : "no"}" data-badge="${b.id}" aria-expanded="false"><span class="i">${b.icon}</span><b>${esc(b.en)}</b></button>`).join("")}</div>`;
+  }
+
+  /* ---------- page ---------- */
+  const app = document.getElementById("app");
+  app.innerHTML = `
+    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="topr"><span id="accBtn"></span><button class="chip icon" data-settings aria-label="Settings">⚙️</button></span></div>
+    <div class="grid2">
+      <div class="colL">${hero()}${clockHTML()}<div id="grpBox">${groupBox()}</div>${todayCard()}</div>
+      <div class="colR"><div id="signBox"></div><div id="tileBox">${tiles(null)}</div>${goal()}</div>
+    </div>
+    <div class="sh"><div><h2>My journey</h2><p>${items.length} lessons open${grp ? " · " + esc(G(grp).name) : ""} · Darslarni takrorlang</p></div>
+      <div class="tools"><input class="search" id="q" type="search" placeholder="Find a lesson…" aria-label="Find a lesson">
+      <div class="seg" role="group" aria-label="View"><button data-view="road" aria-pressed="${view === "road"}">Road</button><button data-view="list" aria-pressed="${view === "list"}">Grid</button></div></div></div>
+    <div id="lessons">${lessons()}</div>
+    <div class="sh"><div><h2>My badges</h2><p>Tap a badge to see how to get it · Nishonlar</p></div></div>
+    ${badges()}
+    <p class="foot">${grp ? `<a href="#" data-pickgroup>Group: ${esc(G(grp).name)} · change</a>` : ""}<a href="teacher/">Teacher</a></p>`;
+
+  requestAnimationFrame(() => setTimeout(() => document.querySelectorAll(".bar i").forEach(i => { i.style.width = i.dataset.w; }), 30));
+  tick(); setInterval(tick, 1000);
+
   document.addEventListener("click", e => {
-    const b = e.target.closest("[data-group]"); if (b) { setGroup(b.dataset.group); return; }
-    if (e.target.closest("[data-pickgroup]")) { try { localStorage.removeItem("clv-group"); } catch (er) {} grp = ""; const box = document.getElementById("grpBox"); if (box) box.innerHTML = `<section class="grppick"><h2>Which group are you in?</h2><p class="uz">Qaysi guruhdasiz?</p><div class="grpgrid">${(P.groups || []).map(x => `<button class="grpbtn" data-group="${x.id}"><b>${esc(x.name)}</b><span>${esc(x.when)}</span><small>${esc(x.uz)}</small></button>`).join("")}</div></section>`; }
+    const g = e.target.closest("[data-group]"); if (g) { setGroup(g.dataset.group); return; }
+    if (e.target.closest("[data-pickgroup]")) { e.preventDefault(); try { localStorage.removeItem("clv-group"); } catch (er) {} grp = ""; document.getElementById("grpBox").innerHTML = groupBox(); document.getElementById("grpBox").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+    const v = e.target.closest("[data-view]"); if (v) { view = v.dataset.view; try { localStorage.setItem("clv-homeview", view); } catch (er) {} document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === view))); document.getElementById("lessons").innerHTML = lessons(); return; }
+    const b = e.target.closest("[data-badge]"); if (b) {
+      const shelf = document.getElementById("shelf"), old = shelf.querySelector(".tip"), open = b.getAttribute("aria-expanded") === "true";
+      if (old) old.remove(); shelf.querySelectorAll("[data-badge]").forEach(x => x.setAttribute("aria-expanded", "false"));
+      if (!open) { const x = PR.stats().badges.find(y => y.id === b.dataset.badge); b.setAttribute("aria-expanded", "true");
+        const tip = document.createElement("p"); tip.className = "tip"; tip.innerHTML = `${x.icon} <b>${esc(x.en)}</b> · ${esc(x.uz)} — ${x.got ? "you have it! ✓" : esc(x.how) + "."}`;
+        /* show the tip under the row of the tapped badge */
+        const all = [...shelf.querySelectorAll("[data-badge]")], top = b.offsetTop; let last = b; all.forEach(y => { if (y.offsetTop === top) last = y; }); last.after(tip); }
+    }
   });
+  document.getElementById("q").addEventListener("input", e => { q = e.target.value; document.getElementById("lessons").innerHTML = lessons(); });
+
   /* signed in: the group saved on the server wins on a new phone; a group picked here is sent to the server */
   addEventListener("clv-account", e => {
     const u = e.detail && e.detail.user; if (!u) return;
@@ -185,55 +373,30 @@ html[data-theme="dark"] .card.new{background:#2E2A14}
     if (!local && (u.group === "a" || u.group === "b")) { P.setGroup(u.group); if (u.group !== grp) location.reload(); }
     else if (local && u.group !== local && window.CLV_ACCOUNT && window.CLV_ACCOUNT.signedIn) window.CLV_ACCOUNT.api("/profile", { body: { group: local } }).then(j => { if (j && j.user) window.CLV_ACCOUNT.setUser(j.user); }).catch(() => {});
   });
-
-  const cards = items.length ? items.map(it => `<a class="card ${isToday(it) ? "new" : ""}" href="${it.href}">
-      <span class="n">${it.n ? (it.beg ? "Beginner · " : "") + "Lesson " + it.n : (it.group || "Revision")} · ${esc(P.fmt(it.date))}</span>
-      <h3>${esc(it.title)}</h3><span class="f">${esc(it.focus)}</span>
-      <span class="foot"><span class="my">My points: ${pts[it.key] || 0}</span><span class="go">Revise →</span></span></a>`).join("")
-    : `<p class="empty">Your lessons will appear here when class starts.</p>`;
-
-  document.getElementById("app").innerHTML = `
-    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="topr"><span id="accBtn"></span><button class="gear" data-settings aria-label="Settings">⚙️</button><span class="pts">⭐<span class="lbl"> My points</span> <b>${total}</b></span></span></div>
-    <div class="hello"><h1>My English <span>lessons</span></h1>
-      <p>Every lesson from class is here: rules, Uzbek examples, quizzes and games.</p>
-      <p class="uz">Har bir dars shu yerda. Takrorlang va ball yig‘ing!</p></div>
-    <div id="grpBox">${groupBox}</div>
-    <div id="signBox"></div>
-    <div id="liveBanner"><a class="game" href="play/"><span class="ic" aria-hidden="true">🎮</span><span class="t"><b>Join the class game</b><small>Get the code from the board · Kodni doskadan oling</small></span><span class="go">Join →</span></a></div>
-    ${dailyCard()}
-    <a class="game solo" href="play/?solo=1"><span class="ic" aria-hidden="true">\u{1F9D1}\u200D\u{1F393}</span><span class="t"><b>Play by yourself</b><small>Quiz, word order, vocabulary · any time · Yakka o‘ynash</small></span><span class="go">Play →</span></a>
-    ${feature}
-    <section class="sec"><h2>Revise my lessons</h2><p>${items.length} open · newest first · ${esc(G(grp).name || "Elementary")} · Darslarni takrorlang</p><div class="grid">${cards}</div></section>
-    <p class="foot-link"><a href="teacher/">Teacher</a></p>`;
-  function dailyCard() {
-    let D = {}; try { D = JSON.parse(localStorage.getItem("clv-daily") || "{}"); } catch (e) {}
-    const k = t => new Date(t + 5 * 3600e3).toISOString().slice(0, 10);
-    let n = 0, t = Date.now(); if (!D[k(t)]) t -= 864e5; while (D[k(t)]) { n++; t -= 864e5; }
-    const today = D[k(Date.now())];
-    const sq = today ? today.grid.split("").map(x => x === "1" ? "🟩" : "🟥").join("") : "";
-    return `<a class="game daily ${today ? "done" : ""}" href="daily/"><span class="ic" aria-hidden="true">${today ? "✅" : "\u{1F4C5}"}</span><span class="t"><b>${today ? "Daily challenge done!" : "Daily challenge · Kunlik sinov"}</b>
-      <small>${today ? sq + " · come back tomorrow · ertaga yana" : "Word of the day + 5 questions · 2 minutes"}</small></span><span class="go">${n ? "🔥 " + n : "Go →"}</span></a>`;
-  }
+  let lastLive = null;
   const acc = () => {
-    const el = document.getElementById("accBtn"), A = window.CLV_ACCOUNT; if (!el) return;
-    const u = A && A.user;
-    const face = u && /^[gb]\d\d$/.test(u.avatar || "") ? `<img src="avatars/${u.avatar}.webp" alt="" style="width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:-6px;margin:-4px 2px -4px -6px">` : "\u{1F464}";
-    el.innerHTML = u ? `<a class="gear" href="me/" style="text-decoration:none">${face} ${esc(String(u.name || "Me").split(" ")[0])}</a>`
-      : `<button class="gear tgb" data-signin>✈️ Sign in · Kirish</button>`;
+    const el = document.getElementById("accBtn"), u = acct(); if (!el) return;
+    const face = u && /^[gb]\d\d$/.test(u.avatar || "") ? `<img src="avatars/${u.avatar}.webp" alt="">` : "👤";
+    el.innerHTML = u ? `<a class="chip" href="me/">${face}<span class="lbl">${esc(String(u.name || "Me").split(" ")[0])}</span></a>`
+      : `<button class="chip tg" data-signin>✈️ <span>Sign in</span></button>`;
     const box = document.getElementById("signBox");
     if (box) box.innerHTML = u ? "" : `<button class="signcard" data-signin><span class="ic" aria-hidden="true">✈️</span>
-      <span class="t"><b>Sign in with Telegram</b><small>Save your points on every phone · get homework in Telegram<br>Telegram orqali kiring: ballar saqlanadi, uy vazifasi keladi</small></span>
-      <span class="go">Sign in →</span></button>`;
-    const t = Object.values(P.points()).reduce((a, b) => a + (+b || 0), 0), b = document.querySelector(".pts b"); if (b) b.textContent = t;
+      <span class="t"><b>Sign in with Telegram</b><small>Keep your points and badges on every phone. Telegram orqali kiring: ballar saqlanadi.</small></span></button>`;
+    const h = document.getElementById("hero"); if (h) { h.outerHTML = hero(); requestAnimationFrame(() => setTimeout(() => document.querySelectorAll(".bar i").forEach(i => { i.style.width = i.dataset.w; }), 30)); }
+    const t = document.getElementById("tileBox"); if (t) t.innerHTML = tiles(lastLive);
+    const s = document.getElementById("shelf"); if (s) s.outerHTML = badges();
+    const gl = document.getElementById("goal"); if (gl) gl.outerHTML = goal();
+    levelUp();
   };
+  function levelUp() {
+    PR.celebrate(PR.stats(), s => {
+      const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status");
+      t.innerHTML = `⭐ Level up! You are now <b>level ${s.level} · ${esc(s.name)}</b>`; document.body.appendChild(t); setTimeout(() => t.remove(), 4500);
+    });
+  }
   addEventListener("clv-account", acc); addEventListener("load", acc); acc();
   if (window.LiveNet) {
-    const stop = window.LiveNet.watchRooms(list => {
-      const el = document.getElementById("liveBanner"); if (!el) return;
-      el.innerHTML = list.length
-        ? `<a class="game live" href="play/?code=${encodeURIComponent(list[0].code)}"><span class="ic" aria-hidden="true">🎮</span><span class="t"><b>A class game is on now!</b><small>${esc(list[0].set || "")} · code ${esc(list[0].code)} · Hozir o‘yin bor!</small></span><span class="go">Join →</span></a>`
-        : `<a class="game" href="play/"><span class="ic" aria-hidden="true">🎮</span><span class="t"><b>Join the class game</b><small>Get the code from the board · Kodni doskadan oling</small></span><span class="go">Join →</span></a>`;
-    });
+    const stop = window.LiveNet.watchRooms(list => { lastLive = list[0] || null; const t = document.getElementById("tileBox"); if (t) t.innerHTML = tiles(lastLive); });
     setTimeout(stop, 10 * 60000);
   }
 })();
