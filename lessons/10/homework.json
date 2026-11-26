@@ -1,0 +1,78 @@
+{
+  "lesson": 10,
+  "title": "Time words",
+  "minutes": 35,
+  "intro": "At, on, in and telling the time. Today’s grammar and words, and what we learnt before.",
+  "intro_uz": "At, on, in va soatni aytish. Bugungi grammatika, so’zlar va oldingi mavzular.",
+  "message": "Lesson 10 · Time words. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "circle", "title": "At, on, in and the time", "uz": "To’g’risini aylantiring",
+      "items": [
+        "I get up {at|on} seven o’clock.",
+        "We have English {in|on} Monday.",
+        "My birthday is {in|on} July.",
+        "I sleep {in|at} night.",
+        "We drink tea {in|at} the evening.",
+        "Navruz is {on|in} 21 March.",
+        "7:30 = It’s {half past seven|half past eight}.",
+        "8:45 = It’s {quarter to nine|quarter past nine}."
+      ] },
+    { "type": "gaps", "title": "Write the verb", "uz": "Fe’lni to’g’ri shaklda yozing (har kuni)",
+      "items": [
+        "My father ___ (get up) at six o’clock every day.",
+        "The bank ___ (open) at nine o’clock.",
+        "We ___ (have) lunch at midday.",
+        "Lola ___ (not / work) at the weekend.",
+        "I ___ (not / drink) coffee in the evening.",
+        "Aziz ___ (play) football on Saturday.",
+        "What time ___ you ___ (go) to bed?",
+        "What time ___ the film ___ (start)?"
+      ] },
+    { "type": "match", "title": "New words", "uz": "Yangi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["morning", "ertalab"],
+        ["evening", "kechqurun"],
+        ["midnight", "yarim tun"],
+        ["weekend", "dam olish kunlari"],
+        ["early", "erta"],
+        ["late", "kech"],
+        ["winter", "qish"],
+        ["autumn", "kuz"]
+      ] },
+    { "type": "transform", "title": "Negatives and questions", "uz": "Inkor va so’roq gap",
+      "items": [
+        ["He works on Sunday.", "-"],
+        ["They get up at six o’clock.", "?"],
+        ["It’s five o’clock.", "-"],
+        ["The shop opens at eight.", "?"],
+        ["We have English on Tuesday.", "-"]
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "time / What / it / is / ?",
+        "past / half / It’s / four",
+        "on / I / to the bazaar / go / Saturday",
+        "your / is / When / birthday / ?",
+        "is / It / in / cold / winter"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Soat necha?",
+        "Men soat yettida turaman.",
+        "Tug’ilgan kunim mayda.",
+        "Biz yakshanba kuni ishlamaymiz."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "The cat is {under|between} the bed. (karavot tagida)",
+        "She {is always|always is} happy.",
+        "Look! It {snows|is snowing}.",
+        "There {is|are} three books on the table.",
+        "I {can speak|can speaks} English.",
+        "This is {Bobur’s|Boburs} watch."
+      ] },
+    { "type": "write", "title": "Write about your day and your year", "uz": "Kuningiz va yilingiz haqida yozing",
+      "items": { "prompt": "Write 6 sentences about you. Use at, on and in, and a time (seven o’clock, half past…).",
+                 "hint": "Example: I get up at half past six. On Sunday I visit my grandmother. My birthday is in May.", "lines": 6 } }
+  ]
+}
