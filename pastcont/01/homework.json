@@ -1,0 +1,78 @@
+{
+  "label": "Extra lesson",
+  "title": "Past continuous",
+  "minutes": 35,
+  "intro": "Was / were + -ing: what were you doing? Today’s grammar and words, and what we learnt before.",
+  "intro_uz": "Was / were + -ing: nima qilayotgan edingiz? Bugungi grammatika, so’zlar va oldingi mavzular.",
+  "message": "Homework · Past continuous. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "circle", "title": "Was or were?", "uz": "To’g’risini aylantiring",
+      "items": [
+        "I {was|were} reading a book at nine o’clock.",
+        "My parents {was|were} watching TV.",
+        "It {was|were} raining in the morning.",
+        "We {was|were} waiting for the bus.",
+        "Lola {wasn’t|weren’t} sleeping at midnight.",
+        "You {wasn’t|weren’t} listening to me!",
+        "{Was|Were} the children playing in the garden?",
+        "Were you working yesterday? — Yes, I {was|were}."
+      ] },
+    { "type": "gaps", "title": "Write the verb", "uz": "was / were + -ing shaklida yozing",
+      "items": [
+        "At seven o’clock I ___ (have) breakfast.",
+        "My mother ___ (cook) plov at midday.",
+        "Aziz and Bobur ___ (play) football after school.",
+        "The sun ___ (shine) yesterday morning.",
+        "I ___ (write) a letter at ten o’clock.",
+        "He ___ (swim) in the river.",
+        "We ___ (not / watch) TV. We were talking.",
+        "She ___ (not / work) last week."
+      ] },
+    { "type": "match", "title": "New words", "uz": "Yangi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["yesterday", "kecha"],
+        ["last week", "o’tgan hafta"],
+        ["at that time", "o’sha paytda"],
+        ["travel", "sayohat qilmoq"],
+        ["repair", "ta’mirlamoq"],
+        ["look for", "qidirmoq"],
+        ["shout", "baqirmoq"],
+        ["feed", "boqmoq"]
+      ] },
+    { "type": "transform", "title": "Negatives and questions", "uz": "Inkor va so’roq gap",
+      "items": [
+        ["She was cooking dinner.", "-"],
+        ["They were playing chess.", "?"],
+        ["It was snowing.", "?"],
+        ["I was sleeping at midnight.", "-"],
+        ["You were talking on the phone.", "?"]
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "were / What / doing / you / ?",
+        "was / I / a book / reading",
+        "weren’t / They / working",
+        "raining / it / Was / ?",
+        "the bus / We / waiting for / were"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Men televizor ko’rayotgan edim.",
+        "Onam ovqat pishirayotgan edi.",
+        "Biz uxlamayotgan edik.",
+        "Soat sakkizda nima qilayotgan edingiz?"
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "Look! The baby {is sleeping|was sleeping} now.",
+        "I get up {at|on} seven o’clock.",
+        "My birthday is {in|on} May.",
+        "She {always is|is always} happy.",
+        "The cat is {under|between} the bed. (karavot tagida)",
+        "There {is|are} two parks in my town."
+      ] },
+    { "type": "write", "title": "Yesterday", "uz": "Kecha nima qilayotgan edingiz? Yozing",
+      "items": { "prompt": "Write 6 sentences: what were you doing yesterday at 7:00, 9:00, 12:00, 15:00, 18:00 and 21:00?",
+                 "hint": "Example: At seven o’clock I was having breakfast. At nine o’clock I was travelling to work.", "lines": 6 } }
+  ]
+}

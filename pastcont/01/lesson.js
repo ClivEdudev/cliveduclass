@@ -201,7 +201,7 @@ window.LESSON = {
       { s: "My father working at nine o’clock.", ok: false, fix: "My father was working at nine o’clock." },
       { s: "What were you doing last night?", ok: true },
       { s: "Did you sleeping at midnight?", ok: false, fix: "Were you sleeping at midnight?" },
-      { s: "Were you listening? — Yes, I were.", ok: false, fix: "Yes, I was." },
+      { s: "Were you listening? — Yes, I were.", ok: false, fix: "Were you listening? — Yes, I was." },
       { s: "I was reading while my sister was sleeping.", ok: true },
       { s: "He was swiming in the river.", ok: false, fix: "He was swimming in the river." },
       { s: "The sun was shining in the morning.", ok: true }
