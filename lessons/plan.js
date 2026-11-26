@@ -74,6 +74,8 @@ window.PLAN = {
   },
   /* One-off lessons that sit outside the weekly plan */
   extras: [
+    { title: "Past continuous", focus: "was / were + -ing · What were you doing? · while",
+      date: "2026-11-26", path: "pastcont/01/", key: "pc1", group: "Grammar", pri: 1, openNow: true },
     { title: "Plurals", focus: "one → many · -s, -es, -ies, -ves · men, women, children, people · these / those",
       date: "2026-11-19", path: "plurals/01/", key: "pl1", group: "Grammar", pri: 1, openNow: true },
     { title: "Listening day", focus: "6 stories with sound \u00b7 am/is/are, can, have to, -ing, commands, present simple",
