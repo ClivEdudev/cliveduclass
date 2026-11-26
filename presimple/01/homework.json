@@ -1,0 +1,78 @@
+{
+  "label": "Extra lesson",
+  "title": "Present simple with verbs",
+  "minutes": 35,
+  "intro": "I work, she works. Today’s grammar and words, and what we learnt before.",
+  "intro_uz": "Men ishlayman, u ishlaydi. Bugungi grammatika, so’zlar va oldingi mavzular.",
+  "message": "Homework · Present simple with verbs. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "circle", "title": "Choose the right verb", "uz": "To’g’risini aylantiring",
+      "items": [
+        "My sister {live|lives} in Bukhara.",
+        "I {work|works} in a shop.",
+        "Aziz {watchs|watches} football every Saturday.",
+        "Bobur {studys|studies} at university.",
+        "We {don’t|doesn’t} eat meat.",
+        "My father {don’t|doesn’t} drink coffee.",
+        "{Do|Does} your mother drive?",
+        "Do you speak Russian? — Yes, I {do|speak}."
+      ] },
+    { "type": "gaps", "title": "Write the verb", "uz": "Fe’lni to’g’ri shaklda yozing",
+      "items": [
+        "My uncle ___ (sell) carpets at the bazaar.",
+        "Madina ___ (teach) children.",
+        "The shop ___ (close) at ten o’clock.",
+        "My brother ___ (fix) phones.",
+        "Grandma ___ (go) to the mosque on Fridays.",
+        "Lola ___ (have) two cats.",
+        "I ___ (not / like) fish.",
+        "Aziz ___ (not / work) on Sunday."
+      ] },
+    { "type": "match", "title": "New words", "uz": "Yangi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["sell", "sotmoq"],
+        ["buy", "sotib olmoq"],
+        ["teach", "o’rgatmoq"],
+        ["help", "yordam bermoq"],
+        ["fix", "tuzatmoq"],
+        ["visit", "mehmonga bormoq"],
+        ["forget", "unutmoq"],
+        ["grow", "yetishtirmoq"]
+      ] },
+    { "type": "transform", "title": "Negatives and questions", "uz": "Inkor va so’roq gap",
+      "items": [
+        ["She teaches English.", "-"],
+        ["They live in Samarkand.", "?"],
+        ["He watches TV every evening.", "?"],
+        ["I drink coffee.", "-"],
+        ["Your father drives a taxi.", "?"]
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "live / you / Where / do / ?",
+        "English / teaches / She",
+        "drink / don’t / I / coffee",
+        "does / What time / the shop / open / ?",
+        "every day / My grandmother / to the bazaar / goes"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Men Toshkentda yashayman.",
+        "Otam taksi haydaydi.",
+        "U qahva ichmaydi.",
+        "Inglizcha gapirasizmi?"
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "Look! It {snows|is snowing} now.",
+        "At eight o’clock yesterday I {was|were} sleeping.",
+        "I get up {at|on} seven o’clock.",
+        "We {always have|have always} plov on Fridays.",
+        "My keys {is|are} in my bag.",
+        "{This|These} are my books."
+      ] },
+    { "type": "write", "title": "My family", "uz": "Oilangiz haqida yozing",
+      "items": { "prompt": "Write 6 sentences about your family: where they live, what they do, what they like and don’t like.",
+                 "hint": "Example: My father works in a bank. My sister doesn’t drink coffee.", "lines": 6 } }
+  ]
+}

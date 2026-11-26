@@ -74,6 +74,8 @@ window.PLAN = {
   },
   /* One-off lessons that sit outside the weekly plan */
   extras: [
+    { title: "Present simple with verbs", focus: "I work, she works · don’t / doesn’t · Do you…? Does she…?",
+      date: "2026-11-26", path: "presimple/01/", key: "ps1", group: "Grammar", pri: 1, openNow: true },
     { title: "Past continuous", focus: "was / were + -ing · What were you doing? · while",
       date: "2026-11-26", path: "pastcont/01/", key: "pc1", group: "Grammar", pri: 1, openNow: true },
     { title: "Plurals", focus: "one → many · -s, -es, -ies, -ves · men, women, children, people · these / those",
