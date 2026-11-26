@@ -1,0 +1,90 @@
+/* ClivEdu motion (new look). Loaded with lessons/motion.js on the student pages.
+   html.nv-full  → everything: moving tile sky, floating stars, tilt, spotlight, star trail, page wipes, camel, marquee
+   html.nv-light → only short entrances, ripples and counters (weak phones, smart boards)
+   html.clv-calm → nothing moves (Settings → Animations → Off, or the phone's reduce-motion setting) */
+
+/* ---------- entrances (full + light) ---------- */
+html.nv-on [data-rv]{opacity:0;transform:translate3d(0,26px,0);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .8s cubic-bezier(.2,.9,.25,1.12);transition-delay:calc(var(--d,0) * 70ms)}
+html.nv-on [data-rv="left"]{transform:translate3d(-46px,0,0) rotate(-2deg)}
+html.nv-on [data-rv="right"]{transform:translate3d(46px,0,0) rotate(2deg)}
+html.nv-on [data-rv="pop"]{transform:scale(.6) rotate(-8deg)}
+html.nv-on [data-rv="flip"]{transform:perspective(600px) rotateX(70deg);transform-origin:50% 100%}
+html.nv-on [data-rv="zoom"]{transform:scale(.92)}
+html.nv-on [data-rv].in{opacity:1;transform:none}
+html.nv-light [data-rv]{transition-duration:.35s,.4s;transform:translate3d(0,10px,0)!important}
+html.nv-light [data-rv].in{transform:none!important}
+
+/* ripple on tap */
+.nv-rip{position:absolute;border-radius:50%;pointer-events:none;transform:scale(0);background:currentColor;opacity:.28;animation:nvRip .65s ease-out forwards;z-index:3}
+@keyframes nvRip{to{transform:scale(1);opacity:0}}
+.nv-ripwrap{position:relative;overflow:hidden}
+
+/* ---------- the moving tile sky (full) ---------- */
+#nvSky{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden;contain:strict}
+#nvSky .lat{position:absolute;inset:-240px;background:url(/brand/tiles-light.svg) 0 0/120px 120px;opacity:.9;animation:nvLat 60s linear infinite;will-change:transform}
+html[data-theme="dark"] #nvSky .lat{background-image:url(/brand/tiles-dark.svg)}
+@keyframes nvLat{to{transform:translate3d(120px,120px,0)}}
+#nvSky .au{position:absolute;width:70vmax;height:70vmax;border-radius:50%;filter:blur(60px);opacity:.5;will-change:transform}
+#nvSky .a1{left:-25vmax;top:-30vmax;background:radial-gradient(circle,rgba(244,169,29,.55),transparent 65%);animation:nvAu1 24s ease-in-out infinite alternate}
+#nvSky .a2{right:-30vmax;bottom:-35vmax;background:radial-gradient(circle,rgba(19,163,176,.5),transparent 65%);animation:nvAu2 28s ease-in-out infinite alternate}
+#nvSky .a3{right:-20vmax;top:-30vmax;background:radial-gradient(circle,rgba(35,56,168,.38),transparent 65%);animation:nvAu3 32s ease-in-out infinite alternate}
+#nvSky .a4{left:-20vmax;bottom:-40vmax;background:radial-gradient(circle,rgba(210,59,85,.28),transparent 65%);animation:nvAu1 36s ease-in-out infinite alternate-reverse}
+html[data-theme="dark"] #nvSky .au{opacity:.38}
+@keyframes nvAu1{to{transform:translate3d(18vw,14vh,0) scale(1.15)}}
+@keyframes nvAu2{to{transform:translate3d(-16vw,-18vh,0) scale(1.2)}}
+@keyframes nvAu3{to{transform:translate3d(-22vw,20vh,0) scale(.9)}}
+#nvSky .st{position:absolute;bottom:-60px;width:var(--s);height:var(--s);background:url(/brand/star.svg) center/contain no-repeat;opacity:0;
+  animation:nvFloat var(--t) linear infinite;animation-delay:var(--dl);filter:drop-shadow(0 0 6px rgba(244,169,29,.6))}
+#nvSky .st.c2{filter:hue-rotate(160deg) saturate(1.3) drop-shadow(0 0 6px rgba(19,163,176,.6))}
+#nvSky .st.c3{filter:hue-rotate(300deg) saturate(1.4) drop-shadow(0 0 6px rgba(210,59,85,.5))}
+@keyframes nvFloat{0%{transform:translate3d(0,0,0) rotate(0);opacity:0}10%{opacity:.75}85%{opacity:.6}100%{transform:translate3d(var(--x),-115vh,0) rotate(var(--r));opacity:0}}
+#nvSky .par{position:absolute;inset:0;transition:transform .6s cubic-bezier(.2,.8,.2,1);will-change:transform}
+/* the pages' own static backgrounds give way to the moving sky */
+html.nv-full.clv-nova.clvpaper body{background-image:none!important;background-color:transparent!important}
+html.nv-full.clv-nova.clvpaper{background:#F3F6FC}
+html.nv-full.clv-nova.clvpaper[data-theme="dark"]{background:linear-gradient(180deg,#0A1030,#111A4C) fixed}
+
+/* ---------- star trail behind the mouse (full, computers) ---------- */
+#nvTrail{position:fixed;inset:0;pointer-events:none;z-index:2147481000}
+
+/* ---------- page wipe: a star grows from where you tapped ---------- */
+#nvWipe{position:fixed;inset:0;z-index:2147482600;pointer-events:none;display:grid;place-items:center;overflow:hidden}
+#nvWipe i{position:absolute;left:var(--x,50%);top:var(--y,50%);width:40px;height:40px;margin:-20px 0 0 -20px;
+  background:linear-gradient(135deg,#2B44C2,#16206B);-webkit-mask:url(/brand/star.svg) center/contain no-repeat;mask:url(/brand/star.svg) center/contain no-repeat;transform:scale(0) rotate(0)}
+#nvWipe i::after{content:"";position:absolute;inset:0;background:url(/brand/tiles-dark.svg) 0 0/12px 12px}
+html.nv-leave #nvWipe i{animation:nvWipeIn .5s cubic-bezier(.7,0,.3,1) forwards}
+html.nv-enter #nvWipe i{transform:scale(var(--big)) rotate(90deg);animation:nvWipeOut .6s cubic-bezier(.7,0,.3,1) .05s forwards}
+@keyframes nvWipeIn{to{transform:scale(var(--big)) rotate(90deg)}}
+@keyframes nvWipeOut{to{transform:scale(0) rotate(200deg)}}
+
+/* ---------- tilt + spotlight + magnet (full) ---------- */
+html.nv-full [data-tilt]{transform-style:preserve-3d}
+html.nv-full [data-tilt].rvd,html.nv-full [data-tilt]:not([data-rv]){transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+html.nv-full [data-tilt].tilting{transition:transform .08s linear}
+html.nv-full [data-tilt]::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:4;opacity:0;transition:opacity .3s;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.28),transparent 45%)}
+html.nv-full [data-tilt].tilting::after{opacity:1}
+html.nv-full [data-mag]{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
+
+/* ---------- shine sweeping over a surface ---------- */
+.nv-shine{position:relative;overflow:hidden}
+.nv-sh{display:none}
+html.nv-full .nv-sh{display:block;position:absolute;top:-20%;bottom:-20%;left:0;width:38%;z-index:2;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.32),transparent);transform:translateX(-160%) skewX(-18deg);animation:nvShine 5.5s ease-in-out infinite;animation-delay:var(--sd,1s)}
+@keyframes nvShine{0%,62%{transform:translateX(-160%) skewX(-18deg)}88%,100%{transform:translateX(330%) skewX(-18deg)}}
+
+/* ---------- rolling digits ---------- */
+.nv-dg{display:inline-block;position:relative;overflow:hidden;vertical-align:bottom;height:1.15em;line-height:1.15em}
+.nv-dg>b{display:block;font:inherit;color:inherit}
+html.nv-on .nv-dg.roll>b{animation:nvRoll .45s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes nvRoll{from{transform:translateY(-100%);opacity:.2}to{transform:none;opacity:1}}
+
+/* floating / bobbing helpers */
+html.nv-full .nv-bob{animation:nvBob 3.2s ease-in-out infinite}
+@keyframes nvBob{50%{transform:translateY(-6px) rotate(-4deg)}}
+html.nv-full .nv-spin{animation:nvSpin 40s linear infinite}
+@keyframes nvSpin{to{transform:rotate(360deg)}}
+
+/* calm: switch every motion off */
+html.clv-calm #nvSky,html.clv-calm #nvTrail,html.clv-calm #nvWipe{display:none!important}
+html.clv-calm [data-rv]{opacity:1!important;transform:none!important;transition:none!important}

@@ -197,6 +197,69 @@ html[data-theme="dark"] .stop .ft .go{color:#93A8FF}
 .toast b{color:#FFC54D;font-family:var(--head)}
 @media (max-width:380px){.tile{min-height:120px;padding:14px}.tile b{font-size:15.5px}}
 @media (max-width:440px){.chip .lbl{display:none}}
+
+/* ---------- motion (lessons/motion.js decides full / light / off) ---------- */
+.hero .bigstar{position:absolute;right:-90px;top:-90px;width:300px;height:300px;z-index:-1;opacity:.13;background:url(/brand/star.svg) center/contain no-repeat;filter:brightness(0) invert(1)}
+html.nv-full .hero .bigstar{animation:nvSpin 50s linear infinite}
+html.nv-on .hero .wd{display:inline-block;animation:wdUp .8s cubic-bezier(.2,.9,.25,1.2) both;animation-delay:calc(.15s + var(--w) * .09s)}
+@keyframes wdUp{from{opacity:0;transform:translateY(.6em) rotate(4deg);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+.mwrap{position:relative;flex:none;display:grid;place-items:center}
+.mwrap .medal{position:relative;z-index:1}
+.orbit{position:absolute;inset:-9%;width:118%;height:118%;pointer-events:none;overflow:visible}
+.orbit circle:first-child{fill:none;stroke:rgba(255,226,166,.35);stroke-width:.5;stroke-dasharray:1.5 3}
+.orbit .sp circle{fill:#FFE2A6;filter:drop-shadow(0 0 2px #FFC54D)}
+html.nv-full .orbit{animation:nvSpin 18s linear infinite}
+html.nv-full .orbit .sp{animation:twk 2.4s ease-in-out infinite alternate}
+@keyframes twk{to{opacity:.35}}
+html.nv-on .medal{animation:medIn 1s cubic-bezier(.2,.9,.25,1.25) both .1s}
+@keyframes medIn{from{transform:scale(.3) rotate(-120deg);opacity:0}to{transform:none;opacity:1}}
+html.nv-full .medal .core{animation:corePulse 3s ease-in-out infinite}
+@keyframes corePulse{50%{stroke-width:2.4}}
+.cta .arr{display:inline-block;transition:transform .25s}
+.cta:hover .arr{transform:translateX(5px)}
+html.nv-full .cta .arr{animation:arrNudge 1.6s ease-in-out infinite}
+@keyframes arrNudge{50%{transform:translateX(5px)}}
+html.nv-on .tile.rvd,html.nv-on .stop.rvd,html.nv-on .bdg.rvd,html.nv-on .goal.rvd,html.nv-on .clock.rvd{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,border-color .2s}
+html.nv-on .stop.rvd:hover{transform:translateY(-4px);box-shadow:0 20px 40px -20px rgba(16,26,69,.45)}
+html.nv-on .stop.in:hover::before{transform:rotate(45deg) scale(1.15)}
+.stop::before{transition:transform .5s cubic-bezier(.2,.9,.3,1.4),filter .3s}
+html.nv-on .stop.got.in::before{animation:nodePop .7s cubic-bezier(.2,.9,.3,1.5) both .25s}
+@keyframes nodePop{from{transform:scale(0) rotate(-180deg)}to{transform:none}}
+html.nv-full .stop.here{animation:hereGlow 2.6s ease-in-out infinite}
+@keyframes hereGlow{50%{box-shadow:0 0 0 6px rgba(244,169,29,.22),var(--sh)}}
+html.nv-full .road::before{animation:march 1.2s linear infinite}
+@keyframes march{to{background-position:0 22px}}
+#camel{position:absolute;left:1px;top:0;font-size:30px;z-index:2;transition:top .25s linear;transform:scaleX(-1);filter:drop-shadow(0 4px 4px rgba(0,0,0,.25));pointer-events:none}
+#camel.walk{animation:camelStep .5s ease-in-out infinite}
+@keyframes camelStep{50%{transform:scaleX(-1) translateY(-3px) rotate(-4deg)}}
+@media (min-width:760px){#camel{left:calc(50% - 17px)}}
+html.nv-on .bdg.rvd:hover{transform:translateY(-4px) rotate(-2deg)}
+html.nv-on .bdg[aria-expanded="true"] .i{animation:bdgSpin .7s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes bdgSpin{from{transform:rotateY(0) scale(1)}50%{transform:rotateY(180deg) scale(1.25)}to{transform:rotateY(360deg) scale(1)}}
+html.nv-full .bdg:not(.no) .i{animation:bdgFloat 4s ease-in-out infinite;animation-delay:var(--sd,0s)}
+@keyframes bdgFloat{50%{transform:translateY(-3px) rotate(8deg)}}
+html.nv-on .tip{animation:tipIn .35s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes tipIn{from{opacity:0;transform:translateY(-8px) scale(.97)}}
+html.nv-full .tile.live .em{animation:liveBounce .9s ease-in-out infinite}
+@keyframes liveBounce{50%{transform:scale(1.2) rotate(-8deg)}}
+html.nv-full .clock .ico{animation:hour 4s ease-in-out infinite}
+@keyframes hour{0%,40%{transform:rotate(0)}50%,90%{transform:rotate(180deg)}100%{transform:rotate(360deg)}}
+html.nv-on .toast{animation:toastIn .6s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,30px) scale(.9)}}
+/* word ribbon */
+.ribbon{margin:38px -16px 0;display:grid;gap:8px;overflow:hidden;transform:rotate(-2deg);padding:8px 0}
+.rb{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.rbt{display:flex;gap:10px;width:max-content}
+html.nv-full .r1 .rbt{animation:rib 38s linear infinite}
+html.nv-full .r2 .rbt{animation:rib 44s linear infinite reverse}
+html.nv-light .r1 .rbt{animation:rib 70s linear infinite}
+@keyframes rib{to{transform:translateX(-50%)}}
+.rw{display:inline-flex;align-items:baseline;gap:8px;border-radius:999px;padding:8px 16px;white-space:nowrap;color:#fff}
+.rw b{font:700 16px var(--head)}.rw i{font-style:normal;opacity:.85;font-size:14px}
+.rw.c0{background:#2338A8}.rw.c1{background:#13A3B0}.rw.c2{background:#F4A91D;color:#101A45}.rw.c3{background:#D23B55}
+.r2 .rw{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+.r2 .rw i{color:var(--teal)}
+@media (min-width:1150px){.ribbon{margin-left:calc((1120px - 100vw) / 2);margin-right:calc((1120px - 100vw) / 2)}}
 </style>
 <script src="lessons/settings.js"></script>
 <script src="lessons/account.js" defer></script>
@@ -240,11 +303,11 @@ html[data-theme="dark"] .stop .ft .go{color:#93A8FF}
   /* ---------- pieces ---------- */
   const todayLesson = newest && (isToday(newest) || newest.date > new Date()) ? newest : null;
   function todayCard() {
-    if (todayLesson) return `<section class="today"><p class="when">Today’s lesson · Bugungi dars</p>
+    if (todayLesson) return `<section class="today" data-tilt="4" data-rv="up" style="--d:2"><p class="when">Today’s lesson · Bugungi dars</p>
       <h2>${esc(todayLesson.title)}</h2><p class="focus">${esc(todayLesson.focus)}</p>
-      <a class="cta" href="${todayLesson.href}">Open the lesson</a></section>`;
+      <a class="cta nv-shine" data-mag href="${todayLesson.href}">Open the lesson <span class="arr" aria-hidden="true">➜</span></a></section>`;
     if (upcoming) { const at = P.openAt(upcoming.date, isB ? BEG.unlockHour : null);
-      return `<section class="today locked"><p class="when">Next lesson · ${esc(P.fmt(upcoming.date))}, ${hh}</p>
+      return `<section class="today locked" data-rv="up" style="--d:2"><p class="when">Next lesson · ${esc(P.fmt(upcoming.date))}, ${hh}</p>
       <h2>${esc(upcoming.title)}</h2><p class="focus">It opens here when class starts, at ${hh} on ${esc(P.fmt(at))}. Dars boshlanganda ochiladi.</p>
       <span class="lock">🔒 Opens when class starts</span></section>`; }
     return "";
@@ -261,20 +324,25 @@ html[data-theme="dark"] .stop .ft .go{color:#93A8FF}
   const two = n => String(n).padStart(2, "0");
   function clockHTML() {
     const c = classTimes(); if (!c || !grp) return "";
-    if (c.live) return `<div class="clock live" id="clock"><span class="ico">🏫</span><span class="t"><b><span class="dot"></span>Class is on now</b><small>Hozir dars bor · follow the board</small></span><span class="num" data-cd="${c.end}"></span></div>`;
-    return `<div class="clock" id="clock"><span class="ico">⏳</span><span class="t"><b>Next class</b><small>${esc(P.fmt(c.date))} · ${hh} · Keyingi dars</small></span><span class="num" data-cd="${c.start}"></span></div>`;
+    if (c.live) return `<div class="clock live" id="clock" data-rv="up" style="--d:1"><span class="ico">🏫</span><span class="t"><b><span class="dot"></span>Class is on now</b><small>Hozir dars bor · follow the board</small></span><span class="num" data-cd="${c.end}"></span></div>`;
+    return `<div class="clock" id="clock" data-rv="up" style="--d:1"><span class="ico">⏳</span><span class="t"><b>Next class</b><small>${esc(P.fmt(c.date))} · ${hh} · Keyingi dars</small></span><span class="num" data-cd="${c.start}"></span></div>`;
   }
   function tick() {
     document.querySelectorAll("[data-cd]").forEach(el => {
       let ms = Math.max(0, +el.dataset.cd - Date.now()); if (!ms) { location.reload(); return; }
       const d = Math.floor(ms / 864e5); ms -= d * 864e5; const h = Math.floor(ms / 36e5); ms -= h * 36e5; const m = Math.floor(ms / 6e4); const s = Math.floor((ms - m * 6e4) / 1e3);
-      el.textContent = (el.closest(".live") ? "ends in " : "") + (d ? d + "d " : "") + (d || h ? two(h) + ":" : "") + two(m) + ":" + two(s);
+      const txt = (el.closest(".live") ? "ends in " : "") + (d ? d + "d " : "") + (d || h ? two(h) + ":" : "") + two(m) + ":" + two(s);
+      if (el.dataset.txt === txt) return;
+      const old = el.dataset.txt || "";
+      if (old.length !== txt.length) el.innerHTML = txt.split("").map(ch => /\d/.test(ch) ? `<span class="nv-dg"><b>${ch}</b></span>` : `<span>${ch}</span>`).join("");
+      else [...el.children].forEach((sp, i) => { if (old[i] !== txt[i]) { sp.classList.remove("roll"); void sp.offsetWidth; sp.firstChild ? (sp.firstChild.textContent = txt[i]) : (sp.textContent = txt[i]); sp.classList.add("roll"); } });
+      el.dataset.txt = txt; el.setAttribute("aria-label", txt);
     });
   }
 
   function groupBox() {
     if (grp) return "";
-    return `<section class="grppick"><h2>Which group are you in?</h2><p class="uz">Qaysi guruhdasiz? Dars kunlari va vaqtiga qarang.</p>
+    return `<section class="grppick" data-rv="up"><h2>Which group are you in?</h2><p class="uz">Qaysi guruhdasiz? Dars kunlari va vaqtiga qarang.</p>
       <div class="grpgrid">${(P.groups || []).map(x => `<button class="grpbtn" data-group="${x.id}"><b>${esc(x.name)}</b><span>${esc(x.when)}</span><small>${esc(x.uz)}</small></button>`).join("")}</div></section>`;
   }
   function setGroup(g) {
@@ -292,21 +360,23 @@ html[data-theme="dark"] .stop .ft .go{color:#93A8FF}
   function tiles(live) {
     const S = PR.stats(), d = dailyInfo();
     const game = live
-      ? `<a class="tile live" href="play/?code=${encodeURIComponent(live.code)}"><span class="badge">LIVE</span><span class="em">🎮</span><span><b>Game on now!</b><small>Code ${esc(live.code)} · Hozir o‘yin bor</small></span></a>`
-      : `<a class="tile game" href="play/"><span class="em">🎮</span><span><b>Class game</b><small>Code from the board · Kodni oling</small></span></a>`;
+      ? `<a class="tile live nv-shine" data-tilt="10" data-rv="pop" style="--d:1" href="play/?code=${encodeURIComponent(live.code)}"><span class="badge">LIVE</span><span class="em nv-bob">🎮</span><span><b>Game on now!</b><small>Code ${esc(live.code)} · Hozir o‘yin bor</small></span></a>`
+      : `<a class="tile game nv-shine" data-tilt="10" data-rv="pop" style="--d:1" href="play/"><span class="em nv-bob">🎮</span><span><b>Class game</b><small>Code from the board · Kodni oling</small></span></a>`;
     return `<div class="tiles" id="tiles">${game}
-      <a class="tile daily" href="daily/">${S.streak ? `<span class="badge">🔥 ${S.streak}</span>` : ""}<span class="em">${d ? "✅" : "📅"}</span><span><b>${d ? "Daily done!" : "Daily challenge"}</b><small>${d ? "Come back tomorrow · Ertaga" : "2 minutes · Kunlik sinov"}</small></span></a>
-      <a class="tile solo" href="play/?solo=1"><span class="em">🧑‍🎓</span><span><b>Practice</b><small>Play by yourself · Yakka o‘ynash</small></span></a>
-      <a class="tile words" href="words/">${S.words ? `<span class="badge">${S.known}/${S.words}</span>` : ""}<span class="em">🃏</span><span><b>Word bank</b><small>Flashcards · So‘z kartalari</small></span></a></div>`;
+      <a class="tile daily nv-shine" data-tilt="10" data-rv="pop" style="--d:2;--sd:2s" href="daily/">${S.streak ? `<span class="badge">🔥 ${S.streak}</span>` : ""}<span class="em nv-bob">${d ? "✅" : "📅"}</span><span><b>${d ? "Daily done!" : "Daily challenge"}</b><small>${d ? "Come back tomorrow · Ertaga" : "2 minutes · Kunlik sinov"}</small></span></a>
+      <a class="tile solo nv-shine" data-tilt="10" data-rv="pop" style="--d:3;--sd:3s" href="play/?solo=1"><span class="em nv-bob">🧑‍🎓</span><span><b>Practice</b><small>Play by yourself · Yakka o‘ynash</small></span></a>
+      <a class="tile words nv-shine" data-tilt="10" data-rv="pop" style="--d:4;--sd:4s" href="words/">${S.words ? `<span class="badge">${S.known}/${S.words}</span>` : ""}<span class="em nv-bob">🃏</span><span><b>Word bank</b><small>Flashcards · So‘z kartalari</small></span></a></div>`;
   }
   function hero() {
     const S = PR.stats(), u = acct(), first = u && u.name ? String(u.name).split(" ")[0] : "";
     const hour = new Date().getHours(), hi = hour < 12 ? "Good morning · Xayrli tong" : hour < 18 ? "Good afternoon · Xayrli kun" : "Good evening · Xayrli kech";
-    return `<section class="hero" id="hero"><p class="hi">${hi}</p><h1>${first ? "Salom, " + esc(first) + "!" : "My English lessons"}</h1>
-      <div class="row">${PR.medallion(S)}
+    const title = first ? "Salom, " + first + "!" : "My English lessons";
+    return `<section class="hero nv-shine" id="hero" data-tilt="5" data-rv="zoom"><span class="bigstar" aria-hidden="true"></span><p class="hi">${hi}</p>
+      <h1 aria-label="${esc(title)}">${title.split(" ").map((w, i) => `<span class="wd" style="--w:${i}" aria-hidden="true">${esc(w)}</span>`).join(" ")}</h1>
+      <div class="row"><span class="mwrap"><svg class="orbit" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="49" /><g class="sp"><circle cx="50" cy="1" r="2.2"/><circle cx="99" cy="50" r="1.5"/><circle cx="50" cy="99" r="1.8"/><circle cx="1" cy="50" r="1.3"/></g></svg>${PR.medallion(S)}</span>
         <div class="lvinfo"><p class="nm">${esc(S.name)}<small>${esc(S.nameUz)} · level ${S.level}</small></p>
           <div class="bar" aria-hidden="true"><i data-w="${Math.round(100 * S.into / Math.max(1, S.need))}%"></i></div>
-          <p class="ptl"><b>${S.total}</b> points · <b>${S.next - S.total}</b> to level ${S.level + 1}</p>
+          <p class="ptl"><b data-count="${S.total}">${S.total}</b> points · <b>${S.next - S.total}</b> to level ${S.level + 1}</p>
           <div class="stats"><span class="stat">🔥 ${S.streak} ${S.streak === 1 ? "day" : "days"}</span><span class="stat">🏅 ${S.badges.filter(b => b.got).length}/${S.badges.length}</span>${S.known ? `<span class="stat">🃏 ${S.known} words</span>` : ""}</div></div></div></section>`;
   }
 
@@ -317,19 +387,26 @@ html[data-theme="dark"] .stop .ft .go{color:#93A8FF}
     const list = items.filter(it => !k || (it.title + " " + it.focus + " " + (it.n || "")).toLowerCase().includes(k));
     if (!items.length) return `<p class="empty">Your lessons appear here when class starts. Darslar dars boshlanganda shu yerda paydo bo‘ladi.</p>`;
     if (!list.length) return `<p class="empty">No lesson matches “${esc(q)}”. Try another word.</p>`;
-    return `<div class="${view === "list" ? "list" : "road"}">${list.map((it, i) => `<a class="stop ${pts[it.key] ? "got" : ""} ${i === 0 && !k ? "here" : ""}" href="${it.href}">
+    return `<div class="${view === "list" ? "list" : "road"}">${list.map((it, i) => `<a class="stop ${pts[it.key] ? "got" : ""} ${i === 0 && !k ? "here" : ""}" href="${it.href}" data-rv="${view === "list" ? "up" : i % 2 ? "right" : "left"}" style="--d:${view === "list" ? i % 3 : 0}">
       <span class="k">${it.n ? (it.beg ? "Beginner " : "") + "Lesson " + it.n : esc(it.group || "Extra")} · ${esc(P.fmt(it.date))}</span>
       <h3>${esc(it.title)}</h3><p class="f">${esc(it.focus)}</p>
       <span class="ft"><span class="p">⭐ ${pts[it.key] || 0} points</span><span class="go">Revise</span></span></a>`).join("")}</div>`;
   }
+  /* a moving ribbon of words from the course, English and Uzbek, in two directions */
+  const RIB = [["hello","salom"],["book","kitob"],["teacher","o‘qituvchi"],["friend","do‘st"],["bazaar","bozor"],["bread","non"],["tea","choy"],["city","shahar"],["morning","ertalab"],["happy","xursand"],
+    ["family","oila"],["water","suv"],["school","maktab"],["kitchen","oshxona"],["summer","yoz"],["winter","qish"],["ticket","chipta"],["garden","bog‘"],["doctor","shifokor"],["children","bolalar"]];
+  function ribbon() {
+    const row = (list, cls) => `<div class="rb ${cls}"><div class="rbt">${[...list, ...list].map(([e, u], i) => `<span class="rw c${i % 4}"><b>${e}</b><i>${u}</i></span>`).join("")}</div></div>`;
+    return `<div class="ribbon" aria-hidden="true">${row(RIB.slice(0, 10), "r1")}${row(RIB.slice(10), "r2")}</div>`;
+  }
   function goal() {
     const S = PR.stats(), x = S.badges.find(b => !b.got);
-    if (!x) return `<div class="goal" id="goal"><span class="i">👑</span><p><b>Every badge won!</b>Siz barcha nishonlarni oldingiz.</p></div>`;
-    return `<div class="goal" id="goal"><span class="i">${x.icon}</span><p><b>Next badge: ${esc(x.en)}</b>${esc(x.how)}. · ${esc(x.uz)}</p></div>`;
+    if (!x) return `<div class="goal" id="goal" data-rv="up" style="--d:5"><span class="i nv-bob">👑</span><p><b>Every badge won!</b>Siz barcha nishonlarni oldingiz.</p></div>`;
+    return `<div class="goal" id="goal" data-rv="up" style="--d:5"><span class="i nv-bob">${x.icon}</span><p><b>Next badge: ${esc(x.en)}</b>${esc(x.how)}. · ${esc(x.uz)}</p></div>`;
   }
   function badges() {
     const S = PR.stats();
-    return `<div class="shelf" id="shelf">${S.badges.map(b => `<button class="bdg ${b.got ? "" : "no"}" data-badge="${b.id}" aria-expanded="false"><span class="i">${b.icon}</span><b>${esc(b.en)}</b></button>`).join("")}</div>`;
+    return `<div class="shelf" id="shelf">${S.badges.map((b, i) => `<button class="bdg ${b.got ? "nv-shine" : "no"}" data-badge="${b.id}" aria-expanded="false" data-rv="flip" style="--d:${i % 6};--sd:${(i % 5) * .7 + 1}s"><span class="i">${b.icon}</span><b>${esc(b.en)}</b></button>`).join("")}</div>`;
   }
 
   /* ---------- page ---------- */
@@ -340,21 +417,36 @@ html[data-theme="dark"] .stop .ft .go{color:#93A8FF}
       <div class="colL">${hero()}${clockHTML()}<div id="grpBox">${groupBox()}</div>${todayCard()}</div>
       <div class="colR"><div id="signBox"></div><div id="tileBox">${tiles(null)}</div>${goal()}</div>
     </div>
-    <div class="sh"><div><h2>My journey</h2><p>${items.length} lessons open${grp ? " · " + esc(G(grp).name) : ""} · Darslarni takrorlang</p></div>
+    ${ribbon()}
+    <div class="sh" data-rv="up"><div><h2>My journey</h2><p>${items.length} lessons open${grp ? " · " + esc(G(grp).name) : ""} · Darslarni takrorlang</p></div>
       <div class="tools"><input class="search" id="q" type="search" placeholder="Find a lesson…" aria-label="Find a lesson">
       <div class="seg" role="group" aria-label="View"><button data-view="road" aria-pressed="${view === "road"}">Road</button><button data-view="list" aria-pressed="${view === "list"}">Grid</button></div></div></div>
     <div id="lessons">${lessons()}</div>
-    <div class="sh"><div><h2>My badges</h2><p>Tap a badge to see how to get it · Nishonlar</p></div></div>
+    <div class="sh" data-rv="up"><div><h2>My badges</h2><p>Tap a badge to see how to get it · Nishonlar</p></div></div>
     ${badges()}
     <p class="foot">${grp ? `<a href="#" data-pickgroup>Group: ${esc(G(grp).name)} · change</a>` : ""}<a href="teacher/">Teacher</a></p>`;
 
   requestAnimationFrame(() => setTimeout(() => document.querySelectorAll(".bar i").forEach(i => { i.style.width = i.dataset.w; }), 30));
   tick(); setInterval(tick, 1000);
+  /* a camel walks down the lesson road as you scroll (full animations) */
+  function camel() {
+    const box = document.getElementById("lessons"), road = box && box.querySelector(".road");
+    let c = document.getElementById("camel");
+    if (!road || !document.documentElement.classList.contains("nv-full")) { if (c) c.remove(); return; }
+    if (!c) { c = document.createElement("span"); c.id = "camel"; c.setAttribute("aria-hidden", "true"); c.textContent = "🐪"; }
+    road.appendChild(c);
+    const place = () => { const r = road.getBoundingClientRect(), k = Math.max(0, Math.min(1, (innerHeight * .55 - r.top) / Math.max(1, r.height)));
+      c.style.top = (k * (r.height - 40)) + "px"; c.classList.toggle("walk", k > 0 && k < 1); };
+    place(); if (!camel.on) { camel.on = 1; addEventListener("scroll", () => requestAnimationFrame(() => { const x = document.getElementById("camel"); if (x) camel.place(); }), { passive: true }); }
+    camel.place = place;
+  }
+  const rescan = () => { if (window.CLV_MOTION) window.CLV_MOTION.scan(); camel(); };
+  addEventListener("load", rescan); setTimeout(rescan, 400);
 
   document.addEventListener("click", e => {
     const g = e.target.closest("[data-group]"); if (g) { setGroup(g.dataset.group); return; }
     if (e.target.closest("[data-pickgroup]")) { e.preventDefault(); try { localStorage.removeItem("clv-group"); } catch (er) {} grp = ""; document.getElementById("grpBox").innerHTML = groupBox(); document.getElementById("grpBox").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
-    const v = e.target.closest("[data-view]"); if (v) { view = v.dataset.view; try { localStorage.setItem("clv-homeview", view); } catch (er) {} document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === view))); document.getElementById("lessons").innerHTML = lessons(); return; }
+    const v = e.target.closest("[data-view]"); if (v) { view = v.dataset.view; try { localStorage.setItem("clv-homeview", view); } catch (er) {} document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === view))); document.getElementById("lessons").innerHTML = lessons(); rescan(); return; }
     const b = e.target.closest("[data-badge]"); if (b) {
       const shelf = document.getElementById("shelf"), old = shelf.querySelector(".tip"), open = b.getAttribute("aria-expanded") === "true";
       if (old) old.remove(); shelf.querySelectorAll("[data-badge]").forEach(x => x.setAttribute("aria-expanded", "false"));
@@ -364,7 +456,7 @@ html[data-theme="dark"] .stop .ft .go{color:#93A8FF}
         const all = [...shelf.querySelectorAll("[data-badge]")], top = b.offsetTop; let last = b; all.forEach(y => { if (y.offsetTop === top) last = y; }); last.after(tip); }
     }
   });
-  document.getElementById("q").addEventListener("input", e => { q = e.target.value; document.getElementById("lessons").innerHTML = lessons(); });
+  document.getElementById("q").addEventListener("input", e => { q = e.target.value; document.getElementById("lessons").innerHTML = lessons(); rescan(); });
 
   /* signed in: the group saved on the server wins on a new phone; a group picked here is sent to the server */
   addEventListener("clv-account", e => {
@@ -374,19 +466,27 @@ html[data-theme="dark"] .stop .ft .go{color:#93A8FF}
     else if (local && u.group !== local && window.CLV_ACCOUNT && window.CLV_ACCOUNT.signedIn) window.CLV_ACCOUNT.api("/profile", { body: { group: local } }).then(j => { if (j && j.user) window.CLV_ACCOUNT.setUser(j.user); }).catch(() => {});
   });
   let lastLive = null;
+  /* redraw a block only when its content really changed, so nothing plays its entrance twice */
+  const last = {};
+  function swap(id, html, inner) {
+    if (last[id] === html) return; const first = last[id] === undefined; last[id] = html;
+    const el = document.getElementById(id); if (!el) return;
+    if (inner) el.innerHTML = html; else el.outerHTML = html;
+    const now = document.getElementById(id);
+    if (!first && now) { now.querySelectorAll("[data-rv]").forEach(x => x.classList.add("in", "rvd")); if (now.hasAttribute("data-rv")) now.classList.add("in", "rvd"); }
+  }
   const acc = () => {
     const el = document.getElementById("accBtn"), u = acct(); if (!el) return;
     const face = u && /^[gb]\d\d$/.test(u.avatar || "") ? `<img src="avatars/${u.avatar}.webp" alt="">` : "👤";
     el.innerHTML = u ? `<a class="chip" href="me/">${face}<span class="lbl">${esc(String(u.name || "Me").split(" ")[0])}</span></a>`
       : `<button class="chip tg" data-signin>✈️ <span>Sign in</span></button>`;
-    const box = document.getElementById("signBox");
-    if (box) box.innerHTML = u ? "" : `<button class="signcard" data-signin><span class="ic" aria-hidden="true">✈️</span>
-      <span class="t"><b>Sign in with Telegram</b><small>Keep your points and badges on every phone. Telegram orqali kiring: ballar saqlanadi.</small></span></button>`;
-    const h = document.getElementById("hero"); if (h) { h.outerHTML = hero(); requestAnimationFrame(() => setTimeout(() => document.querySelectorAll(".bar i").forEach(i => { i.style.width = i.dataset.w; }), 30)); }
-    const t = document.getElementById("tileBox"); if (t) t.innerHTML = tiles(lastLive);
-    const s = document.getElementById("shelf"); if (s) s.outerHTML = badges();
-    const gl = document.getElementById("goal"); if (gl) gl.outerHTML = goal();
-    levelUp();
+    swap("signBox", u ? "" : `<button class="signcard nv-shine" data-signin data-rv="up"><span class="ic" aria-hidden="true">✈️</span>
+      <span class="t"><b>Sign in with Telegram</b><small>Keep your points and badges on every phone. Telegram orqali kiring: ballar saqlanadi.</small></span></button>`, true);
+    const hh = hero(); if (last.hero !== hh) { swap("hero", hh); requestAnimationFrame(() => setTimeout(() => document.querySelectorAll(".bar i").forEach(i => { i.style.width = i.dataset.w; }), 30)); }
+    swap("tileBox", tiles(lastLive), true);
+    swap("shelf", badges());
+    swap("goal", goal());
+    levelUp(); rescan();
   };
   function levelUp() {
     PR.celebrate(PR.stats(), s => {
@@ -396,7 +496,7 @@ html[data-theme="dark"] .stop .ft .go{color:#93A8FF}
   }
   addEventListener("clv-account", acc); addEventListener("load", acc); acc();
   if (window.LiveNet) {
-    const stop = window.LiveNet.watchRooms(list => { lastLive = list[0] || null; const t = document.getElementById("tileBox"); if (t) t.innerHTML = tiles(lastLive); });
+    const stop = window.LiveNet.watchRooms(list => { lastLive = list[0] || null; swap("tileBox", tiles(lastLive), true); rescan(); });
     setTimeout(stop, 10 * 60000);
   }
 })();

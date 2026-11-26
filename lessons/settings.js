@@ -5,11 +5,12 @@
   "use strict";
   const KEY = "clv-settings";
   window.CLV_V = "dev";      /* replaced by the deploy's version (tools/stamp.cjs) */
-  const DEF = { theme: "light", style: "nova", bright: 100, size: 100, reading: false, calm: false, uz: true, sound: true };
+  const DEF = { theme: "light", style: "nova", bright: 100, size: 100, reading: false, calm: false, motion: "auto", uz: true, sound: true };
   const root = document.documentElement;
   const load = () => { try { return Object.assign({}, DEF, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { return Object.assign({}, DEF); } };
   const keep = s => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} };
   let S = load();
+  try { const raw = JSON.parse(localStorage.getItem(KEY) || "{}"); if (raw.calm && !raw.motion) S.motion = "off"; } catch (e) {}
   /* Nov 2026: the new look became the default, also for phones that had saved settings before */
   if (!S.v2) { S.style = "nova"; S.v2 = true; keep(S); }
   const mq = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
@@ -20,7 +21,7 @@
     const dark = S.theme === "dark" || (S.theme === "auto" && mq && mq.matches);
     root.dataset.theme = dark ? "dark" : "light";
     root.classList.toggle("clv-reading", !!S.reading);
-    root.classList.toggle("clv-calm", !!S.calm || !!(rm && rm.matches));
+    root.classList.toggle("clv-calm", S.motion === "off" || (S.motion !== "full" && S.motion !== "light" && !!(rm && rm.matches)));
     root.classList.toggle("clv-nouz", !S.uz);
     root.classList.toggle("clv-mute", !S.sound);
     root.style.setProperty("--clv-scale", String((S.size || 100) / 100));
@@ -31,6 +32,19 @@
       const f = document.createElement("link"); f.rel = "stylesheet"; f.id = "clvNovaFont";
       f.href = "https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap"; document.head.appendChild(f);
       const l = document.createElement("link"); l.id = "clvNova"; l.rel = "stylesheet"; l.href = "/lessons/nova.css?v=" + window.CLV_V; document.head.appendChild(l);
+      /* animations: the student pages only (lessons and the board stay still) */
+      if (root.classList.contains("clvpaper")) {
+        /* hide the blocks that will rise in before the first paint; motion.js then shows them (or, if it fails, this timer does) */
+        if (!root.classList.contains("clv-calm") && !root.classList.contains("nv-on")) {
+          const n = navigator, weak = (n.deviceMemory || 4) < 3 || (n.hardwareConcurrency || 4) < 4 || !(window.CSS && CSS.supports && CSS.supports("aspect-ratio", "1"));
+          root.classList.add("nv-on", S.motion === "light" || (S.motion !== "full" && weak) ? "nv-light" : "nv-full");
+          setTimeout(() => { if (!window.CLV_MOTION) root.classList.remove("nv-on", "nv-full", "nv-light"); }, 3000);
+          const st = document.createElement("style"); st.textContent = "html.nv-on [data-rv]:not(.in){opacity:0}"; document.head.appendChild(st);
+        }
+        const m = document.createElement("link"); m.rel = "stylesheet"; m.href = "/lessons/motion.css?v=" + window.CLV_V;
+        m.onload = m.onerror = () => { window.CLV_MOTION_CSS = true; try { window.dispatchEvent(new Event("clv-motioncss")); } catch (e) {} }; document.head.appendChild(m);
+        const j = document.createElement("script"); j.src = "/lessons/motion.js?v=" + window.CLV_V; j.defer = true; document.head.appendChild(j);
+      }
     }
     const modern = S.style === "modern";
     root.classList.toggle("clv-modern", modern);
@@ -189,7 +203,7 @@ html.clv-calm body.flow.student::after,html.clv-calm.clvpaper body::after{displa
       </div>
       <div class="clvgrp"><b>Reading and learning · O‘qish</b>
         <div class="clvrow"><span>${L("Reading mode", "O‘qish rejimi: katta matn, bitta ustun")}</span>${sw("reading")}</div>
-        <div class="clvrow"><span>${L("Less animation", "Kamroq harakat")}</span>${sw("calm")}</div>
+        <div class="clvrow"><span>${L("Animations", "Animatsiyalar · Auto: kuchsiz telefonda kamroq")}</span>${seg("motion", [["auto", "Auto"], ["full", "✨ Full"], ["light", "Light"], ["off", "Off"]])}</div>
         <div class="clvrow"><span>${L("Uzbek help", "O‘zbekcha tarjimalar")}</span>${sw("uz")}</div>
         <div class="clvrow"><span>${L("Sound effects", "Ovoz effektlari")}</span>${sw("sound")}</div>
       </div>
