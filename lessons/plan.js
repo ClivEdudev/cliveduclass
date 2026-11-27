@@ -103,7 +103,7 @@ window.PLAN = {
       { n: 8, title: "How often?", focus: "always, usually, sometimes, never", ready: true },
       { n: 9, title: "Where is it?", focus: "in, on, under, next to, between", ready: true },
       { n: 10, title: "Time words", focus: "in, on, at · telling the time", ready: true },
-      { n: 11, title: "Some and any", focus: "food · countable and uncountable" },
+      { n: 11, title: "Some and any", focus: "food · countable and uncountable", ready: true },
       { n: 12, title: "Week 2 review", focus: "games with all week 2 topics" } ] },
     { name: "Week 3 · Asking and comparing", lessons: [
       { n: 13, title: "How much? How many?", focus: "shopping and prices" },

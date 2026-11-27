@@ -1,0 +1,78 @@
+{
+  "lesson": 11,
+  "title": "Some and any",
+  "minutes": 35,
+  "intro": "Some, any, a and an with food words. Today’s grammar and words, and what we learnt before.",
+  "intro_uz": "Ovqat so’zlari bilan some, any, a va an. Bugungi grammatika, so’zlar va oldingi mavzular.",
+  "message": "Lesson 11 · Some and any. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "circle", "title": "Some, any, a or an?", "uz": "To’g’risini aylantiring",
+      "items": [
+        "There are {some|any} grapes on the plate.",
+        "There isn’t {some|any} milk in the fridge.",
+        "Are there {any|a} tomatoes?",
+        "I eat {a|an} apple every day.",
+        "We don’t have {some|any} bread.",
+        "Can I have {some|an} water, please?",
+        "There {is|are} some rice in the bag.",
+        "There {is|are} some eggs on the table."
+      ] },
+    { "type": "gaps", "title": "Write some, any, a or an", "uz": "Bo’sh joyga some, any, a yoki an yozing",
+      "items": [
+        "There are ___ potatoes in the bag.",
+        "Is there ___ cheese in the fridge?",
+        "I want ___ orange.",
+        "We don’t have ___ flour for samsa.",
+        "My father is buying ___ big melon.",
+        "There aren’t ___ cucumbers at the shop.",
+        "I need ___ salt for the soup.",
+        "Are there ___ grapes at the bazaar?"
+      ] },
+    { "type": "match", "title": "New words: food", "uz": "Yangi so’zlar: so’z va tarjimasi",
+      "items": [
+        ["potato", "kartoshka"],
+        ["tomato", "pomidor"],
+        ["cucumber", "bodring"],
+        ["grapes", "uzum"],
+        ["melon", "qovun"],
+        ["flour", "un"],
+        ["sugar", "shakar"],
+        ["cheese", "pishloq"]
+      ] },
+    { "type": "transform", "title": "Negatives and questions", "uz": "Inkor va so’roq gap (any bilan)",
+      "items": [
+        ["There is some milk.", "-"],
+        ["There are some apples.", "?"],
+        ["We have some bread.", "-"],
+        ["There is some sugar in the tea.", "?"],
+        ["They have some tomatoes.", "?"]
+      ] },
+    { "type": "order", "title": "Put the words in order", "uz": "So’zlarni tartib bilan yozing",
+      "items": [
+        "some / There / apples / are / on the table",
+        "any / isn’t / There / milk",
+        "there / any / Is / sugar / ?",
+        "need / for plov / some / I / rice",
+        "you / Do / have / any / eggs / ?"
+      ] },
+    { "type": "translate", "title": "Uzbek → English", "uz": "Ingliz tiliga tarjima qiling",
+      "items": [
+        "Stolda bir nechta olma bor.",
+        "Muzlatgichda pishloq yo’q.",
+        "Non bormi?",
+        "Palov uchun menga guruch kerak."
+      ] },
+    { "type": "circle", "title": "What we learnt before", "uz": "Oldingi mavzular: to’g’risini aylantiring",
+      "items": [
+        "The bank opens {at|on} nine o’clock.",
+        "My birthday is {in|on} May.",
+        "The shop is {next to|between} the bank.",
+        "Aziz {always gets|gets always} up early.",
+        "Look! Madina {is cooking|cooks} plov.",
+        "My sister {can speak|can speaks} English."
+      ] },
+    { "type": "write", "title": "Write about your kitchen", "uz": "Oshxonangiz haqida yozing",
+      "items": { "prompt": "Write 6 sentences about your kitchen or your fridge. Use some, any and food words.",
+                 "hint": "Example: There are some eggs in my fridge. There isn’t any milk. Is there any bread? Yes, there is.", "lines": 6 } }
+  ]
+}
