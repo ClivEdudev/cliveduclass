@@ -74,6 +74,8 @@ window.PLAN = {
   },
   /* One-off lessons that sit outside the weekly plan */
   extras: [
+    { title: "Countable and uncountable", focus: "an apple · some water · How many? How much? · a bottle of, a cup of, a piece of",
+      date: "2026-11-27", path: "countable/01/", key: "cu1", group: "Grammar", pri: 2, openNow: true },
     { title: "Present simple with verbs", focus: "I work, she works · don’t / doesn’t · Do you…? Does she…?",
       date: "2026-11-26", path: "presimple/01/", key: "ps1", group: "Grammar", pri: 1, openNow: true },
     { title: "Past continuous", focus: "was / were + -ing · What were you doing? · while",

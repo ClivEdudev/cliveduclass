@@ -317,7 +317,13 @@ function fit() {
     const s = Math.min(vp.clientWidth / 1920, vp.clientHeight / 1080);
     stage.style.transformOrigin = ""; stage.style.transform = `translate(-50%,-50%) scale(${s})`;
   }
-  const vb = $("#viewBtn"); if (vb && STUDENT && vb.parentNode !== document.body) document.body.appendChild(vb);   /* floating button on phones (lessons/engine.css) */
+  const vb = $("#viewBtn");
+  if (vb && STUDENT) {                       /* phones: a floating button (lessons/engine.css); bigger screens: back in the top bar */
+    if (!vb._home) vb._home = { p: vb.parentNode, n: vb.nextSibling };
+    const phone = matchMedia("(max-width:900px)").matches;
+    if (phone && vb.parentNode !== document.body) document.body.appendChild(vb);
+    else if (!phone && vb.parentNode === document.body) vb._home.p.insertBefore(vb, vb._home.n);
+  }
   if (vb) { if (STUDENT) vb.textContent = flow ? "\u{1F5BC}\uFE0F Slides" : "\u2195\uFE0F Scroll"; else { vb.innerHTML = (flow ? "\u{1F5BC}\uFE0F" : "\u2195\uFE0F") + `<span class="long"> ${flow ? "Slides" : "Scroll"}</span>`; vb.title = flow ? "Slide view" : "Scroll view"; } }
   sizeCv();
 }
