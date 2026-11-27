@@ -138,6 +138,10 @@ html.clvpaper[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body,html[data-
     radial-gradient(70% 50% at 50% 115%,rgba(124,77,255,.35),transparent 70%),radial-gradient(60% 40% at 0% 100%,rgba(22,182,201,.16),transparent 70%),
     linear-gradient(180deg,#070A1E 0%,#0E1236 45%,#1E1650 85%,#2A1B5C 100%)!important;
   background-size:100% 100vh!important;background-attachment:fixed!important;background-position:0 0!important;position:relative;isolation:isolate}
+/* phones ignore "fixed" backgrounds and repeated the 1-screen gradient, which drew a line across the page: stretch it over the whole page instead */
+@media (hover:none),(pointer:coarse){
+html.clvpaper:not(.clv-modern):not(.clv-nova) body,html:not(.clv-modern):not(.clv-nova) body.flow.student{background-attachment:scroll!important;background-size:560px 560px,24px 24px,100% 100%,100% 100%,100% 100%!important}
+html.clvpaper[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body,html[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body.flow.student{background-size:100% 100%!important}}
 /* starry night: two fixed star layers that twinkle, and a shooting star now and then */
 html.clvpaper[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body::before,html[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body.flow.student::before,
 html.clvpaper[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body::after,html[data-theme="dark"]:not(.clv-modern):not(.clv-nova) body.flow.student::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none}

@@ -317,7 +317,8 @@ function fit() {
     const s = Math.min(vp.clientWidth / 1920, vp.clientHeight / 1080);
     stage.style.transformOrigin = ""; stage.style.transform = `translate(-50%,-50%) scale(${s})`;
   }
-  const vb = $("#viewBtn"); if (vb) { if (STUDENT) vb.textContent = flow ? "Slide view" : "Scroll view"; else { vb.innerHTML = (flow ? "\u{1F5BC}\uFE0F" : "\u2195\uFE0F") + `<span class="long"> ${flow ? "Slides" : "Scroll"}</span>`; vb.title = flow ? "Slide view" : "Scroll view"; } }
+  const vb = $("#viewBtn"); if (vb && STUDENT && vb.parentNode !== document.body) document.body.appendChild(vb);   /* floating button on phones (lessons/engine.css) */
+  if (vb) { if (STUDENT) vb.textContent = flow ? "\u{1F5BC}\uFE0F Slides" : "\u2195\uFE0F Scroll"; else { vb.innerHTML = (flow ? "\u{1F5BC}\uFE0F" : "\u2195\uFE0F") + `<span class="long"> ${flow ? "Slides" : "Scroll"}</span>`; vb.title = flow ? "Slide view" : "Scroll view"; } }
   sizeCv();
 }
 addEventListener("resize", queueFit);
