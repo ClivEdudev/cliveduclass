@@ -115,6 +115,7 @@ const ORIGINS = [/^https:\/\/clivedu\.me$/, /^https:\/\/cliveduclass\.netlify\.a
 const allowed = o => !!o && (ORIGINS.some(r => r.test(o)) || Object.values(CLIENTS).some(c => c.origins.includes(o)) || devOrigins().includes(o));
 const HUB = o => !!o && (ORIGINS.some(r => r.test(o)) || devOrigins().includes(o));
 const siteLabel = o => /clivesystems/.test(o || "") ? "c-ID · clivesystems.netlify.app" : "clivedu.me";
+const CFILE_MAX = 4 * 1024 * 1024, CFILE_QUOTA = 100 * 1024 * 1024;  /* c-ID files: 4 MB each (Netlify request limit), 100 MB per person */
 const PHOTO_MAX = 160 * 1024, APP_MAX = 300 * 1024, APPS = ["clive", "vaqt", "sprachwerk", "vault", "clivedu"];
 function imageType(buf) {
   const b = new Uint8Array(buf.slice(0, 12));
@@ -1021,6 +1022,7 @@ async function handle(req, context) {
       await put("cids/" + old, { uid: me.uid, retired: Date.now(), deleted: true });
       await del("photos/" + me.uid);
       for (const a of APPS) await del("apps/" + me.uid + "/" + a);
+      { const { blobs: fb } = await db().list({ prefix: "cidfiles/" + me.uid + "/" }); for (const x of fb) await del(x.key); await del("cidfilesidx/" + me.uid); }
       if (b.classToo === true) await del("progress/" + me.uid);
       ["cid", "cidAt", "photo", "avatar", "apps", "nameSet"].forEach(k => { delete me.user[k]; });
       me.user.cidOld = (me.user.cidOld || []).concat([old]).slice(-10);
@@ -1069,8 +1071,39 @@ async function handle(req, context) {
         if (text.length > APP_MAX) return json({ error: "Too large" }, 413);
         let b; try { b = JSON.parse(text); } catch (e) { return json({ error: "Bad data" }, 400); }
         if (!b || typeof b.data !== "object" || b.data === null || Array.isArray(b.data)) return json({ error: "Bad data" }, 400);
+        /* a device that saves on top of an older copy gets the newer one back to merge first, so two devices never overwrite each other */
+        const base = url.searchParams.get("base");
+        if (base != null) { const cur = await get("apps/" + me.uid + "/" + app); if (cur && String(cur.t) !== base) return json({ conflict: true, data: cur.data, t: cur.t }, 409); }
         const t = Date.now(); await put("apps/" + me.uid + "/" + app, { data: b.data, t });
         return json({ ok: true, t });
+      }
+    }
+    /* files attached in apps (Reja deadlines), stored under the person's c-ID so every device can open them */
+    if (path === "/cid/file") {
+      const id = url.searchParams.get("id") || "";
+      if (!/^[A-Za-z0-9_-]{6,64}$/.test(id)) return json({ error: "Bad id" }, 400);
+      const key = "cidfiles/" + me.uid + "/" + id, ik = "cidfilesidx/" + me.uid;
+      if (method === "GET") {
+        const r = await db().get(key, { type: "arrayBuffer" }).catch(() => null);
+        if (!r) return json({ error: "No such file" }, 404);
+        return new Response(r, { headers: { "content-type": "application/octet-stream", "content-disposition": "attachment", "cache-control": "private, no-store", "x-content-type-options": "nosniff", "content-security-policy": "default-src 'none'; sandbox" } });
+      }
+      if (method === "DELETE") {
+        await del(key);
+        const idx = (await get(ik)) || {}; if (idx[id] != null) { delete idx[id]; await put(ik, idx); }
+        return json({ ok: true });
+      }
+      if (method === "POST") {
+        if (await limited("cfile:" + me.uid, 120, 3600)) return json({ error: "Too many uploads. Try again later." }, 429);
+        const buf = await req.arrayBuffer();
+        if (!buf.byteLength) return json({ error: "Empty file" }, 400);
+        if (buf.byteLength > CFILE_MAX) return json({ error: "Files over 4 MB stay on this device only." }, 413);
+        const idx = (await get(ik)) || {};
+        const used = Object.keys(idx).reduce((n, k) => n + (k === id ? 0 : (+idx[k] || 0)), 0);
+        if (used + buf.byteLength > CFILE_QUOTA) return json({ error: "Your c-ID file space (100 MB) is full." }, 413);
+        await db().set(key, buf);
+        idx[id] = buf.byteLength; await put(ik, idx);
+        return json({ ok: true, size: buf.byteLength });
       }
     }
     if (path === "/homework") return json({ items: (await myHomework(me.user)).reverse() });
