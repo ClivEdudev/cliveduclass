@@ -80,7 +80,7 @@ async function ensureCid(u) {
 export async function backfillCids() {
   const { blobs } = await db().list({ prefix: "users/" });
   let made = 0;
-  for (const b of blobs) { const u = await get(b.key); if (u && u.id && !u.cid) { await ensureCid(u); made++; } }
+  for (const b of blobs) { const u = await get(b.key); if (u && u.id && !u.cid && !u.cidDeleted) { await ensureCid(u); made++; } }
   /* old rate-limit counters */
   const rl = await db().list({ prefix: "rl/" }); let gone = 0;
   for (const b of rl.blobs) { const x = await get(b.key); if (!x || (x.exp || 0) < Date.now()) { await del(b.key); gone++; } }
@@ -658,7 +658,7 @@ async function onCallback(cq, req, context) {
     if (!L || L.refused || Date.now() - L.t > LOGIN_MIN * 60e3) { await ack(); return edit("⌛ This sign-in link is old. Go back to the website and tap <b>Sign in</b> again.\n\nBu havola eskirgan. Saytda qaytadan bosing."); }
     if (L.token) { await ack("Already done"); return; }
     const { u: u0, isNew } = await upsertUser(cq.from);
-    u0.notify = true; await put("users/" + u0.id, u0);
+    u0.notify = true; delete u0.cidDeleted; await put("users/" + u0.id, u0);
     const u = await ensureCid(u0);
     const token = rid(24);
     await put(skey(token), { uid: u.id, t: Date.now() });
@@ -1011,6 +1011,25 @@ async function handle(req, context) {
       for (const a of APPS) { const x = await get("apps/" + me.uid + "/" + a); if (x) apps[a] = { t: x.t }; }
       Object.keys(me.user.apps || {}).forEach(a => { apps[a] = Object.assign({ linked: me.user.apps[a] }, apps[a] || {}); });
       return json({ user: pub(me.user, await isTeacher(me.uid)), cidAt: me.user.cidAt || 0, joined: me.user.joined || 0, summary: me.app ? undefined : summary(me.user, p), apps });
+    }
+    /* delete my c-ID: the number is retired, the photo and every app's saved data are deleted and every
+       device is signed out. Signing in again later opens a brand-new c-ID with a new number. */
+    if (path === "/cid/delete" && method === "POST") {
+      if (!HUB(origin)) return json({ error: "Not allowed." }, 403);
+      const b = await body(), old = me.user.cid || "";
+      if (!old || String(b.confirm || "") !== old.slice(-4)) return json({ error: "Type the last 4 digits of your c-ID number to confirm." }, 400);
+      await put("cids/" + old, { uid: me.uid, retired: Date.now(), deleted: true });
+      await del("photos/" + me.uid);
+      for (const a of APPS) await del("apps/" + me.uid + "/" + a);
+      if (b.classToo === true) await del("progress/" + me.uid);
+      ["cid", "cidAt", "photo", "avatar", "apps", "nameSet"].forEach(k => { delete me.user[k]; });
+      me.user.cidOld = (me.user.cidOld || []).concat([old]).slice(-10);
+      me.user.cidDeleted = Date.now();
+      if (me.user.first || me.user.last) me.user.name = cleanName([me.user.first, me.user.last].filter(Boolean).join(" ")) || me.user.name;
+      await put("users/" + me.uid, me.user);
+      const { blobs } = await db().list({ prefix: "sessions/" });
+      for (const x of blobs) { const ss = await get(x.key); if (ss && String(ss.uid) === me.uid) await del(x.key); }
+      return json({ ok: true, deleted: old });
     }
     /* retire this c-ID number and issue a new one; the old number is never given to anyone again */
     if (path === "/cid/renumber" && method === "POST") {
