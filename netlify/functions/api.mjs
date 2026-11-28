@@ -1012,6 +1012,17 @@ async function handle(req, context) {
       Object.keys(me.user.apps || {}).forEach(a => { apps[a] = Object.assign({ linked: me.user.apps[a] }, apps[a] || {}); });
       return json({ user: pub(me.user, await isTeacher(me.uid)), cidAt: me.user.cidAt || 0, joined: me.user.joined || 0, summary: me.app ? undefined : summary(me.user, p), apps });
     }
+    /* retire this c-ID number and issue a new one; the old number is never given to anyone again */
+    if (path === "/cid/renumber" && method === "POST") {
+      if (!HUB(origin)) return json({ error: "Not allowed." }, 403);
+      if (await limited("renumber:" + me.uid, 3, 86400)) return json({ error: "You can change your number 3 times a day." }, 429);
+      const old = me.user.cid;
+      if (old) await put("cids/" + old, { uid: me.uid, retired: Date.now() });
+      me.user.cid = ""; me.user.cidOld = (me.user.cidOld || []).concat(old ? [old] : []).slice(-10);
+      await put("users/" + me.uid, me.user);
+      await ensureCid(me.user);
+      return json({ user: pub(me.user, await isTeacher(me.uid)), cidAt: me.user.cidAt });
+    }
     if (path === "/cid/photo") {
       if (method === "GET") {
         const r = await db().get("photos/" + me.uid, { type: "arrayBuffer" }).catch(() => null);
