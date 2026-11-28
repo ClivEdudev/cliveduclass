@@ -46,7 +46,7 @@ const S = { phase: "setup", room: null, client: null, players: {}, rounds: [], q
   set: sets.find(x => x.id === QP.get("set")) || sets[0], type: "mix", auto: true, status: "offline", tick: 0, timer: 0, autoAt: 0, lastGain: {}, gid: "", kicked: {} };
 const newGid = () => Math.random().toString(36).slice(2, 8);
 const AV = /^[gbn]\d\d$/;
-const face = p => p && p.av ? `<img class="face" src="../avatars/${p.av}.webp" alt="">` : "";
+const face = p => p && p.av ? `<img class="face" src="../avatars/${p.av}.webp?v=2" alt="">` : "";
 
 /* ---------- content: shared with solo play (lessons/live-rounds.js) ---------- */
 const buildRounds = () => R.build({ set: S.set, type: S.type, rounds: ROUNDS, base: "../" });

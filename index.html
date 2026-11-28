@@ -477,7 +477,7 @@ html.nv-light .r1 .rbt{animation:rib 70s linear infinite}
   }
   const acc = () => {
     const el = document.getElementById("accBtn"), u = acct(); if (!el) return;
-    const face = u && /^[gbn]\d\d$/.test(u.avatar || "") ? `<img src="avatars/${u.avatar}.webp" alt="">` : "👤";
+    const face = u && /^[gbn]\d\d$/.test(u.avatar || "") ? `<img src="avatars/${u.avatar}.webp?v=2" alt="">` : "👤";
     el.innerHTML = u ? `<a class="chip" href="me/">${face}<span class="lbl">${esc(String(u.name || "Me").split(" ")[0])}</span></a>`
       : `<button class="chip tg" data-signin>✈️ <span>Sign in</span></button>`;
     swap("signBox", u ? "" : `<button class="signcard nv-shine" data-signin data-rv="up"><span class="ic" aria-hidden="true">✈️</span>

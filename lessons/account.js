@@ -125,7 +125,7 @@
   function css() { if (!document.getElementById("clvAccCss")) { const st = document.createElement("style"); st.id = "clvAccCss"; st.textContent = CSS; (document.head || document.documentElement).appendChild(st); } }
   function toast(t) { css(); const d = document.createElement("div"); d.className = "clvtoast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3500); }
   const initial = n => esc(String(n || "?").trim().charAt(0).toUpperCase() || "?");
-  const avatarHTML = u => /^[gbn]\d\d$/.test((u && u.avatar) || "") ? `<img src="/avatars/${u.avatar}.webp" alt="">` : initial(u && u.name);
+  const avatarHTML = u => /^[gbn]\d\d$/.test((u && u.avatar) || "") ? `<img src="/avatars/${u.avatar}.webp?v=2" alt="">` : initial(u && u.name);
   function panelHTML() {
     css();
     if (user) {
