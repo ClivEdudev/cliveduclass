@@ -191,7 +191,7 @@ let choice = null, built = [], pending = null, sentFor = -1, confirmLeave = fals
 let stopWatch = null, rooms = [], waitT = 0, gid = "", removed = false;
 /* my profile picture: from the account when signed in, else the one chosen on this phone */
 const myAv = () => { const u = window.CLV_ACCOUNT && window.CLV_ACCOUNT.user; const a = (u && u.avatar) || load("clv-avatar") || ""; return /^[gbn]\d\d$/.test(a) ? a : ""; };
-const faceImg = () => myAv() ? `<img class="myface" src="../avatars/${myAv()}.webp" alt="">` : "";
+const faceImg = () => myAv() ? `<img class="myface" src="../avatars/${myAv()}.webp?v=2" alt="">` : "";
 
 /* ---------------- join ---------------- */
 const acct = () => window.CLV_ACCOUNT && window.CLV_ACCOUNT.signedIn && window.CLV_ACCOUNT.user || null;
@@ -202,7 +202,7 @@ function joinForm(err) {
   const last = load("clv-live-last") || {}, u = acct();
   const qcode = (($("#code") && $("#code").value) || new URLSearchParams(location.search).get("code") || "").toUpperCase();
   const pick = jPick;
-  const face = myAv() ? `<img class="jface" src="../avatars/${myAv()}.webp" alt="">` : `<span class="jface ph">🙋</span>`;
+  const face = myAv() ? `<img class="jface" src="../avatars/${myAv()}.webp?v=2" alt="">` : `<span class="jface ph">🙋</span>`;
   const soloLbl = u ? `Play as ${esc(first(u.name))}` : "Just me";
   /* the name box only when it is needed: a team name, or "just me" without signing in */
   const needName = pick === "team" || (pick === "solo" && !u);
