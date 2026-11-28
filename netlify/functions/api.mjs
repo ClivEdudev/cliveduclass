@@ -2,7 +2,11 @@
    Storage: one Netlify Blobs store "clivedu".
      users/<tgId>      Telegram profile + display name, group, notify flag, lastSeen
      progress/<tgId>   points, picks, awarded, settings, mistakes, games, days (points per day)
-     sessions/<token>  { uid, t }
+     sessions/<sha256(token)>  { uid, t }   (older sessions/<token> keys are moved on first use)
+     cids/<number>     { uid }        c-ID number → Telegram id (each account gets exactly one)
+     photos/<tgId>     the c-ID photo (webp/jpeg/png, re-encoded in the browser, max 160 KB)
+     apps/<tgId>/<app> { data, t }    progress from other Clive apps saved to the c-ID (clive, vaqt)
+     rl/<key>          rate-limit counters
      logins/<code>     { t } → { t, token, uid } once the student pressed START in the bot
      meta/teacher      { uid }        the first account that claims the teacher role keeps it
      meta/homework     [ { id, t, text, to, file? { id, name, size } } ]   file.id = Telegram file_id
@@ -15,7 +19,7 @@
      polls/<pollId>    { uid, qz, i } so an answer can be matched to its quiz
    The bot token lives only in the TELEGRAM_BOT_TOKEN environment variable. */
 import { getStore } from "@netlify/blobs";
-import { createHmac, randomBytes } from "node:crypto";
+import { createHmac, createHash, randomBytes } from "node:crypto";
 
 const env = k => (globalThis.Netlify && Netlify.env.get(k)) || (globalThis.process && process.env[k]) || "";
 const TOKEN = () => env("TELEGRAM_BOT_TOKEN");
@@ -47,7 +51,65 @@ const day = (t = Date.now()) => new Date(t + 5 * 3600e3).toISOString().slice(0, 
 const get = async k => { try { return await db().get(k, { type: "json" }); } catch (e) { return null; } };
 const put = (k, v) => db().setJSON(k, v);
 const del = k => db().delete(k).catch(() => {});
-const SESSION_DAYS = 180, LOGIN_MIN = 15;
+const SESSION_DAYS = 180, LOGIN_MIN = 10;
+const sha = s => createHash("sha256").update(String(s)).digest("hex");
+const skey = tok => "sessions/" + sha("clv-session:" + tok);
+
+/* ---------- c-ID: one number per Telegram account ----------
+   12 digits: 2 for the year it was issued, 9 random, 1 Luhn check digit. Shown as "2611 4832 0075". */
+function luhn(d) { let s = 0; for (let i = 0; i < d.length; i++) { let n = +d[d.length - 1 - i]; if (i % 2 === 0) { n *= 2; if (n > 9) n -= 9; } s += n; } return String((10 - s % 10) % 10); }
+const cidOk = n => /^\d{12}$/.test(n) && luhn(n.slice(0, 11)) === n[11];
+async function ensureCid(u) {
+  if (u.cid && cidOk(u.cid)) return u;
+  for (let i = 0; i < 8; i++) {
+    const body = String(new Date().getUTCFullYear() % 100).padStart(2, "0") + String(parseInt(rid(5), 16) % 1e9).padStart(9, "0");
+    const n = body + luhn(body);
+    if (await get("cids/" + n)) continue;
+    await put("cids/" + n, { uid: String(u.id), t: Date.now() });
+    const fresh = (await get("users/" + u.id)) || u;
+    if (fresh.cid && cidOk(fresh.cid)) { await del("cids/" + n); return fresh; }   /* another request got there first */
+    fresh.cid = n; fresh.cidAt = Date.now();
+    await put("users/" + u.id, fresh);
+    Object.assign(u, fresh);
+    return u;
+  }
+  return u;
+}
+/* every student who already has progress gets a c-ID without doing anything */
+export async function backfillCids() {
+  const { blobs } = await db().list({ prefix: "users/" });
+  let made = 0;
+  for (const b of blobs) { const u = await get(b.key); if (u && u.id && !u.cid) { await ensureCid(u); made++; } }
+  /* old rate-limit counters */
+  const rl = await db().list({ prefix: "rl/" }); let gone = 0;
+  for (const b of rl.blobs) { const x = await get(b.key); if (!x || (x.exp || 0) < Date.now()) { await del(b.key); gone++; } }
+  return { users: blobs.length, made, gone };
+}
+/* clean display names: no control or direction-changing characters (they can disguise a name) */
+const cleanName = s => String(s || "").normalize("NFC").replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g, "").replace(/\s+/g, " ").trim().slice(0, 40);
+
+/* ---------- rate limits (fixed windows, kept in Blobs) ---------- */
+async function limited(key, max, sec) {
+  const w = Math.floor(Date.now() / (sec * 1000)), k = "rl/" + sha(key).slice(0, 32) + "-" + w;
+  const n = ((await get(k)) || {}).n || 0;
+  if (n >= max) return true;
+  await put(k, { n: n + 1, exp: (w + 1) * sec * 1000 });
+  return false;
+}
+const ipOf = (req, context) => (context && context.ip) || req.headers.get("x-nf-client-connection-ip") || (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "?";
+
+/* ---------- which websites may call the API from the browser ---------- */
+const ORIGINS = [/^https:\/\/clivedu\.me$/, /^https:\/\/cliveduclass\.netlify\.app$/, /^https:\/\/([a-z0-9-]+--)?clivesystems\.netlify\.app$/];
+const allowed = o => !!o && (ORIGINS.some(r => r.test(o)) || (env("CID_DEV_ORIGIN") && o === env("CID_DEV_ORIGIN")));
+const siteLabel = o => /clivesystems/.test(o || "") ? "c-ID · clivesystems.netlify.app" : "clivedu.me";
+const PHOTO_MAX = 160 * 1024, APP_MAX = 300 * 1024, APPS = ["clive", "vaqt"];
+function imageType(buf) {
+  const b = new Uint8Array(buf.slice(0, 12));
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg";
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return "image/png";
+  if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return "image/webp";
+  return "";
+}
 
 /* ---------- progress merging (same rules on every device) ---------- */
 const PREF = ["clv-picks-", "clv-awarded-"];
@@ -100,7 +162,7 @@ function summary(user, p) {
   const mistakes = (d["clv-mistakes"] || []).filter(m => !m.fx);
   const games = d["clv-games"] || [];
   return {
-    id: user.id, name: user.name || user.first || "Student", username: user.username || "", group: user.group || "", avatar: AV.test(user.avatar || "") ? user.avatar : "",
+    id: user.id, cid: user.cid || "", name: user.name || user.first || "Student", username: user.username || "", group: user.group || "", avatar: AV.test(user.avatar || "") ? user.avatar : "",
     quizzes: (user.quizzes || []).length, lastQuiz: (user.quizzes || []).slice(-1)[0] || null,
     lastSeen: user.lastSeen || 0, joined: user.joined || 0, notify: user.notify !== false,
     points: total(d), today: ((p && p.days) || {})[day()] || 0, lessons: Object.keys(pts).filter(l => pts[l] > 0).length,
@@ -121,15 +183,19 @@ async function who(req) {
   const h = req.headers.get("authorization") || "";
   const tok = h.startsWith("Bearer ") ? h.slice(7).trim() : "";
   if (!/^[a-f0-9]{48}$/.test(tok)) return null;
-  const s = await get("sessions/" + tok);
-  if (!s || Date.now() - s.t > SESSION_DAYS * 864e5) return null;
+  let s = await get(skey(tok));
+  if (!s) {                                                  /* a session from before tokens were hashed: move it */
+    s = await get("sessions/" + tok);
+    if (s) { await put(skey(tok), s); await del("sessions/" + tok); }
+  }
+  if (!s || Date.now() - s.t > SESSION_DAYS * 864e5) { if (s) await del(skey(tok)); return null; }
   const user = await get("users/" + s.uid);
   if (!user) return null;
   return { tok, uid: String(s.uid), user };
 }
 async function isTeacher(uid) { const t = await get("meta/teacher"); return !!t && String(t.uid) === String(uid); }
-const AV = /^[gb]\d\d$/;
-const pub = (u, teacher) => ({ id: u.id, name: u.name || u.first, first: u.first, username: u.username || "", group: u.group || "", notify: u.notify !== false, teacher: !!teacher, avatar: AV.test(u.avatar || "") ? u.avatar : "" });
+const AV = /^[gbn]\d\d$/;
+const pub = (u, teacher) => ({ id: u.id, cid: u.cid || "", photo: u.photo || 0, name: u.name || u.first, first: cleanName(u.first), username: u.username || "", group: u.group || "", notify: u.notify !== false, teacher: !!teacher, avatar: AV.test(u.avatar || "") ? u.avatar : "" });
 
 /* ---------- Telegram webhook setup ---------- */
 const secret = () => createHmac("sha256", TOKEN()).update("clivedu-webhook").digest("hex").slice(0, 48);
@@ -183,7 +249,7 @@ async function upsertUser(f) {
   const u = Object.assign({ joined: Date.now(), notify: true }, old, {
     id, first: f.first_name || "", last: f.last_name || "", username: f.username || "", lang: f.language_code || "", lastSeen: Date.now()
   });
-  if (!u.name) u.name = [f.first_name, f.last_name].filter(Boolean).join(" ").trim() || f.username || "Student";
+  if (!u.name) u.name = cleanName([f.first_name, f.last_name].filter(Boolean).join(" ")) || f.username || "Student";
   await put("users/" + id, u);
   return { u, isNew: !old.id };
 }
@@ -224,14 +290,10 @@ async function onUpdate(up, req, context) {
     const code = arg.slice(6);
     const L = /^[a-z0-9]{12}$/.test(code) ? await get("logins/" + code) : null;
     if (!L || Date.now() - L.t > LOGIN_MIN * 60e3) return say(chat, "⌛ This sign-in link is old. Go back to the website and tap <b>Sign in with Telegram</b> again.\n\nBu havola eskirgan. Saytga qaytib, qaytadan bosing.");
-    const { u, isNew } = await upsertUser(m.from);
-    u.notify = true; await put("users/" + u.id, u);
-    const token = rid(24);
-    await put("sessions/" + token, { uid: u.id, t: Date.now() });
-    await put("logins/" + code, { t: L.t, token, uid: u.id });
-    await say(chat, `✅ <b>You are signed in, ${esc(u.name)}!</b>\nGo back to the website — it opens by itself.\n\nKirdingiz! Saytga qayting. Ballaringiz endi saqlanadi va uy vazifalari shu yerga keladi.`, { reply_markup: kb("↩️ Back to ClivEdu", site + "/") });
-    if (isNew) { const t = await get("meta/teacher"); if (t && String(t.uid) !== u.id) say(t.uid, `\u{1F44B} New student signed in: <b>${esc(u.name)}</b>${u.username ? " @" + esc(u.username) : ""}`); }
-    return;
+    if (L.token) return say(chat, "This sign-in link was already used. · Bu havola ishlatilgan.");
+    /* Ask first. Someone could send you their own sign-in link; pressing Yes would give them your account. */
+    return say(chat, `\u{1F510} <b>Sign in to ${esc(L.site || "clivedu.me")}?</b>\n\nTap <b>Yes</b> only if <b>you</b> just pressed “Sign in” on that website yourself. Never press it for a link someone sent you.\n\nFaqat o‘zingiz hozir saytda “Kirish”ni bosgan bo‘lsangiz, <b>Ha</b>ni bosing. Birov yuborgan havola uchun hech qachon bosmang.`,
+      { reply_markup: { inline_keyboard: [[btn("✅ Yes, it’s me · Ha, menman", "lg:" + code)], [btn("✖ No · Yo‘q", "lgx:" + code)]] } });
   }
   const { u } = await upsertUser(m.from);
   const teacher = await isTeacher(u.id);
@@ -574,6 +636,26 @@ async function onCallback(cq, req, context) {
   const site = PUBLIC(), uid = String(cq.from.id);
   const ack = (text, alert) => tg("answerCallbackQuery", { callback_query_id: cq.id, text: text || "", show_alert: !!alert });
   if (!chat) return ack();
+  /* sign-in confirmation */
+  if (data.startsWith("lg:") || data.startsWith("lgx:")) {
+    const no = data.startsWith("lgx:"), code = data.slice(no ? 4 : 3);
+    const L = /^[a-z0-9]{12}$/.test(code) ? await get("logins/" + code) : null;
+    const edit = text => tg("editMessageText", { chat_id: chat, message_id: msgId, text, parse_mode: "HTML" });
+    if (no) { if (L && !L.token) await put("logins/" + code, Object.assign({}, L, { refused: true })); await ack("OK"); return edit("✖ Not signed in. · Kirilmadi."); }
+    if (!L || L.refused || Date.now() - L.t > LOGIN_MIN * 60e3) { await ack(); return edit("⌛ This sign-in link is old. Go back to the website and tap <b>Sign in</b> again.\n\nBu havola eskirgan. Saytda qaytadan bosing."); }
+    if (L.token) { await ack("Already done"); return; }
+    const { u: u0, isNew } = await upsertUser(cq.from);
+    u0.notify = true; await put("users/" + u0.id, u0);
+    const u = await ensureCid(u0);
+    const token = rid(24);
+    await put(skey(token), { uid: u.id, t: Date.now() });
+    await put("logins/" + code, { t: L.t, site: L.site, token, uid: u.id });
+    await ack("✅");
+    const cidTxt = u.cid ? `\n\u{1FAAA} Your c-ID: <code>${u.cid.replace(/(\d{4})(?=\d)/g, "$1 ")}</code>` : "";
+    await edit(`✅ <b>You are signed in, ${esc(u.name)}!</b>${cidTxt}\nGo back to the website — it opens by itself.\n\nKirdingiz! Saytga qayting.`);
+    if (isNew) { const t = await get("meta/teacher"); if (t && String(t.uid) !== u.id) say(t.uid, `\u{1F44B} New student signed in: <b>${esc(u.name)}</b>${u.username ? " @" + esc(u.username) : ""}`); }
+    return;
+  }
   /* student buttons */
   if (data === "q:menu") { await ack(); return quizMenu(chat, site); }
   if (data.startsWith("q:")) {
@@ -790,6 +872,17 @@ async function sendLessonHomework(tr, today, lesson) {
 
 /* ---------- HTTP ---------- */
 export default async (req, context) => {
+  const origin = req.headers.get("origin") || "";
+  if (req.method === "OPTIONS") {
+    if (!allowed(origin)) return new Response(null, { status: 403 });
+    return new Response(null, { status: 204, headers: { "access-control-allow-origin": origin, "access-control-allow-methods": "GET, POST, DELETE", "access-control-allow-headers": "authorization, content-type", "access-control-max-age": "600", vary: "origin" } });
+  }
+  const res = await handle(req, context);
+  if (allowed(origin)) { res.headers.set("access-control-allow-origin", origin); res.headers.set("vary", "origin"); }
+  return res;
+};
+async function handle(req, context) {
+  const origin = req.headers.get("origin") || "";
   const url = new URL(req.url), path = url.pathname.replace(/^\/api/, "").replace(/\/$/, "") || "/";
   const method = req.method;
   INTERNAL = siteUrl(req, context);
@@ -811,10 +904,11 @@ export default async (req, context) => {
     if (path === "/open") return json({ open: (((await get("meta/open")) || {}).keys) || [] });   /* lessons opened early (public) */
     if (path === "/login/start" && method === "POST") {
       if (!TOKEN()) return json({ error: "The bot is not set up yet (TELEGRAM_BOT_TOKEN is missing)." }, 503);
+      if (await limited("login:" + ipOf(req, context), 8, 600)) return json({ error: "Too many sign-in attempts. Wait 10 minutes. · Juda ko‘p urinish, 10 daqiqa kuting." }, 429);
       const hook = await ensureWebhook(req, context);
       if (!hook.ok) console.error("webhook", hook);
       const code = rid(6);
-      await put("logins/" + code, { t: Date.now() });
+      await put("logins/" + code, { t: Date.now(), site: siteLabel(origin) });
       return json({ code, link: `https://t.me/${BOT_NAME()}?start=login_${code}`, bot: BOT_NAME(), minutes: LOGIN_MIN });
     }
     if (path === "/login/status") {
@@ -822,6 +916,7 @@ export default async (req, context) => {
       if (!/^[a-z0-9]{12}$/.test(code)) return json({ error: "bad code" }, 400);
       const L = await get("logins/" + code);
       if (!L || Date.now() - L.t > LOGIN_MIN * 60e3) { if (L) await del("logins/" + code); return json({ state: "expired" }); }
+      if (L.refused) { await del("logins/" + code); return json({ state: "refused" }); }
       if (!L.token) return json({ state: "waiting" });
       await del("logins/" + code);
       const u = await get("users/" + L.uid);
@@ -832,6 +927,7 @@ export default async (req, context) => {
     if (!me) return json({ error: "Please sign in again." }, 401);
     const touch = async () => { if (Date.now() - (me.user.lastSeen || 0) > 60e3) { me.user.lastSeen = Date.now(); await put("users/" + me.uid, me.user); } };
 
+    if (!me.user.cid) await ensureCid(me.user);
     if (path === "/me") {
       await touch();
       const p = await get("progress/" + me.uid), t = await isTeacher(me.uid);
@@ -846,7 +942,8 @@ export default async (req, context) => {
     }
     if (path === "/profile" && method === "POST") {
       const b = await body();
-      if (typeof b.name === "string" && b.name.trim()) { me.user.name = b.name.trim().slice(0, 40); me.user.nameSet = true; }
+      if (await limited("profile:" + me.uid, 60, 3600)) return json({ error: "Too many changes. Try again later." }, 429);
+      if (typeof b.name === "string" && cleanName(b.name)) { me.user.name = cleanName(b.name); me.user.nameSet = true; }
       if (typeof b.group === "string") me.user.group = ["a", "b", ""].includes(b.group) ? b.group : "";
       if (typeof b.notify === "boolean") me.user.notify = b.notify;
       if (typeof b.avatar === "string") me.user.avatar = AV.test(b.avatar) ? b.avatar : "";
@@ -854,7 +951,52 @@ export default async (req, context) => {
       await put("users/" + me.uid, me.user);
       return json({ user: pub(me.user, await isTeacher(me.uid)) });
     }
-    if (path === "/logout" && method === "POST") { await del("sessions/" + me.tok); return json({ ok: true }); }
+    if (path === "/logout" && method === "POST") { await del(skey(me.tok)); await del("sessions/" + me.tok); return json({ ok: true }); }
+    if (path === "/logout-all" && method === "POST") {         /* sign out every device (lost phone) */
+      const { blobs } = await db().list({ prefix: "sessions/" });
+      let n = 0;
+      for (const b of blobs) { const s = await get(b.key); if (s && String(s.uid) === me.uid) { await del(b.key); n++; } }
+      return json({ ok: true, signedOut: n });
+    }
+
+    /* ---- c-ID ---- */
+    if (path === "/cid") {
+      await touch();
+      const p = await get("progress/" + me.uid), apps = {};
+      for (const a of APPS) { const x = await get("apps/" + me.uid + "/" + a); if (x) apps[a] = { t: x.t }; }
+      return json({ user: pub(me.user, await isTeacher(me.uid)), cidAt: me.user.cidAt || 0, joined: me.user.joined || 0, summary: summary(me.user, p), apps });
+    }
+    if (path === "/cid/photo") {
+      if (method === "GET") {
+        const r = await db().get("photos/" + me.uid, { type: "arrayBuffer" }).catch(() => null);
+        if (!r) return json({ error: "No photo" }, 404);
+        return new Response(r, { headers: { "content-type": imageType(r) || "application/octet-stream", "cache-control": "private, no-store", "x-content-type-options": "nosniff", "content-security-policy": "default-src 'none'; sandbox" } });
+      }
+      if (method === "DELETE") { await del("photos/" + me.uid); me.user.photo = 0; await put("users/" + me.uid, me.user); return json({ user: pub(me.user, await isTeacher(me.uid)) }); }
+      if (method === "POST") {
+        if (await limited("photo:" + me.uid, 20, 3600)) return json({ error: "Too many uploads. Try again in an hour." }, 429);
+        const buf = await req.arrayBuffer();
+        if (!buf.byteLength || buf.byteLength > PHOTO_MAX) return json({ error: "The picture must be under 160 KB." }, 413);
+        if (!imageType(buf)) return json({ error: "That is not a picture." }, 415);
+        await db().set("photos/" + me.uid, buf);
+        me.user.photo = Date.now(); await put("users/" + me.uid, me.user);
+        return json({ user: pub(me.user, await isTeacher(me.uid)) });
+      }
+    }
+    if (path === "/cid/app") {
+      const app = url.searchParams.get("app") || "";
+      if (!APPS.includes(app)) return json({ error: "Unknown app" }, 400);
+      if (method === "GET") { const x = await get("apps/" + me.uid + "/" + app); return json({ data: x ? x.data : null, t: x ? x.t : 0 }); }
+      if (method === "POST") {
+        if (await limited("app:" + me.uid, 240, 3600)) return json({ error: "Too many saves. Try again later." }, 429);
+        const text = await req.text();
+        if (text.length > APP_MAX) return json({ error: "Too large" }, 413);
+        let b; try { b = JSON.parse(text); } catch (e) { return json({ error: "Bad data" }, 400); }
+        if (!b || typeof b.data !== "object" || b.data === null || Array.isArray(b.data)) return json({ error: "Bad data" }, 400);
+        const t = Date.now(); await put("apps/" + me.uid + "/" + app, { data: b.data, t });
+        return json({ ok: true, t });
+      }
+    }
     if (path === "/homework") return json({ items: (await myHomework(me.user)).reverse() });
     if (path === "/homework/file") {                       /* download the attachment on the website */
       const id = url.searchParams.get("id") || "";
@@ -880,7 +1022,8 @@ export default async (req, context) => {
     if (path === "/teacher/claim" && method === "POST") {
       const b = await body(), t = await get("meta/teacher");
       if (t && String(t.uid) !== me.uid) return json({ error: "Another account is already the teacher." }, 403);
-      if (!t && String(b.code || "").trim().toLowerCase() !== TEACHER_CODE()) return json({ error: "Wrong teacher code." }, 403);
+      if (!t && await limited("claim:" + me.uid, 5, 3600)) return json({ error: "Too many tries." }, 429);
+      if (!t && (!env("TEACHER_CODE") || String(b.code || "").trim().toLowerCase() !== TEACHER_CODE())) return json({ error: "Wrong teacher code." }, 403);
       if (!t) { await put("meta/teacher", { uid: me.uid, t: Date.now() }); await teacherCommands(me.uid); }
       return json({ user: pub(me.user, true) });
     }
@@ -889,6 +1032,7 @@ export default async (req, context) => {
     if (path.startsWith("/teacher/")) {
       if (!(await isTeacher(me.uid))) return json({ error: "Teacher only." }, 403);
       if (path === "/teacher/students") {
+        await backfillCids();
         const rows = await allStudents();
         const students = rows.filter(r => !r.teacher).map(r => summary(r.u, r.p)).sort((a, b) => b.points - a.points);
         return json({ students, common: commonMistakes(rows.filter(r => !r.teacher)), homework: ((await hwAll())).slice(-10).reverse(), today: day() });
@@ -933,6 +1077,6 @@ export default async (req, context) => {
     console.error(e);
     return json({ error: "Server error · Xatolik. Try again." }, 500);
   }
-};
+}
 
 export const config = { path: "/api/*" };
