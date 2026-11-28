@@ -412,7 +412,7 @@ html.nv-light .r1 .rbt{animation:rib 70s linear infinite}
   /* ---------- page ---------- */
   const app = document.getElementById("app");
   app.innerHTML = `
-    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="topr"><span id="accBtn"></span><button class="chip icon" data-settings aria-label="Settings">⚙️</button></span></div>
+    <div class="top"><div class="brand"><i aria-hidden="true"></i>ClivEdu Class</div><span class="topr"><a class="chip" href="https://clivesystems.netlify.app/" title="All Clive apps and your c-ID card" style="text-decoration:none">🪐 Clive orbit</a><span id="accBtn"></span><button class="chip icon" data-settings aria-label="Settings">⚙️</button></span></div>
     <div class="grid2">
       <div class="colL">${hero()}${clockHTML()}<div id="grpBox">${groupBox()}</div>${todayCard()}</div>
       <div class="colR"><div id="signBox"></div><div id="tileBox">${tiles(null)}</div>${goal()}</div>

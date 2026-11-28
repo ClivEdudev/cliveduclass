@@ -5,7 +5,8 @@
      sessions/<sha256(token)>  { uid, t }   (older sessions/<token> keys are moved on first use)
      cids/<number>     { uid }        c-ID number → Telegram id (each account gets exactly one)
      photos/<tgId>     the c-ID photo (webp/jpeg/png, re-encoded in the browser, max 160 KB)
-     apps/<tgId>/<app> { data, t }    progress from other Clive apps saved to the c-ID (clive, vaqt)
+     apps/<tgId>/<app> { data, t }    progress from other Clive apps saved to the c-ID (clive, vaqt, sprachwerk, vault, clivedu)
+     grants/<code>     { uid, app, t } one-time code the hub hands to an app (2 minutes)
      rl/<key>          rate-limit counters
      logins/<code>     { t } → { t, token, uid } once the student pressed START in the bot
      meta/teacher      { uid }        the first account that claims the teacher role keeps it
@@ -83,6 +84,8 @@ export async function backfillCids() {
   /* old rate-limit counters */
   const rl = await db().list({ prefix: "rl/" }); let gone = 0;
   for (const b of rl.blobs) { const x = await get(b.key); if (!x || (x.exp || 0) < Date.now()) { await del(b.key); gone++; } }
+  const gr = await db().list({ prefix: "grants/" });
+  for (const b of gr.blobs) { const x = await get(b.key); if (!x || Date.now() - (x.t || 0) > 120e3) { await del(b.key); gone++; } }
   return { users: blobs.length, made, gone };
 }
 /* clean display names: no control or direction-changing characters (they can disguise a name) */
@@ -99,10 +102,20 @@ async function limited(key, max, sec) {
 const ipOf = (req, context) => (context && context.ip) || req.headers.get("x-nf-client-connection-ip") || (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "?";
 
 /* ---------- which websites may call the API from the browser ---------- */
+/* Apps that sign in with c-ID through the hub on clivesystems. Each gets its own token that can only
+   read the card and its own saved data. Add a new app here (and to the card's pass) to plug it in. */
+const CLIENTS = {
+  sprachwerk: { name: "Sprachwerk", origins: ["https://sprachwerkclive.netlify.app"] },
+  vault: { name: "Vault Studio", origins: ["https://wondervaultyoutube.netlify.app"] },
+  clivedu: { name: "ClivEdu", origins: ["https://mellifluous-elf-d3aaf0.netlify.app"] }
+};
+const devOrigins = () => env("CID_DEV_ORIGIN").split(",").map(x => x.trim()).filter(Boolean);
+const clientOrigins = app => (CLIENTS[app] ? CLIENTS[app].origins : []).concat(env("CID_DEV_ORIGIN") ? devOrigins() : []);
 const ORIGINS = [/^https:\/\/clivedu\.me$/, /^https:\/\/cliveduclass\.netlify\.app$/, /^https:\/\/([a-z0-9-]+--)?clivesystems\.netlify\.app$/];
-const allowed = o => !!o && (ORIGINS.some(r => r.test(o)) || (env("CID_DEV_ORIGIN") && o === env("CID_DEV_ORIGIN")));
+const allowed = o => !!o && (ORIGINS.some(r => r.test(o)) || Object.values(CLIENTS).some(c => c.origins.includes(o)) || devOrigins().includes(o));
+const HUB = o => !!o && (ORIGINS.some(r => r.test(o)) || devOrigins().includes(o));
 const siteLabel = o => /clivesystems/.test(o || "") ? "c-ID · clivesystems.netlify.app" : "clivedu.me";
-const PHOTO_MAX = 160 * 1024, APP_MAX = 300 * 1024, APPS = ["clive", "vaqt"];
+const PHOTO_MAX = 160 * 1024, APP_MAX = 300 * 1024, APPS = ["clive", "vaqt", "sprachwerk", "vault", "clivedu"];
 function imageType(buf) {
   const b = new Uint8Array(buf.slice(0, 12));
   if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg";
@@ -191,7 +204,7 @@ async function who(req) {
   if (!s || Date.now() - s.t > SESSION_DAYS * 864e5) { if (s) await del(skey(tok)); return null; }
   const user = await get("users/" + s.uid);
   if (!user) return null;
-  return { tok, uid: String(s.uid), user };
+  return { tok, uid: String(s.uid), user, app: s.app || "" };
 }
 async function isTeacher(uid) { const t = await get("meta/teacher"); return !!t && String(t.uid) === String(uid); }
 const AV = /^[gbn]\d\d$/;
@@ -904,6 +917,7 @@ async function handle(req, context) {
     if (path === "/open") return json({ open: (((await get("meta/open")) || {}).keys) || [] });   /* lessons opened early (public) */
     if (path === "/login/start" && method === "POST") {
       if (!TOKEN()) return json({ error: "The bot is not set up yet (TELEGRAM_BOT_TOKEN is missing)." }, 503);
+      if (origin && !HUB(origin)) return json({ error: "Sign in with c-ID on clivesystems." }, 403);
       if (await limited("login:" + ipOf(req, context), 8, 600)) return json({ error: "Too many sign-in attempts. Wait 10 minutes. · Juda ko‘p urinish, 10 daqiqa kuting." }, 429);
       const hook = await ensureWebhook(req, context);
       if (!hook.ok) console.error("webhook", hook);
@@ -923,8 +937,27 @@ async function handle(req, context) {
       return json({ state: "done", token: L.token, user: pub(u, await isTeacher(L.uid)) });
     }
 
+    /* an app swaps the one-time code from the hub for its own token */
+    if (path === "/cid/exchange" && method === "POST") {
+      const b = await body(), app = String(b.app || ""), code = String(b.code || "");
+      if (!CLIENTS[app] || !/^[a-f0-9]{32}$/.test(code)) return json({ error: "Bad request" }, 400);
+      if (await limited("exchange:" + ipOf(req, context), 30, 600)) return json({ error: "Too many tries." }, 429);
+      const g = await get("grants/" + code);
+      if (g) await del("grants/" + code);
+      if (!g || g.app !== app || Date.now() - g.t > 120e3 || !clientOrigins(app).includes(origin)) return json({ error: "This sign-in link has expired. Try again." }, 400);
+      const u = await get("users/" + g.uid); if (!u) return json({ error: "Not found" }, 404);
+      const token = rid(24);
+      await put(skey(token), { uid: g.uid, t: Date.now(), app });
+      return json({ token, user: pub(u, false) });
+    }
+
     const me = await who(req);
     if (!me) return json({ error: "Please sign in again." }, 401);
+    /* app tokens (Sprachwerk, Vault Studio, …) may only read the card and their own data */
+    if (me.app) {
+      const own = path === "/cid/app" && url.searchParams.get("app") === me.app;
+      if (!(own || (path === "/cid" && method === "GET") || path === "/logout")) return json({ error: "Not allowed for this app." }, 403);
+    }
     const touch = async () => { if (Date.now() - (me.user.lastSeen || 0) > 60e3) { me.user.lastSeen = Date.now(); await put("users/" + me.uid, me.user); } };
 
     if (!me.user.cid) await ensureCid(me.user);
@@ -960,11 +993,24 @@ async function handle(req, context) {
     }
 
     /* ---- c-ID ---- */
+    /* the hub on clivesystems asks for a one-time code to hand to an app the user allowed */
+    if (path === "/cid/grant" && method === "POST") {
+      if (!HUB(origin)) return json({ error: "Not allowed." }, 403);
+      const b = await body(), app = String(b.app || "");
+      let back = null; try { back = new URL(String(b.redirect || "")); } catch (e) {}
+      if (!CLIENTS[app] || !back || !clientOrigins(app).includes(back.origin)) return json({ error: "Unknown app." }, 400);
+      if (await limited("grant:" + me.uid, 60, 3600)) return json({ error: "Too many tries." }, 429);
+      const code = rid(16);
+      await put("grants/" + code, { uid: me.uid, app, t: Date.now() });
+      const linked = me.user.apps || {}; linked[app] = linked[app] || Date.now(); me.user.apps = linked; await put("users/" + me.uid, me.user);
+      return json({ code, name: CLIENTS[app].name });
+    }
     if (path === "/cid") {
       await touch();
       const p = await get("progress/" + me.uid), apps = {};
       for (const a of APPS) { const x = await get("apps/" + me.uid + "/" + a); if (x) apps[a] = { t: x.t }; }
-      return json({ user: pub(me.user, await isTeacher(me.uid)), cidAt: me.user.cidAt || 0, joined: me.user.joined || 0, summary: summary(me.user, p), apps });
+      Object.keys(me.user.apps || {}).forEach(a => { apps[a] = Object.assign({ linked: me.user.apps[a] }, apps[a] || {}); });
+      return json({ user: pub(me.user, await isTeacher(me.uid)), cidAt: me.user.cidAt || 0, joined: me.user.joined || 0, summary: me.app ? undefined : summary(me.user, p), apps });
     }
     if (path === "/cid/photo") {
       if (method === "GET") {
