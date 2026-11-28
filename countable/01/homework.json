@@ -1,0 +1,31 @@
+{
+  "label": "Extra lesson",
+  "title": "Countable and uncountable",
+  "minutes": 35,
+  "intro": "an apple, some water, How many? How much? Write neatly!",
+  "intro_uz": "Sanaladigan va sanalmaydigan otlar. Chiroyli yozing!",
+  "message": "Homework · Countable and uncountable. Do it before the next lesson. Rasmga oling yoki chop eting.",
+  "parts": [
+    { "type": "gaps", "title": "Countable or uncountable?", "uz": "C (sanaladi) yoki U (sanalmaydi) deb yozing",
+      "items": ["apple → ___", "water → ___", "rice → ___", "egg → ___", "money → ___", "book → ___",
+                "bread → ___", "banana → ___", "milk → ___", "sugar → ___", "cup → ___", "tea → ___"] },
+    { "type": "circle", "title": "a, an or some?", "uz": "To‘g‘risini aylantiring",
+      "items": ["{a|some} water", "{an|a} apple", "{a|some} rice", "{an|a} egg", "{a|some} bread",
+                "{a|an} banana", "{some|a} milk", "{an|a} orange", "{some|a} money", "{a|an} cup"] },
+    { "type": "gaps", "title": "many or much?", "uz": "many yoki much yozing",
+      "items": ["How ___ apples?", "How ___ water?", "How ___ eggs?", "How ___ rice?",
+                "How ___ students?", "How ___ sugar?", "How ___ books?", "How ___ milk?"] },
+    { "type": "gaps", "title": "Containers", "uz": "bottle, cup, piece, glass, kilo, bowl — birini yozing",
+      "items": ["a ___ of water (shisha)", "a ___ of tea (piyola)", "a ___ of bread (bo‘lak)",
+                "a ___ of milk (stakan)", "a ___ of rice (kilo)", "a ___ of soup (kosa)"] },
+    { "type": "match", "title": "Useful words", "uz": "Foydali so‘zlar: inglizcha ↔ o‘zbekcha",
+      "items": [["sugar", "shakar"], ["salt", "tuz"], ["rice", "guruch"], ["cheese", "pishloq"], ["meat", "go‘sht"],
+                ["juice", "sharbat"], ["bread", "non"], ["money", "pul"], ["a bottle of", "bir shisha"], ["a cup of", "bir piyola"]] },
+    { "type": "circle", "title": "is or are?", "uz": "is yoki are",
+      "items": ["The rice {is|are} hot.", "The apples {is|are} red.", "There {is|are} some milk.", "There {is|are} two eggs.",
+                "The water {is|are} cold.", "My books {is|are} new."] },
+    { "type": "odd", "title": "Odd one out", "uz": "Boshqalardan farq qiladiganini aylantiring",
+      "items": ["water · milk · apple · juice", "egg · banana · rice · orange", "sugar · salt · rice · pen",
+                "bottle · cup · glass · cheese", "money · bread · book · tea", "many · much · some · meat"] }
+  ]
+}
