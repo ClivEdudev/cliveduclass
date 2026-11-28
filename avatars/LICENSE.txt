@@ -26,3 +26,6 @@ b09.webp  black hair with a fringe  (SFHQ_pt1_00005877_resize..jpg)
 b10.webp  very short hair  (SFHQ_pt1_00006183_resize..jpg)
 b11.webp  curly hair and glasses  (SFHQ_pt1_00006509_resize..jpg)
 b12.webp  messy hair and glasses  (SFHQ_pt1_00007241_resize..jpg)
+
+n01.webp – n24.webp: anime-style drawings made with DiceBear "Lorelei" by Lisa Wischofsky,
+licensed CC0 1.0 (https://www.dicebear.com/styles/lorelei/). Colours and backgrounds added for ClivEdu.

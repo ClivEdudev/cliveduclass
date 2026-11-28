@@ -172,13 +172,13 @@ html.clv-calm body.flow.student::after,html.clv-calm.clvpaper body::after{displa
     return A.panelHTML();
   }
   /* profile pictures: realistic faces, all AI-generated (see /avatars/LICENSE.txt) */
-  const FACES = { g: Array.from({ length: 12 }, (_, i) => "g" + String(i + 1).padStart(2, "0")), b: Array.from({ length: 12 }, (_, i) => "b" + String(i + 1).padStart(2, "0")) };
+  const FACES = { g: Array.from({ length: 12 }, (_, i) => "g" + String(i + 1).padStart(2, "0")), b: Array.from({ length: 12 }, (_, i) => "b" + String(i + 1).padStart(2, "0")), n: Array.from({ length: 24 }, (_, i) => "n" + String(i + 1).padStart(2, "0")) };
   let faceTab = null;
-  const myFace = () => { const A = window.CLV_ACCOUNT, u = A && A.user; const v = (u && u.avatar) || (function () { try { return JSON.parse(localStorage.getItem("clv-avatar") || "null"); } catch (e) { return null; } })() || ""; return /^[gb]\d\d$/.test(v) ? v : ""; };
+  const myFace = () => { const A = window.CLV_ACCOUNT, u = A && A.user; const v = (u && u.avatar) || (function () { try { return JSON.parse(localStorage.getItem("clv-avatar") || "null"); } catch (e) { return null; } })() || ""; return /^[gbn]\d\d$/.test(v) ? v : ""; };
   function faces() {
     const cur = myFace(), tab = faceTab || (cur ? cur[0] : "g");
     return `<div class="clvgrp" data-faces><b>Profile picture · Rasmingiz</b>
-      <div class="clvrow"><span>${L("Choose your picture", "Rasmingizni tanlang")}</span>${`<div class="clvseg" role="group"><button data-ftab="g" aria-pressed="${tab === "g"}">Girls · Qizlar</button><button data-ftab="b" aria-pressed="${tab === "b"}">Boys · O‘g‘illar</button></div>`}</div>
+      <div class="clvrow"><span>${L("Choose your picture", "Rasmingizni tanlang")}</span>${`<div class="clvseg" role="group"><button data-ftab="g" aria-pressed="${tab === "g"}">Girls · Qizlar</button><button data-ftab="b" aria-pressed="${tab === "b"}">Boys · O‘g‘illar</button><button data-ftab="n" aria-pressed="${tab === "n"}">Anime</button></div>`}</div>
       <div class="clvfaces">${FACES[tab].map(id => `<button data-av="${id}" aria-pressed="${cur === id}" aria-label="Picture ${id}"><img src="/avatars/${id}.webp" alt="" loading="lazy" width="64" height="64"></button>`).join("")}</div>
       ${cur ? `<div class="clvbtm"><button data-av="">No picture · Rasmsiz</button></div>` : ""}</div>`;
   }

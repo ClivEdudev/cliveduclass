@@ -190,7 +190,7 @@ let client = null, st = null, gotAt = 0, lastK = 0, lastKey = "", tick = 0, onli
 let choice = null, built = [], pending = null, sentFor = -1, confirmLeave = false;
 let stopWatch = null, rooms = [], waitT = 0, gid = "", removed = false;
 /* my profile picture: from the account when signed in, else the one chosen on this phone */
-const myAv = () => { const u = window.CLV_ACCOUNT && window.CLV_ACCOUNT.user; const a = (u && u.avatar) || load("clv-avatar") || ""; return /^[gb]\d\d$/.test(a) ? a : ""; };
+const myAv = () => { const u = window.CLV_ACCOUNT && window.CLV_ACCOUNT.user; const a = (u && u.avatar) || load("clv-avatar") || ""; return /^[gbn]\d\d$/.test(a) ? a : ""; };
 const faceImg = () => myAv() ? `<img class="myface" src="../avatars/${myAv()}.webp" alt="">` : "";
 
 /* ---------------- join ---------------- */

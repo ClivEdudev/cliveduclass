@@ -93,6 +93,7 @@
       const j = await api("/login/status?code=" + login.code);
       if (j.state === "done") { stopLogin(); signedIn(j.token, j.user); }
       else if (j.state === "expired") { stopLogin(); msg = "The link expired. Try again."; repaint(); }
+      else if (j.state === "refused") { stopLogin(); msg = "Sign-in cancelled in Telegram. · Kirish bekor qilindi."; repaint(); }
     } catch (e) {}
   }
   function stopLogin() { clearInterval(pollId); pollId = 0; login = null; }
@@ -100,7 +101,7 @@
     token = t; user = u; keep(TOK, t); keep(USR, u); msg = "";
     const localAv = load("clv-avatar", "");
     if (u.avatar) keep("clv-avatar", u.avatar);
-    else if (/^[gb]\d\d$/.test(localAv || "")) setTimeout(() => api("/profile", { body: { avatar: localAv } }).then(j => { if (j && j.user) { user = j.user; keep(USR, user); repaint(); } }).catch(() => {}), 800);
+    else if (/^[gbn]\d\d$/.test(localAv || "")) setTimeout(() => api("/profile", { body: { avatar: localAv } }).then(j => { if (j && j.user) { user = j.user; keep(USR, user); repaint(); } }).catch(() => {}), 800);
     repaint(); tell(true);
     sync(true);
     toast(`✅ Hello, ${u.name}! Your progress is saved now.`);
@@ -124,7 +125,7 @@
   function css() { if (!document.getElementById("clvAccCss")) { const st = document.createElement("style"); st.id = "clvAccCss"; st.textContent = CSS; (document.head || document.documentElement).appendChild(st); } }
   function toast(t) { css(); const d = document.createElement("div"); d.className = "clvtoast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 3500); }
   const initial = n => esc(String(n || "?").trim().charAt(0).toUpperCase() || "?");
-  const avatarHTML = u => /^[gb]\d\d$/.test((u && u.avatar) || "") ? `<img src="/avatars/${u.avatar}.webp" alt="">` : initial(u && u.name);
+  const avatarHTML = u => /^[gbn]\d\d$/.test((u && u.avatar) || "") ? `<img src="/avatars/${u.avatar}.webp" alt="">` : initial(u && u.name);
   function panelHTML() {
     css();
     if (user) {
@@ -135,7 +136,7 @@
     }
     if (login && login.code) {
       return `<div class="clvgrp"><b>Sign in · Kirish</b><div class="clvwait">
-        <ol><li>Tap <b>Open Telegram</b> · Telegramni oching</li><li>Press <b>START</b> in @${esc(login.bot)}</li><li>Come back here · Shu yerga qayting</li></ol>
+        <ol><li>Tap <b>Open Telegram</b> · Telegramni oching</li><li>Press <b>START</b> in @${esc(login.bot)}, then <b>Yes, it’s me</b> · START, keyin “Ha, menman”</li><li>Come back here · Shu yerga qayting</li></ol>
         <div class="clvqr"><a class="clvtg" href="${esc(login.link)}" target="_blank" rel="noopener">✈️ Open Telegram</a><span data-qr></span></div>
         <span><span class="clvspin"></span> Waiting for Telegram… · Kutilmoqda…</span>
         <button class="clvtg" style="background:transparent;color:inherit;border:2px solid currentColor;padding:8px 12px" data-acc="cancel">Cancel · Bekor qilish</button></div></div>`;
@@ -150,7 +151,7 @@
     const draw = () => { try { const q = window.qrcode(0, "M"); q.addData(login.link); q.make(); box.innerHTML = q.createImgTag(4, 0); box.dataset.done = 1; } catch (e) {} };
     if (window.qrcode) return draw();
     if (matchMedia("(max-width: 700px)").matches) return;            /* phones: the button is enough */
-    const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"; s.onload = draw; document.head.appendChild(s);
+    const s = document.createElement("script"); s.src = "/lessons/qrcode.js"; s.onload = draw; document.head.appendChild(s);
   }
   function repaint() { if (window.CLV_SETTINGS) window.CLV_SETTINGS.repaint(); setTimeout(drawQR, 30); tell(); }
   function onClick(b) {

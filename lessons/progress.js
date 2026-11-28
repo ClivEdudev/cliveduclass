@@ -46,7 +46,7 @@
     const W = read("clv-words", {});
     const known = Object.keys(W).filter(k => (W[k] && W[k].b) >= 2).length;
     const A = window.CLV_ACCOUNT, u = A && A.user;
-    const face = /^[gb]\d\d$/.test((u && u.avatar) || read("clv-avatar", "") || "");
+    const face = /^[gbn]\d\d$/.test((u && u.avatar) || read("clv-avatar", "") || "");
     const level = levelOf(total), a = startOf(level), b = startOf(level + 1);
     const s = { total, level, into: total - a, need: b - a, next: b, streak: st.n, dailyToday: st.today, dailyDays: st.days, best,
       known, words: Object.keys(W).length, lessons: Object.keys(pts).filter(k => +pts[k] > 0).length, face, signed: !!u };
